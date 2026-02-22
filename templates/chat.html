@@ -1,0 +1,234 @@
+{% extends "shared_navbar.html" %}
+
+{% block title %}Chat - Career Sathi{% endblock %}{% block extra_css %}
+<link rel="stylesheet" href="/static/css/messagebox.css">
+<style>
+    /* HTML: <div class="loader"></div> */
+    .loader {
+        width: 80px;
+        height: 40px;
+        padding: 5px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        background: #fff;
+        filter: blur(5px) contrast(10) hue-rotate(60deg);
+        mix-blend-mode: darken;
+    }
+
+    .loader:before,
+    .loader:after {
+        content: "";
+        width: 25px;
+        border-radius: 50%;
+        background: #ff00ff;
+        animation: l3 1s infinite alternate;
+    }
+
+    .loader:after {
+        --s: -1;
+    }
+
+    @keyframes l3 {
+
+        90%,
+        100% {
+            transform: translate(calc(var(--s, 1)*20px))
+        }
+    }
+
+    .ai-message:has(.loader) {
+        padding: 5px 10px;
+        background: #fff !important;
+        border: 1px solid var(--border-color);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar_footer %}
+<div class="sidebar-footer">
+    <button class="predict-btn">
+        <i class="fa-solid fa-sparkles"></i> Predict Career
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Message History -->
+    <div class="message-history" id="messageHistory">
+        {% if chat_history %}
+        {% for msg in chat_history %}
+        {% if msg.sender == 'user' %}
+        <div class="message user-message" data-markdown="{{ msg.message }}">{{ msg.message }}</div>
+        {% else %}
+        <div class="message ai-message" data-markdown="{{ msg.message }}">{{ msg.message }}</div>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <!-- Initial Greetings -->
+        <div class="message ai-message">
+            Hello! I'm your Career Sathi AI. How can I help you today? You can ask me about career paths, courses, or
+            upload your academic documents for analysis.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Chat Input (Partial) -->
+    {% include 'partials/chat_input.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const messageHistory = document.getElementById('messageHistory');
+    const docUpload = document.getElementById('docUpload');
+    const filePreview = document.getElementById('filePreview');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileIcon = document.getElementById('fileIcon');
+
+    // Parse Markdown for existing history messages on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(msg => {
+            // Only parse if it has content and isn't the file preview or typing indicator
+            if (msg.dataset.markdown) {
+                msg.innerHTML = marked.parse(msg.dataset.markdown);
+            } else if (!msg.classList.contains('document-bubble') && msg.textContent.trim()) {
+                // Fallback for greetings or legacy
+                msg.innerHTML = marked.parse(msg.textContent);
+            }
+        });
+        scrollToBottom();
+    });
+
+    // Handle File Selection
+    docUpload.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            fileNameDisplay.textContent = file.name;
+
+            // Toggle icon based on type
+            if (file.name.endsWith('.pdf')) {
+                fileIcon.className = 'fa-solid fa-file-pdf';
+            } else {
+                fileIcon.className = 'fa-solid fa-file-word';
+            }
+
+            filePreview.style.display = 'flex';
+        }
+    });
+
+    // Clear File Selection
+    function clearFileSelection() {
+        docUpload.value = '';
+        filePreview.style.display = 'none';
+    }
+
+    chatForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        const hasFile = docUpload.files.length > 0;
+
+        if (message || hasFile) {
+            // 1. Add File Bubble first if exists
+            if (hasFile) {
+                const file = docUpload.files[0];
+                addFileBubble(file.name);
+            }
+
+            // 2. Add Message Bubble if exists
+            if (message) {
+                addMessage(message, 'user');
+                userInput.value = '';
+
+                // Show loading animation
+                const typingId = 'ai-typing-' + Date.now();
+                const typingDiv = document.createElement('div');
+                typingDiv.id = typingId;
+                typingDiv.classList.add('message', 'ai-message');
+                typingDiv.innerHTML = '<div class="loader"></div>';
+                messageHistory.appendChild(typingDiv);
+                scrollToBottom();
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message }),
+                    });
+
+                    if (!response.ok) throw new Error("Stream Error");
+
+                    // Remove loader/typing indicator
+                    typingDiv.remove();
+
+                    // 1. Create AI Response Bubble (Empty)
+                    const aiMsgDiv = document.createElement('div');
+                    aiMsgDiv.classList.add('message', 'ai-message');
+                    messageHistory.appendChild(aiMsgDiv);
+
+                    let fullAiResponse = "";
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        fullAiResponse += chunk;
+
+                        // Update UI with partial markdown
+                        aiMsgDiv.innerHTML = marked.parse(fullAiResponse);
+                        scrollToBottom();
+                    }
+                } catch (error) {
+                    if (document.getElementById(typingId)) {
+                        document.getElementById(typingId).remove();
+                    }
+                    addMessage("Communication error. Please try again later.", 'ai');
+                }
+            }
+            clearFileSelection();
+        }
+    });
+
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        msgDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+
+        // Use marked to parse markdown into HTML
+        msgDiv.innerHTML = marked.parse(text);
+
+        messageHistory.appendChild(msgDiv);
+        scrollToBottom();
+    }
+
+    function addFileBubble(fileName) {
+        const fileDiv = document.createElement('div');
+        fileDiv.classList.add('document-bubble');
+
+        const isPdf = fileName.toLowerCase().endsWith('.pdf');
+        const iconClass = isPdf ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-word';
+
+        fileDiv.innerHTML = `
+            <i class="${iconClass}"></i>
+            <span class="document-name">${fileName}</span>
+        `;
+
+        messageHistory.appendChild(fileDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        messageHistory.scrollTop = messageHistory.scrollHeight;
+    }
+</script>
+{% endblock %}

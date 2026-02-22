@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Report | AI Career Counselor</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="report.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-header">
+            <div class="header-left">
+                <a href="chat.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Chat</a>
+                <div class="logo">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>CareerAI Report</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Download PDF</button>
+                <div class="user-profile">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="report-content">
+
+            <!-- Top Section: Summary & Top Match -->
+            <section class="report-summary glass-card">
+                <div class="summary-text">
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Analysis Complete
+                    </div>
+                    <h1>Your Top Career Match: <span class="text-gradient">Data Science</span></h1>
+                    <p>Based on your academic performance in Science and Math, combined with your interest in
+                        problem-solving and coding, Data Science is your optimal career path.</p>
+
+                    <div class="key-metrics">
+                        <div class="metric">
+                            <span class="metric-value">92%</span>
+                            <span class="metric-label">Match Score</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">High</span>
+                            <span class="metric-label">Market Demand</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">4 Years</span>
+                            <span class="metric-label">Avg. Education</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-chart">
+                    <canvas id="careerChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Detailed Analysis Grid -->
+            <div class="analysis-grid">
+                <!-- Strengths -->
+                <div class="glass-card analysis-card">
+                    <h3><i class="fa-solid fa-bolt"></i> Key Strengths</h3>
+                    <ul class="list-check">
+                        <li>Strong analytical skills demonstrated by Math grades.</li>
+                        <li>Proficiency in logical reasoning.</li>
+                        <li>Interest in technology and automation.</li>
+                        <li>Good attention to detail.</li>
+                    </ul>
+                </div>
+
+                <!-- Recommended Courses -->
+                <div class="glass-card analysis-card">
+                    <h3><i class="fa-solid fa-graduation-cap"></i> Recommended Path</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="dot"></div>
+                            <div class="content">
+                                <h4>Bachelor's in CS or IT</h4>
+                                <p>Focus on algorithms and statistics.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="dot"></div>
+                            <div class="content">
+                                <h4>Learn Python & SQL</h4>
+                                <p>Essential tools for data analysis.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="dot"></div>
+                            <div class="content">
+                                <h4>Internship</h4>
+                                <p>Gain practical experience in data handling.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Pathways Section -->
+            <section class="pathways-section">
+                <div class="section-header-row">
+                    <h2><i class="fa-solid fa-building-columns"></i> Educational Pathways</h2>
+
+                    <!-- Toggle Switch -->
+                    <div class="toggle-container">
+                        <div class="toggle-bg"></div>
+                        <button class="toggle-btn active" id="btn-nepal">Nepal 🇳🇵</button>
+                        <button class="toggle-btn" id="btn-abroad">Abroad 🌍</button>
+                    </div>
+                </div>
+
+                <!-- Nepal Colleges -->
+                <div class="colleges-grid" id="nepal-colleges">
+                    <!-- KU Card -->
+                    <div class="glass-card college-card">
+                        <div class="card-badge">Top Choice</div>
+                        <div class="college-header">
+                            <div class="college-icon ku-icon">KU</div>
+                            <div>
+                                <h4>Kathmandu University</h4>
+                                <span class="location">Dhulikhel, Kavre</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>B.Sc. in Computational Mathematics</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 4 Years</span>
+                                <span class="tag"><i class="fa-solid fa-coins"></i> ~8 Lakhs</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block btn-sm">View Details</button>
+                    </div>
+
+                    <!-- TU Card -->
+                    <div class="glass-card college-card">
+                        <div class="college-header">
+                            <div class="college-icon tu-icon">TU</div>
+                            <div>
+                                <h4>Tribhuvan University</h4>
+                                <span class="location">Kirtipur, Kathmandu</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>B.Sc. CSIT</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 4 Years</span>
+                                <span class="tag"><i class="fa-solid fa-coins"></i> ~4-6 Lakhs</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-block btn-sm">View Details</button>
+                    </div>
+
+                    <!-- PU Card -->
+                    <div class="glass-card college-card">
+                        <div class="college-header">
+                            <div class="college-icon pu-icon">PU</div>
+                            <div>
+                                <h4>Pokhara University</h4>
+                                <span class="location">Pokhara, Kaski</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>Bachelor of Software Engineering</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 4 Years</span>
+                                <span class="tag"><i class="fa-solid fa-coins"></i> ~5-7 Lakhs</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-block btn-sm">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Abroad Colleges (Hidden by default) -->
+                <div class="colleges-grid hidden" id="abroad-colleges">
+                    <!-- MIT Card -->
+                    <div class="glass-card college-card">
+                        <div class="card-badge">Dream</div>
+                        <div class="college-header">
+                            <div class="college-icon mit-icon">MIT</div>
+                            <div>
+                                <h4>MIT</h4>
+                                <span class="location">Cambridge, USA 🇺🇸</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>B.S. in Computer Science</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 4 Years</span>
+                                <span class="tag"><i class="fa-solid fa-star"></i> SAT Req.</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block btn-sm">View Details</button>
+                    </div>
+
+                    <!-- Oxford Card -->
+                    <div class="glass-card college-card">
+                        <div class="college-header">
+                            <div class="college-icon ox-icon">OX</div>
+                            <div>
+                                <h4>University of Oxford</h4>
+                                <span class="location">Oxford, UK 🇬🇧</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>BA Computer Science</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 3 Years</span>
+                                <span class="tag"><i class="fa-solid fa-star"></i> A-Levels</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-block btn-sm">View Details</button>
+                    </div>
+
+                    <!-- UNSW Card -->
+                    <div class="glass-card college-card">
+                        <div class="college-header">
+                            <div class="college-icon unsw-icon">AU</div>
+                            <div>
+                                <h4>UNSW Sydney</h4>
+                                <span class="location">Sydney, Australia 🇦🇺</span>
+                            </div>
+                        </div>
+                        <div class="degree-info">
+                            <h5>Bachelor of Data Science</h5>
+                            <div class="tags">
+                                <span class="tag"><i class="fa-regular fa-clock"></i> 3 Years</span>
+                                <span class="tag"><i class="fa-solid fa-star"></i> IELTS Req.</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-block btn-sm">View Details</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="report.js"></script>
+    <script>
+        // Initialize Chart.js
+        const ctx = document.getElementById('careerChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Data Science', 'Software Eng.', 'Business Analyst', 'Others'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [
+                        '#DC143C', // Crimson
+                        '#0056b3', // Deep Blue
+                        '#2dd4bf', // Teal
+                        '#94a3b8'  // Grey
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            font: {
+                                family: "'Outfit', sans-serif"
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    </script>
+</body>
+
+</html>

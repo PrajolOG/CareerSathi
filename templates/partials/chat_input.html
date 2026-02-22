@@ -1,0 +1,31 @@
+<div class="chat-input-wrapper">
+    <div id="filePreview" class="file-preview-container" style="display: none;">
+        <div class="file-info">
+            <i class="fa-solid fa-file-pdf" id="fileIcon"></i>
+            <span id="fileNameDisplay">filename.pdf</span>
+        </div>
+        <button type="button" class="remove-file-btn" onclick="clearFileSelection()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <form class="chat-input-form" id="chatForm">
+        <!-- Hidden File Input Restricted to PDF and DOCX -->
+        <input type="file" id="docUpload" style="display: none;" accept=".pdf,.docx">
+
+        <!-- Upload Button Trigger -->
+        <button type="button" class="icon-btn" onclick="document.getElementById('docUpload').click()"
+            title="Upload Document">
+            <i class="fa-solid fa-paperclip"></i>
+        </button>
+
+        <!-- Message Input -->
+        <input type="text" class="chat-input-field" id="userInput" placeholder="Type your message here..."
+            autocomplete="off">
+
+        <!-- Send Button -->
+        <button type="submit" class="icon-btn send-btn" title="Send Message">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </form>
+</div>

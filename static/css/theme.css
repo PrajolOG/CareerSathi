@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* User Requested Colors */
+    --brand-teal: #008080;
+    --brand-teal-dark: #005a5a;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --background-white: #ffffff;
+    --border-color-user: #e5e7eb;
+    --error-color: #b91c1c;
+    --error-bg-user: #fef2f2;
+
+    /* Theme Mappings (Used across the app) */
+    --brand-primary: var(--brand-teal);
+    --brand-secondary: var(--brand-teal);
+    --brand-accent: var(--brand-teal);
+    --brand-accent-hover: var(--brand-teal-dark);
+    --brand-purple: #8E44AD;
+
+    /* Typography */
+    --font-main: 'IBM Plex Mono', monospace;
+
+    /* Backgrounds & Surfaces */
+    --bg-color: #F9FAFB;
+    --surface-color: var(--background-white);
+    --input-bg: var(--background-white);
+    --bachelors-bg: #f8fafc;
+
+    /* Text */
+    --text-primary: var(--text-dark);
+    --text-secondary: var(--text-light);
+    --text-muted: #94a3b8;
+    --text-on-accent: var(--background-white);
+
+    /* Functional Colors */
+    --border-color: var(--border-color-user);
+    --border-hover: #d1d5db;
+    --focus-ring: rgba(0, 128, 128, 0.2);
+
+    --error-bg: var(--error-bg-user);
+    --error-text: var(--error-color);
+    --error-border: #fecaca;
+
+    --success-bg: #f0fdf4;
+    --success-text: #16a34a;
+    --success-border: #a7f3d0;
+
+    /* Shared Tokens */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(31, 41, 55, 0.08);
+
+    --transition-fast: 0.2s ease;
+}

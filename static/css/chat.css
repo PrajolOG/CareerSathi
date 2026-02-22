@@ -1,0 +1,143 @@
+/* chat.css */
+
+/* --- MAIN CONTENT LAYOUT --- */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    width: calc(100vw - var(--sidebar-width));
+}
+
+/* --- CHAT INTERFACE CONTAINER --- */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 1400px;
+    /* Increased from 1000px */
+    margin: 0 auto;
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+/* Message History Area */
+.message-history {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background-color: #ffffff;
+}
+
+/* Base Message Style */
+.message {
+    max-width: 80%;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+}
+
+/* Assistant/AI Message */
+.ai-message {
+    align-self: flex-start;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border-bottom-left-radius: 2px;
+    border: 1px solid var(--border-color);
+}
+
+/* Markdown Support Styles */
+.message p {
+    margin: 0 0 0.5rem 0;
+}
+
+.message p:last-child {
+    margin-bottom: 0;
+}
+
+.message ul,
+.message ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.message li {
+    margin-bottom: 0.25rem;
+}
+
+/* User Message */
+.user-message {
+    align-self: flex-end;
+    background-color: var(--brand-teal);
+    color: #ffffff;
+    border-bottom-right-radius: 2px;
+}
+
+/* Document/File Bubble */
+.document-bubble {
+    align-self: flex-end;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: default;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+}
+
+.document-bubble:hover {
+    transform: translateY(-2px);
+    border-color: var(--brand-teal);
+}
+
+.document-bubble i {
+    font-size: 1.5rem;
+    color: var(--brand-teal);
+}
+
+.document-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Custom Scrollbar */
+.message-history::-webkit-scrollbar {
+    width: 6px;
+}
+
+.message-history::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-history::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .chat-main {
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .message-history {
+        padding: 1rem;
+    }
+}

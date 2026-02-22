@@ -1,0 +1,202 @@
+/* shared_navbar.css */
+
+:root {
+    --sidebar-width: 280px;
+    --header-height: 60px;
+}
+
+.chat-wrapper {
+    display: flex;
+    flex-direction: row;
+    /* Horizontal layout for Sidebar + Content */
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+}
+
+/* --- VERTICAL SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--surface-color);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    z-index: 100;
+}
+
+/* Logo Area */
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.sidebar-logo img {
+    height: 108px;
+    width: auto;
+}
+
+.sidebar-logo span {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--brand-primary);
+}
+
+/* User Profile Section */
+.user-menu-section {
+    margin-bottom: 2rem;
+    background-color: var(--bg-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+/* The header (Image + Name) - Now links to /chat */
+.user-menu-header,
+.user-menu-header:hover,
+.user-menu-header .user-name {
+    text-decoration: none !important;
+}
+
+.user-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    user-select: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.user-menu-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: translateX(4px);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--brand-secondary);
+}
+
+.user-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* The Sub-options (Accordion style) */
+.user-sub-options {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    padding-left: 1rem;
+    /* Indent sub-items */
+}
+
+.user-menu-section.active .user-sub-options {
+    max-height: 200px;
+    /* Enough height to show items */
+    margin-top: 0.5rem;
+}
+
+.sub-link {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: var(--radius-sm);
+    transition: color 0.2s;
+}
+
+.sub-link:hover {
+    color: var(--brand-primary);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Sidebar Footer (Predict Button) */
+
+/* Sidebar Footer (Predict Button) */
+.sidebar-footer {
+    margin-top: auto;
+    /* Push to bottom */
+}
+
+.predict-btn {
+    width: 100%;
+    background-color: var(--brand-accent);
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.predict-btn:hover {
+    background-color: var(--brand-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Mobile Responsiveness for Sidebar */
+@media (max-width: 768px) {
+    .chat-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 1rem;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-menu-section {
+        margin-bottom: 0;
+        margin-left: auto;
+        margin-right: 1rem;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .user-name,
+    .toggle-icon,
+    .user-sub-options,
+    .sidebar-footer {
+        display: none;
+        /* Hide complex sidebar elements on mobile for simplicity */
+    }
+}

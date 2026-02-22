@@ -1,0 +1,540 @@
+:root {
+    --card-bg: rgba(10, 15, 20, 0.85);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --input-bg-dark: rgba(255, 255, 255, 0.05);
+    --brand-teal: #008080;
+    --himalaya-teal: #00e5ff;
+    --nepal-red: #DC143C;
+    /* Safe area variables for notched phones */
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Move background to a pseudo-element or container to prevent mobile scroll jitter */
+    background-color: #050a0f;
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Dynamic viewport height for mobile */
+    margin: 0;
+    padding: 0;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Fixed Background Layer */
+.bg-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../assets/auth.png') no-repeat center center;
+    background-size: cover;
+    z-index: -2;
+}
+
+/* Overlay Layer */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: -1;
+}
+
+.login-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Branding Section --- */
+.branding-section {
+    flex: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(2rem, 5vw, 4rem);
+    /* Fluid padding */
+    position: relative;
+    background: radial-gradient(circle at 20% 50%, rgba(0, 128, 128, 0.15) 0%, transparent 50%);
+}
+
+.branding-content {
+    max-width: 600px;
+    width: 100%;
+}
+
+.branding-logo img {
+    max-width: clamp(150px, 20vw, 220px);
+    /* Fluid image size */
+    margin-bottom: clamp(1rem, 3vh, 1.5rem);
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.2));
+    height: auto;
+}
+
+.namaste-text {
+    display: block;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    color: var(--himalaya-teal);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.branding-title {
+    font-size: clamp(2rem, 5vw, 4rem);
+    /* Super responsive font size */
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: clamp(1.5rem, 4vh, 3rem);
+    color: white;
+}
+
+.branding-title span {
+    color: var(--brand-teal);
+    background: linear-gradient(90deg, var(--himalaya-teal), #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.trusted-by p {
+    font-size: 0.75rem;
+    letter-spacing: 0.2rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 1.5rem;
+}
+
+.trust-icons {
+    display: flex;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.3);
+    flex-wrap: wrap;
+    /* Prevents overflow on smaller screens */
+}
+
+.trust-icons span {
+    transition: all 0.3s;
+}
+
+.trust-icons span:hover {
+    color: var(--himalaya-teal);
+    transform: translateY(-2px);
+}
+
+/* --- Auth Section --- */
+.auth-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 3vw, 2rem);
+    padding-top: max(2rem, var(--sat));
+    /* Respect notch */
+    padding-bottom: max(2rem, var(--sab));
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+    /* Scroll internally on desktop */
+}
+
+.auth-card {
+    width: 100%;
+    /* Use min to ensure it never touches edges on tiny screens */
+    width: min(100%, 460px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    border-radius: clamp(1rem, 3vw, 1.5rem);
+    /* Fluid padding inside card */
+    padding: clamp(1.5rem, 5vw, 3rem);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    margin: auto 0;
+}
+
+.auth-card-header {
+    text-align: center;
+    margin-bottom: clamp(1.5rem, 4vh, 2rem);
+}
+
+.auth-card-header h2 {
+    font-size: clamp(1.5rem, 4vw, 1.8rem);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.auth-card-header p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2vh, 1.25rem);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    background: var(--input-bg-dark);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    padding: 0.8rem 1rem;
+    color: white;
+    font-family: inherit;
+    /* Prevent iOS zoom on focus by ensuring at least 16px */
+    font-size: max(16px, 1rem);
+    transition: all 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+    /* Remove default iOS styles */
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--himalaya-teal);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.15);
+}
+
+/* Bubble Group Responsive Tweak */
+.bubble-group {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    flex-wrap: wrap;
+    /* Wrap on tiny screens */
+}
+
+.bubble-item {
+    flex: 1;
+    min-width: 120px;
+    /* Prevent squishing */
+    position: relative;
+}
+
+.bubble-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.bubble {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-align: center;
+    height: 100%;
+    /* Ensure equal height */
+}
+
+.bubble:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.bubble-item input:checked+.bubble {
+    background: linear-gradient(135deg, var(--brand-teal), #005f5f);
+    border-color: var(--himalaya-teal);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
+    transform: translateY(-1px);
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    padding-right: 3rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 0.5rem;
+    /* Increase touch target */
+    display: flex;
+    transition: color 0.2s;
+}
+
+.password-toggle:hover {
+    color: var(--himalaya-teal);
+}
+
+.submit-btn {
+    margin-top: 0.5rem;
+    background: linear-gradient(90deg, var(--brand-teal), #00a3a3);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    /* Better touch behavior */
+    touch-action: manipulation;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(0, 128, 128, 0.4);
+    filter: brightness(1.1);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.terms-notice {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.terms-notice a {
+    color: var(--himalaya-teal);
+    text-decoration: none;
+}
+
+.terms-notice a:hover {
+    text-decoration: underline;
+}
+
+.auth-card-footer {
+    text-align: center;
+    margin-top: clamp(1.5rem, 3vh, 2rem);
+    padding-top: clamp(1.5rem, 3vh, 2rem);
+    border-top: 1px solid var(--card-border);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.auth-card-footer a {
+    color: var(--himalaya-teal);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    display: inline-block;
+    /* Helps with clickable area */
+}
+
+.auth-card-footer a:hover {
+    text-decoration: underline;
+}
+
+.auth-footer-links {
+    margin-top: 2rem;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    /* Responsive wrapping */
+    justify-content: center;
+}
+
+.auth-footer-links a {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: color 0.2s;
+    padding: 0.5rem;
+    /* Increase touch target */
+}
+
+.auth-footer-links a:hover {
+    color: white;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.alert-error {
+    background: rgba(220, 38, 38, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.alert-success {
+    background: rgba(5, 150, 105, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+/* =========================================
+   SUPER RESPONSIVE MEDIA QUERIES
+   ========================================= */
+
+/* Tablet Portrait & Large Phones (Max 1024px) */
+@media (max-width: 1024px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .branding-section {
+        flex: none;
+        width: 100%;
+        padding: 3rem 1.5rem 1rem;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .branding-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .auth-section {
+        width: 100%;
+        min-height: auto;
+        /* Let content dictate height */
+        padding-bottom: 3rem;
+        overflow-y: visible;
+        /* Let body scroll */
+    }
+
+    /* Center trust icons on tablet */
+    .trust-icons {
+        justify-content: center;
+    }
+}
+
+/* Mobile Devices (Max 768px) */
+@media (max-width: 768px) {
+    .branding-title {
+        font-size: 2.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .trusted-by,
+    .trust-icons {
+        display: none;
+        /* Hide trust chain on mobile to save space */
+    }
+
+    .auth-card {
+        padding: 1.5rem;
+        backdrop-filter: blur(15px);
+        /* Less blur for performance */
+        background: rgba(10, 15, 20, 0.92);
+        /* More opaque */
+    }
+}
+
+/* Landscape Mode on Phones (Short height) */
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-container {
+        flex-direction: row;
+        /* Keep side by side for landscape phones */
+    }
+
+    .branding-section {
+        display: none;
+        /* Hide branding on landscape phones to focus on form */
+    }
+
+    .auth-section {
+        padding: 1rem;
+        align-items: flex-start;
+        /* Align top for better scrolling */
+    }
+
+    .auth-card {
+        margin: 0 auto;
+    }
+}
+
+/* Tiny Devices / Folded Phones (Max 380px) */
+@media (max-width: 380px) {
+    .branding-section {
+        padding: 2rem 1rem 0.5rem;
+    }
+
+    .branding-logo img {
+        max-width: 140px;
+    }
+
+    .auth-card {
+        padding: 1.25rem;
+        border-width: 0;
+        /* Remove border to save pixels */
+        background: transparent;
+        /* Seamless look */
+        box-shadow: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 0.7rem;
+    }
+
+    .auth-footer-links {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+}

@@ -1,0 +1,93 @@
+{% extends "shared_navbar.html" %}
+
+{% block title %}Profile - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container-main {
+        background-color: var(--surface-color);
+        padding: 3rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .profile-header-main {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 2rem;
+    }
+
+    .profile-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 3px solid var(--brand-secondary);
+        padding: 5px;
+    }
+
+    .profile-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .info-item p {
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container-main">
+    <div class="profile-header-main">
+        <img class="profile-avatar-large"
+            src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png" alt="Profile">
+        <div>
+            <h1>{{ user_name }}</h1>
+            <p style="color: var(--text-secondary);">Student Dashboard</p>
+        </div>
+    </div>
+
+    <div class="profile-info-grid">
+        <div class="info-item">
+            <label>Full Name</label>
+            <p>{{ user_name }}</p>
+        </div>
+        <div class="info-item">
+            <label>Email Address</label>
+            <p>{{ user_email }}</p>
+        </div>
+        <div class="info-item">
+            <label>Education Level</label>
+            <p>{{ grade_level }}</p>
+        </div>
+        <div class="info-item">
+            <label>Gender</label>
+            <p>{{ gender }}</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+        <button class="predict-btn" style="width: auto; padding: 0.8rem 2rem;">Edit Profile</button>
+    </div>
+</div>
+{% endblock %}

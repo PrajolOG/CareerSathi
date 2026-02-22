@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Career Sathi{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/theme.css">
+    <link rel="stylesheet" href="/static/css/shared_navbar.css">
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link rel="icon" href="/static/assets/cc_ico.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="chat-wrapper">
+        <!-- SHARED VERTICAL SIDEBAR -->
+        <aside class="sidebar">
+            <a href="/" class="sidebar-logo">
+                <img src="/static/assets/careersathi.png" alt="Logo">
+            </a>
+
+            <div class="user-menu-section active" id="userMenu">
+                <a href="/chat" class="user-menu-header">
+                    <img class="user-avatar"
+                        src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png"
+                        alt="User">
+                    <div class="user-info">
+                        <span class="user-name">{{ user_name }}</span>
+                    </div>
+                </a>
+
+                <div class="user-sub-options">
+                    <a href="/userProfile" class="sub-link">
+                        <i class="fa-regular fa-id-card" style="margin-right: 8px; width: 20px;"></i> View Profile
+                    </a>
+                    <a href="/reports" class="sub-link">
+                        <i class="fa-solid fa-chart-line" style="margin-right: 8px; width: 20px;"></i> View Reports
+                    </a>
+                    <a href="/settings" class="sub-link">
+                        <i class="fa-solid fa-gear" style="margin-right: 8px; width: 20px;"></i> Settings
+                    </a>
+                    <a href="/logout" class="sub-link" style="color: var(--error-text);">
+                        <i class="fa-solid fa-sign-out-alt" style="margin-right: 8px; width: 20px;"></i> Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- SEPARATE CONTROLS SECTION REMOVED (Voice Answer) -->
+
+            {% block sidebar_footer %}{% endblock %}
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="chat-main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
