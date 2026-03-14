@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Career Sathi</title>
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/static/assets/cc_ico.png">
+
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-blue: #eff6ff;
+            --text-dark: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Navbar / Header --- */
+        .terms-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-logo img {
+            height: 100px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: var(--secondary-blue);
+        }
+
+        /* --- Main Layout --- */
+        .terms-layout {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            max-width: 1400px;
+            margin: 40px auto;
+            gap: 48px;
+            padding: 0 24px;
+            align-items: start;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .terms-sidebar {
+            position: sticky;
+            top: 150px;
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-left: 16px;
+        }
+
+        .terms-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .terms-nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .terms-nav a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 0;
+            width: 3px;
+            background-color: var(--primary-blue);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.2s;
+        }
+
+        .terms-nav a:hover {
+            color: var(--text-dark);
+            background: var(--bg-main);
+        }
+
+        .terms-nav a.active {
+            color: var(--primary-blue);
+            background: var(--secondary-blue);
+            font-weight: 600;
+        }
+
+        .terms-nav a.active::before {
+            height: 60%;
+        }
+
+        /* --- Content Area --- */
+        .terms-content {
+            background: var(--bg-card);
+            padding: 60px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            letter-spacing: -1.5px;
+            line-height: 1.2;
+        }
+
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Highlight Notice --- */
+        .highlight-box {
+            background: var(--secondary-blue);
+            border-left: 4px solid var(--primary-blue);
+            padding: 24px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 40px;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--primary-blue);
+            font-size: 16px;
+        }
+
+        /* --- Sections --- */
+        .terms-section {
+            margin-bottom: 48px;
+            scroll-margin-top: 100px;
+        }
+
+        .terms-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .terms-section p {
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .terms-section ul {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        .terms-section li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .terms-section li::marker {
+            color: var(--primary-blue);
+        }
+
+        /* --- Footer --- */
+        .terms-footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .terms-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 0 16px;
+                margin: 24px auto;
+            }
+
+            .terms-sidebar {
+                position: static;
+                padding: 16px;
+            }
+
+            .terms-nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .terms-nav a {
+                white-space: nowrap;
+            }
+
+            .terms-nav a::before {
+                display: none;
+            }
+
+            .terms-content {
+                padding: 32px 24px;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="terms-header">
+        <a href="/" class="header-logo">
+            <img src="/static/assets/careersathi.png" alt="Career Sathi">
+        </a>
+        <a href="/settings" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="terms-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="terms-sidebar">
+            <div class="sidebar-title">Privacy Policy</div>
+            <nav class="terms-nav">
+                <a href="#data-collection" class="active">1. Data Collection</a>
+                <a href="#data-usage">2. How We Use Data</a>
+                <a href="#ai-data">3. AI Data Processing</a>
+                <a href="#data-storage">4. Storage & Security</a>
+                <a href="#user-rights">5. Your Rights</a>
+                <a href="#third-parties">6. Third Parties</a>
+                <a href="#cookies">7. Cookies & Tracking</a>
+                <a href="#contact">8. Contact Us</a>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="terms-content">
+            <div class="page-header">
+                <h1 class="page-title">Privacy Policy</h1>
+                <div class="last-updated">
+                    <i class="fa-regular fa-calendar"></i> Last Updated: March 2026
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p><strong>Your privacy is our priority.</strong> This policy explains how Career Sathi collects, uses,
+                    and protects your information when you use our AI career counseling platform.</p>
+            </div>
+
+            <section id="data-collection" class="terms-section">
+                <h2>1. Information We Collect</h2>
+                <p>We collect information you provide directly to us when you create an account, build your profile, or
+                    interact with our AI assistant:</p>
+                <ul>
+                    <li><strong>Account Data:</strong> Name, email address, and profile picture.</li>
+                    <li><strong>Profile Data:</strong> Academic level, grades, streams, entrance scores, and personal
+                        interests.</li>
+                    <li><strong>Chat Data:</strong> Text conversations between you and the Career Sathi AI assistant.
+                    </li>
+                    <li><strong>Usage Data:</strong> Information about how you navigate and interact with the platform.
+                    </li>
+                </ul>
+            </section>
+
+            <section id="data-usage" class="terms-section">
+                <h2>2. How We Use Your Information</h2>
+                <p>We use the collected data to provide a personalized experience and improve our services:</p>
+                <ul>
+                    <li>To generate customized career roadmaps and recommendations.</li>
+                    <li>To provide conversational AI support tailored to your academic background.</li>
+                    <li>To analyze platform usage trends and technical performance.</li>
+                    <li>To communicate with you about your account or service updates.</li>
+                </ul>
+            </section>
+
+            <section id="ai-data" class="terms-section">
+                <h2>3. AI Data Processing & Analysis</h2>
+                <p>Career Sathi uses advanced AI models to analyze your data. Please note:</p>
+                <ul>
+                    <li>Your profile and chat data are passed to AI models (e.g., via secure APIs) to generate
+                        specialized advice.</li>
+                    <li>We use anonymized data to fine-tune our internal recommendation engines and improve the quality
+                        of roadmaps.</li>
+                    <li>We do NOT sell your personal chat history or academic data to educational marketers or
+                        third-party advertisers.</li>
+                </ul>
+            </section>
+
+            <section id="data-storage" class="terms-section">
+                <h2>4. Data Storage & Security</h2>
+                <p>We implement robust security measures to protect your data:</p>
+                <ul>
+                    <li>Data is stored in secure, encrypted cloud databases (hosted by providers like Supabase).</li>
+                    <li>We use industry-standard authentication (OAuth/JWT) to ensure only you can access your private
+                        data.</li>
+                    <li>While we strive to use commercially acceptable means to protect your Personal Data, we cannot
+                        guarantee its absolute security.</li>
+                </ul>
+            </section>
+
+            <section id="user-rights" class="terms-section">
+                <h2>5. Your Rights & Control</h2>
+                <p>You have full control over your data on Career Sathi:</p>
+                <ul>
+                    <li><strong>Access:</strong> You can view all your profile and chat data directly in the
+                        application.</li>
+                    <li><strong>Delete:</strong> You can clear your chat history or delete your entire account at any
+                        time from the Settings menu.</li>
+                    <li><strong>Export:</strong> You can request a copy of your stored data for your own records.</li>
+                </ul>
+            </section>
+
+            <section id="third-parties" class="terms-section">
+                <h2>6. Third-Party Sharing</h2>
+                <p>We only share data with third parties in the following circumstances:</p>
+                <ul>
+                    <li><strong>Service Providers:</strong> We share data with infrastructure partners (like cloud
+                        hosting and AI API providers) necessary to run the service.</li>
+                    <li><strong>Legal Requirements:</strong> If required by law, we may disclose information to public
+                        authorities.</li>
+                </ul>
+            </section>
+
+            <section id="cookies" class="terms-section">
+                <h2>7. Cookies & Tracking</h2>
+                <p>We use cookies to maintain your login session and enhance your experience:</p>
+                <ul>
+                    <li><strong>Essential Cookies:</strong> Used for authentication and security.</li>
+                    <li><strong>Functional Cookies:</strong> Used to remember your site preferences (like tab
+                        selections).</li>
+                </ul>
+            </section>
+
+            <section id="contact" class="terms-section">
+                <h2>8. Contact Us</h2>
+                <p>If you have any questions about this Privacy Policy or our data practices, please reach out to us:
+                </p>
+                <ul>
+                    <li>Email: privacy@careersathi.com</li>
+                    <li>Location: Kathmandu, Nepal</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="terms-footer">
+        <p>&copy; 2026 Career Sathi. Designed for student empowerment in Nepal.</p>
+    </footer>
+
+    <!-- ScrollSpy Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".terms-section");
+            const navLinks = document.querySelectorAll(".terms-nav a");
+
+            const observerOptions = {
+                root: null,
+                rootMargin: "-120px 0px -60% 0px",
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => link.classList.remove("active"));
+                        const activeId = entry.target.getAttribute("id");
+                        const activeLink = document.querySelector(`.terms-nav a[href="#${activeId}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add("active");
+                            if (window.innerWidth <= 900) {
+                                activeLink.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                            }
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+        });
+    </script>
+</body>
+
+</html>

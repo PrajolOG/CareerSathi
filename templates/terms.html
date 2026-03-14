@@ -3,67 +3,486 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Career Sathi - Terms and Conditions</title>
-    <link rel="stylesheet" href="/static/css/theme.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions - Career Sathi</title>
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="/static/assets/cc_ico.png">
+
     <style>
-        .terms-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 40px;
-            background: var(--surface-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            line-height: 1.6;
+        /* --- Theme Variables --- */
+        :root {
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-blue: #eff6ff;
+            --text-dark: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
         }
 
-        h1 {
-            color: var(--brand-primary);
-            border-bottom: 2px solid var(--brand-secondary);
-            padding-bottom: 10px;
+        html {
+            scroll-behavior: smooth;
+            /* Native smooth scrolling */
         }
 
-        h2 {
-            color: var(--brand-primary);
-            margin-top: 25px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
-        p {
-            color: var(--text-secondary);
-            margin-bottom: 15px;
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: var(--brand-secondary);
+        /* --- Navbar / Header --- */
+        .terms-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-logo img {
+            height: 100px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: var(--secondary-blue);
+        }
+
+        /* --- Main Layout --- */
+        .terms-layout {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            max-width: 1400px;
+            margin: 40px auto;
+            gap: 48px;
+            padding: 0 24px;
+            align-items: start;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .terms-sidebar {
+            position: sticky;
+            top: 150px;
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-left: 16px;
+        }
+
+        .terms-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .terms-nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .terms-nav a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 0;
+            width: 3px;
+            background-color: var(--primary-blue);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.2s;
+        }
+
+        .terms-nav a:hover {
+            color: var(--text-dark);
+            background: var(--bg-main);
+        }
+
+        .terms-nav a.active {
+            color: var(--primary-blue);
+            background: var(--secondary-blue);
             font-weight: 600;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
+        .terms-nav a.active::before {
+            height: 60%;
+        }
+
+        /* --- Content Area --- */
+        .terms-content {
+            background: var(--bg-card);
+            padding: 60px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            letter-spacing: -1.5px;
+            line-height: 1.2;
+        }
+
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Highlight Notice --- */
+        .highlight-box {
+            background: var(--secondary-blue);
+            border-left: 4px solid var(--primary-blue);
+            padding: 24px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 40px;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--primary-blue);
+            font-size: 16px;
+        }
+
+        /* --- Sections --- */
+        .terms-section {
+            margin-bottom: 48px;
+            /* Replaces the old margin/padding hack for sticky headers */
+            scroll-margin-top: 100px;
+        }
+
+        .terms-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .terms-section p {
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .terms-section ul {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        .terms-section li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .terms-section li::marker {
+            color: var(--primary-blue);
+        }
+
+        /* --- Footer --- */
+        .terms-footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .terms-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 0 16px;
+                margin: 24px auto;
+            }
+
+            .terms-sidebar {
+                position: static;
+                padding: 16px;
+            }
+
+            /* Make sidebar horizontally scrollable on mobile */
+            .terms-nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .terms-nav a {
+                white-space: nowrap;
+            }
+
+            .terms-nav a::before {
+                display: none;
+                /* Hide vertical indicator on mobile */
+            }
+
+            .terms-content {
+                padding: 32px 24px;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="terms-container">
-        <h1>Terms and Conditions</h1>
-        <p>Welcome to Career Sathi. By using our service, you agree to the following terms...</p>
+    <!-- Header -->
+    <header class="terms-header">
+        <a href="/" class="header-logo">
+            <img src="/static/assets/careersathi.png" alt="">
+        </a>
+        <a href="/settings" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+    </header>
 
-        <h2>1. Acceptance of Terms</h2>
-        <p>WORK IN PROGRESS</p>
+    <!-- Main Layout -->
+    <div class="terms-layout">
 
-        <h2>2. Privacy Policy</h2>
-        <p>WORK IN PROGRESS</p>
+        <!-- Sidebar Navigation -->
+        <aside class="terms-sidebar">
+            <div class="sidebar-title">Table of Contents</div>
+            <nav class="terms-nav">
+                <a href="#acceptance" class="active">1. Acceptance of Terms</a>
+                <a href="#description">2. Description of Service</a>
+                <a href="#ai-processing">3. AI & Data Processing</a>
+                <a href="#user-conduct">4. User Conduct</a>
+                <a href="#intellectual-property">5. Intellectual Property</a>
+                <a href="#privacy">6. Privacy Policy</a>
+                <a href="#liability">7. Limitation of Liability</a>
+                <a href="#modifications">8. Modifications</a>
+            </nav>
+        </aside>
 
-        <h2>3. Use of Service</h2>
-        <p>WORK IN PROGRESS</p>
+        <!-- Content Area -->
+        <main class="terms-content">
+            <div class="page-header">
+                <h1 class="page-title">Terms & Conditions</h1>
+                <div class="last-updated">
+                    <i class="fa-regular fa-calendar"></i> Last Updated: March 2026
+                </div>
+            </div>
 
-        <a href="/signup" class="back-link">&larr; Back to Signup</a>
+            <div class="highlight-box">
+                <p><strong>Please read these Terms carefully.</strong> By accessing or using the Career Sathi platform,
+                    you signify your agreement to be bound by these Terms and Conditions. If you do not agree, please do
+                    not use our services.</p>
+            </div>
+
+            <section id="acceptance" class="terms-section">
+                <h2>1. Acceptance of Terms</h2>
+                <p>Welcome to Career Sathi ("Company," "we," "us," or "our"). These Terms and Conditions constitute a
+                    legally binding agreement made between you ("User" or "you") and Career Sathi, concerning your
+                    access to and use of our web application and AI-driven career counseling services.</p>
+                <p>You must be at least 13 years of age to use this platform. By creating an account, you represent and
+                    warrant that you meet all eligibility requirements.</p>
+            </section>
+
+            <section id="description" class="terms-section">
+                <h2>2. Description of Service</h2>
+                <p>Career Sathi provides an automated, Artificial Intelligence (AI) driven career guidance platform. The
+                    Service includes but is not limited to:</p>
+                <ul>
+                    <li>Conversational AI career counseling bots.</li>
+                    <li>Automated roadmap Generation based on inputted academics and interests.</li>
+                    <li>Resource aggregation for educational materials.</li>
+                </ul>
+                <p><strong>Disclaimer:</strong> The career advice provided by our AI models is for informational and
+                    educational purposes only. It should not be construed as guaranteed professional, financial, or
+                    academic advice. Users are solely responsible for their educational and career decisions.</p>
+            </section>
+
+            <section id="ai-processing" class="terms-section">
+                <h2>3. AI & Data Processing</h2>
+                <p>Career Sathi heavily relies on Large Language Models (LLMs) and advanced machine learning algorithms
+                    to generate customized advice. By using the service, you acknowledge that:</p>
+                <ul>
+                    <li>Your input data (including academic grades, text chats, and personal interests) is processed
+                        dynamically by our AI pipeline.</li>
+                    <li>AI processing may occasionally produce hallucinated, inaccurate, or outdated information. Career
+                        Sathi does not warrant the absolute accuracy of generated reports.</li>
+                    <li>You grant us permission to temporarily process your data through third-party AI APIs strictly
+                        for the purpose of fulfilling your prompt requests.</li>
+                </ul>
+            </section>
+
+            <section id="user-conduct" class="terms-section">
+                <h2>4. User Conduct & Responsibilities</h2>
+                <p>You agree to use Career Sathi only for lawful purposes. You agree NOT to:</p>
+                <ul>
+                    <li>Attempt to jailbreak, prompt-inject, or otherwise manipulate the AI models to bypass safety
+                        filters.</li>
+                    <li>Submit personally identifiable information (PII) beyond what is strictly requested by the
+                        profile forms.</li>
+                    <li>Reverse engineer or scrape the datasets, algorithms, or proprietary educational roadmaps
+                        provided by Career Sathi.</li>
+                    <li>Use the service to generate harmful, biased, or discriminatory career materials.</li>
+                </ul>
+            </section>
+
+            <section id="intellectual-property" class="terms-section">
+                <h2>5. Intellectual Property Rights</h2>
+                <p>Unless otherwise indicated, the Site is our proprietary property. All source code, databases,
+                    functionality, software, website designs, audio, video, text, photographs, and graphics on the Site
+                    (collectively, the "Content") are owned or controlled by us.</p>
+                <p>You are granted a limited license to access and use the Site and to download or print a copy of the
+                    AI-generated Roadmaps and Reports solely for your personal, non-commercial use.</p>
+            </section>
+
+            <section id="privacy" class="terms-section">
+                <h2>6. Privacy Policy Interface</h2>
+                <p>Your privacy is important to us. We aggregate user data to improve the contextual accuracy of our
+                    career models. You retain the right to:</p>
+                <ul>
+                    <li>Export your data at any time.</li>
+                    <li>Permanently delete your Chat History through the Settings dashboard.</li>
+                    <li>Terminate your account, triggering a cascade deletion of your stored profile metrics.</li>
+                </ul>
+            </section>
+
+            <section id="liability" class="terms-section">
+                <h2>7. Limitation of Liability</h2>
+                <p>In no event will we or our directors, employees, or agents be liable to you or any third party for
+                    any direct, indirect, consequential, exemplary, incidental, special, or punitive damages, including
+                    lost profit, lost academic opportunity, or other damages arising from your use of the site, even if
+                    we have been advised of the possibility of such damages.</p>
+            </section>
+
+            <section id="modifications" class="terms-section">
+                <h2>8. Modifications and Interruptions</h2>
+                <p>We reserve the right to change, modify, or remove the contents of the Site at any time or for any
+                    reason at our sole discretion without notice. We will not be liable to you or any third party for
+                    any modification, price change, suspension, or discontinuance of the Site.</p>
+            </section>
+
+        </main>
     </div>
+
+    <!-- Footer -->
+    <footer class="terms-footer">
+        <p>&copy; 2026 Career Sathi. Designed for student empowerment in Nepal.</p>
+    </footer>
+
+    <!-- ScrollSpy Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".terms-section");
+            const navLinks = document.querySelectorAll(".terms-nav a");
+
+            // Efficient ScrollSpy using IntersectionObserver
+            const observerOptions = {
+                root: null,
+                rootMargin: "-120px 0px -60% 0px", // Triggers when section is near the top
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remove active class from all links
+                        navLinks.forEach(link => link.classList.remove("active"));
+
+                        // Add active class to the currently visible section's link
+                        const activeId = entry.target.getAttribute("id");
+                        const activeLink = document.querySelector(`.terms-nav a[href="#${activeId}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add("active");
+
+                            // For mobile: auto-scroll the horizontal nav to show the active pill
+                            if (window.innerWidth <= 900) {
+                                activeLink.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                            }
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+        });
+    </script>
 </body>
 
 </html>

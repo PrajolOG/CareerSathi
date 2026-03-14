@@ -1,0 +1,170 @@
+{% extends "shared_navbar.html" %}
+
+{% block title %}Search Courses - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-section {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .search-header {
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .search-header h1 {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+
+    .search-bar-container {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 40px;
+        background: white;
+        padding: 8px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-light);
+    }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .btn-search {
+        background: var(--brand-primary);
+        color: white;
+        border: none;
+        padding: 12px 32px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    .course-card {
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--brand-primary);
+    }
+
+    .course-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--brand-light);
+        color: var(--brand-primary);
+        border-radius: var(--radius-full);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        width: fit-content;
+    }
+
+    .course-card h3 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--text-primary);
+    }
+
+    .course-meta {
+        font-size: 14px;
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .course-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .course-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border-light);
+    }
+
+    .btn-apply {
+        color: var(--brand-primary);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-apply:hover {
+        color: var(--brand-hover);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-section">
+    <div class="search-header">
+        <h1>Find Your Ideal Course</h1>
+        <p>Browse thousands of courses tailored to your predicted career path.</p>
+    </div>
+
+    <form action="/search/courses" method="GET" class="search-bar-container">
+        <input type="text" name="q" class="search-input" placeholder="Search by course name, university or category..."
+            value="{{ query or '' }}">
+        <button type="submit" class="btn-search">Search</button>
+    </form>
+
+    <div class="course-grid">
+        {% for course in courses %}
+        <div class="course-card">
+            <span class="course-tag">{{ course.career_category }}</span>
+            <h3>{{ course.course_name }}</h3>
+            <div class="course-meta">
+                <span><i class="fa-solid fa-building-columns"></i> {{ course.university_name }}</span>
+                <span><i class="fa-solid fa-location-dot"></i> {{ course.location }}</span>
+            </div>
+            <div class="course-footer">
+                <a href="{{ course.website_link }}" target="_blank" class="btn-apply">
+                    Learn More <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-book-open fa-3x mb-3"></i>
+            <h3>No courses found</h3>
+            <p>Try searching for a specific subject or career field.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

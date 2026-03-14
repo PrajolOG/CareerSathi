@@ -1,30 +1,49 @@
+<!-- partials/chat_input.html -->
 <div class="chat-input-wrapper">
+    <!-- Animated File Preview Bubble -->
     <div id="filePreview" class="file-preview-container" style="display: none;">
         <div class="file-info">
-            <i class="fa-solid fa-file-pdf" id="fileIcon"></i>
-            <span id="fileNameDisplay">filename.pdf</span>
+            <div class="doc-icon-wrapper-small">
+                <i class="fa-solid fa-file-pdf" id="fileIcon"></i>
+            </div>
+            <span id="fileNameDisplay" class="truncate-text">filename.pdf</span>
         </div>
-        <button type="button" class="remove-file-btn" onclick="clearFileSelection()">
+        <button type="button" class="remove-file-btn" onclick="clearFileSelection()" title="Remove file">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <form class="chat-input-form" id="chatForm">
-        <!-- Hidden File Input Restricted to PDF and DOCX -->
+    <!-- Main Chat Input Form -->
+    <form class="chat-input-form group" id="chatForm">
+        <!-- Hidden File Inputs -->
         <input type="file" id="docUpload" style="display: none;" accept=".pdf,.docx">
+        <input type="file" id="imgUpload" style="display: none;" accept="image/*">
 
-        <!-- Upload Button Trigger -->
-        <button type="button" class="icon-btn" onclick="document.getElementById('docUpload').click()"
+        <!-- Attachment Menu -->
+        <div id="attachmentMenu" class="attachment-menu">
+            <button type="button" class="attach-option btn-img" onclick="document.getElementById('imgUpload').click(); toggleAttachmentMenu()">
+                <i class="fa-solid fa-image"></i>
+                <span>Image</span>
+            </button>
+            <button type="button" class="attach-option btn-pdf" onclick="document.getElementById('docUpload').click(); toggleAttachmentMenu()">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>PDF / Doc</span>
+            </button>
+        </div>
+
+        <!-- Attachment Button -->
+        <button type="button" class="icon-btn attach-btn" onclick="toggleAttachmentMenu()"
             title="Upload Document">
             <i class="fa-solid fa-paperclip"></i>
         </button>
 
-        <!-- Message Input -->
-        <input type="text" class="chat-input-field" id="userInput" placeholder="Type your message here..."
-            autocomplete="off">
+        <!-- Message Input (Multiline) -->
+        <textarea class="chat-input-field" id="userInput" rows="1"
+            placeholder="Ask Career Sathi AI about paths, syllabus, or upload a resume..." 
+            autocomplete="off"></textarea>
 
-        <!-- Send Button -->
-        <button type="submit" class="icon-btn send-btn" title="Send Message">
+        <!-- Send Button with Glow -->
+        <button type="submit" class="icon-btn send-btn ai-gradient-btn" id="sendBtn" title="Send Message">
             <i class="fa-solid fa-paper-plane"></i>
         </button>
     </form>

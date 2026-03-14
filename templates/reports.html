@@ -1,0 +1,81 @@
+<!-- reports.html -->
+{% extends "shared_navbar.html" %}
+
+{% block title %}My Reports - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/reports.css">
+{% endblock %}
+
+{% block content %}
+<div class="reports-wrapper">
+    <div class="reports-container">
+
+        <!-- Symmetrical Centered Header -->
+        <div class="reports-header text-center">
+            <h1 class="animated-title">My Career <span class="ai-glow">Reports</span></h1>
+            <p>Track every assessment and compare your top recommended paths.</p>
+        </div>
+
+        <!-- Report Image Banner -->
+        <div class="report-banner">
+            <img src="/static/assets/careerreport.png" alt="Career Insight Report Banner">
+        </div>
+
+        <!-- Reports Grid -->
+        <div class="reports-list-grid">
+            {% for report in reports %}
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-icon">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div class="report-score">
+                        <span class="score-badge">Top 3 Match</span>
+                    </div>
+                </div>
+
+                <div class="report-card-body">
+                    {% set prediction_text = report.career_prediction if report.career_prediction else '' %}
+                    {% set careers = prediction_text.split(',') if prediction_text else [] %}
+                    {% set top1 = careers[0].strip() if careers else 'No recommendation found' %}
+
+                    <div class="top1-block">
+                        <span class="rank-pill"><i class="fa-solid fa-crown"></i> Top 1</span>
+                        <h3>{{ top1 }}</h3>
+                    </div>
+
+                    <div class="other-options">
+                        {% for career in careers[1:3] %}
+                        {% if career.strip() %}
+                        <span class="option-chip">Top {{ loop.index + 1 }}: {{ career.strip() }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <p class="date-text"><i class="fa-regular fa-calendar"></i> Analyzed on {{ report.formatted_date }}
+                    </p>
+                </div>
+
+                <div class="report-card-footer">
+                    <a href="/reports/{{ report.id }}" class="btn-outline">
+                        View Full Details <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+
+            <!-- Empty State -->
+            <div class="empty-reports">
+                <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                <h3>No reports found</h3>
+                <p>You haven't taken any career assessments yet.<br>Head over to the Chat to generate your first AI
+                    report.</p>
+            </div>
+
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

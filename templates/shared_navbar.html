@@ -1,3 +1,4 @@
+<!-- shared_navbar.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,51 +6,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Career Sathi{% endblock %}</title>
+
+    <!-- Premium modern font stack -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/shared_navbar.css">
     <link rel="stylesheet" href="/static/css/chat.css">
     <link rel="icon" href="/static/assets/cc_ico.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="mobile-logo">
+            <img src="/static/assets/careersathi.png" alt="Career Sathi Logo">
+        </div>
+        <button class="mobile-toggle-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <div class="chat-wrapper">
-        <!-- SHARED VERTICAL SIDEBAR -->
-        <aside class="sidebar">
-            <a href="/" class="sidebar-logo">
-                <img src="/static/assets/careersathi.png" alt="Logo">
-            </a>
+        <!-- SHARED VERTICAL PILL SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-pill">
+                <div class="sidebar-top">
+                    <a href="/" class="sidebar-logo">
+                        <img src="/static/assets/careersathi.png" alt="Career Sathi Logo">
+                    </a>
+                    <button class="mobile-close-btn" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
 
-            <div class="user-menu-section active" id="userMenu">
-                <a href="/chat" class="user-menu-header">
-                    <img class="user-avatar"
-                        src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png"
-                        alt="User">
-                    <div class="user-info">
-                        <span class="user-name">{{ user_name }}</span>
+                <nav class="sidebar-nav">
+                    <a href="/userProfile"
+                        class="nav-item {% if request.url.path == '/userProfile' %}active{% endif %}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/chat" class="nav-item {% if request.url.path == '/chat' %}active{% endif %}">
+                        <i class="fa-solid fa-comment-dots"></i>
+                        <span>AI Counselor</span>
+                    </a>
+                    <a href="/reports" class="nav-item {% if '/reports' in request.url.path %}active{% endif %}">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>My Reports</span>
+                    </a>
+                    <a href="/search/universities"
+                        class="nav-item {% if '/search/universities' in request.url.path %}active{% endif %}">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <span>Universities</span>
+                    </a>
+                    <a href="/search/courses"
+                        class="nav-item {% if '/search/courses' in request.url.path %}active{% endif %}">
+                        <i class="fa-solid fa-book"></i>
+                        <span>Courses</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-bottom">
+                    <div class="user-pill">
+                        <a href="/userProfile" class="user-pill-link">
+                            <img class="user-pill-avatar"
+                                src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png"
+                                alt="User">
+                            <div class="user-pill-info">
+                                <span class="user-pill-name">{{ user_name|default('User') }}</span>
+                            </div>
+                        </a>
+                        <div class="user-pill-actions">
+                            <a href="/settings" class="action-btn" title="Settings">
+                                <i class="fa-solid fa-gear"></i>
+                            </a>
+                        </div>
                     </div>
-                </a>
-
-                <div class="user-sub-options">
-                    <a href="/userProfile" class="sub-link">
-                        <i class="fa-regular fa-id-card" style="margin-right: 8px; width: 20px;"></i> View Profile
-                    </a>
-                    <a href="/reports" class="sub-link">
-                        <i class="fa-solid fa-chart-line" style="margin-right: 8px; width: 20px;"></i> View Reports
-                    </a>
-                    <a href="/settings" class="sub-link">
-                        <i class="fa-solid fa-gear" style="margin-right: 8px; width: 20px;"></i> Settings
-                    </a>
-                    <a href="/logout" class="sub-link" style="color: var(--error-text);">
-                        <i class="fa-solid fa-sign-out-alt" style="margin-right: 8px; width: 20px;"></i> Logout
-                    </a>
                 </div>
             </div>
-
-            <!-- SEPARATE CONTROLS SECTION REMOVED (Voice Answer) -->
-
-            {% block sidebar_footer %}{% endblock %}
         </aside>
 
         <!-- MAIN CONTENT AREA -->
@@ -62,6 +106,13 @@
         function toggleUserMenu() {
             const menu = document.getElementById('userMenu');
             menu.classList.toggle('active');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
         }
     </script>
     {% block extra_js %}{% endblock %}

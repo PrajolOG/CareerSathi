@@ -1,75 +1,113 @@
+<!-- chat.html -->
 {% extends "shared_navbar.html" %}
 
-{% block title %}Chat - Career Sathi{% endblock %}{% block extra_css %}
+{% block title %}Chat - Career Sathi AI{% endblock %}
+
+{% block extra_css %}
 <link rel="stylesheet" href="/static/css/messagebox.css">
 <style>
-    /* HTML: <div class="loader"></div> */
-    .loader {
-        width: 80px;
-        height: 40px;
-        padding: 5px;
-        box-sizing: border-box;
+    .loader-dots {
         display: flex;
-        justify-content: space-between;
-        background: #fff;
-        filter: blur(5px) contrast(10) hue-rotate(60deg);
-        mix-blend-mode: darken;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 4px;
     }
 
-    .loader:before,
-    .loader:after {
-        content: "";
-        width: 25px;
+    .typing-dot {
+        width: 11px;
+        height: 11px;
+        background: #4F46E5;
         border-radius: 50%;
-        background: #ff00ff;
-        animation: l3 1s infinite alternate;
+        display: inline-block;
+        animation: blink 1.2s infinite both;
     }
 
-    .loader:after {
-        --s: -1;
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+        0%, 100% { opacity: 0.25; transform: translateY(0); }
+        50%       { opacity: 1;    transform: translateY(-5px); }
     }
 
-    @keyframes l3 {
-
-        90%,
-        100% {
-            transform: translate(calc(var(--s, 1)*20px))
-        }
+    .ai-message:has(.loader-dots) {
+        min-width: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #EEF2FF !important;
+        border-color: rgba(79, 70, 229, 0.25) !important;
+        padding: 16px 24px;
     }
 
-    .ai-message:has(.loader) {
-        padding: 5px 10px;
-        background: #fff !important;
-        border: 1px solid var(--border-color);
+    /* Report generating indicator */
+    .report-generating-bubble {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+    }
+
+    .report-generating-bubble .rg-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--brand-primary);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .report-generating-bubble .rg-text {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .report-generating-bubble .rg-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--brand-primary);
+    }
+
+    .report-generating-bubble .rg-dots {
+        display: flex;
+        gap: 6px;
     }
 </style>
 {% endblock %}
 
 {% block sidebar_footer %}
-<div class="sidebar-footer">
-    <button class="predict-btn">
-        <i class="fa-solid fa-sparkles"></i> Predict Career
-    </button>
-</div>
+<div class="sidebar-footer"></div>
 {% endblock %}
 
 {% block content %}
 <div class="chat-container">
+
+    <!-- Animated Chat Header -->
+    <div class="chat-header">
+        <h1 class="animated-title">Career Sathi <span class="ai-glow">AI</span></h1>
+        <p class="animated-subtitle">Your personal AI counselor for career guidance and document analysis.</p>
+    </div>
+
     <!-- Message History -->
     <div class="message-history" id="messageHistory">
         {% if chat_history %}
         {% for msg in chat_history %}
-        {% if msg.sender == 'user' %}
-        <div class="message user-message" data-markdown="{{ msg.message }}">{{ msg.message }}</div>
-        {% else %}
-        <div class="message ai-message" data-markdown="{{ msg.message }}">{{ msg.message }}</div>
-        {% endif %}
+        <div class="message {% if msg.sender == 'user' %}user-message{% else %}ai-message{% endif %}"
+            data-markdown="{{ msg.message }}">
+            {{ msg.message }}
+        </div>
         {% endfor %}
         {% else %}
         <!-- Initial Greetings -->
         <div class="message ai-message">
-            Hello! I'm your Career Sathi AI. How can I help you today? You can ask me about career paths, courses, or
-            upload your academic documents for analysis.
+            Namaste! I am your Career Sathi AI Counselor. How can I help you today? You can ask me about career paths,
+            university syllabus, or upload your academic documents for analysis.
         </div>
         {% endif %}
     </div>
@@ -89,110 +127,261 @@
     const filePreview = document.getElementById('filePreview');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const fileIcon = document.getElementById('fileIcon');
+    const sendBtn = document.querySelector('.send-btn');
 
-    // Parse Markdown for existing history messages on load
+    const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
+
+    // --- NEW: Attachment Menu Logic ---
+    function toggleAttachmentMenu() {
+        const menu = document.getElementById('attachmentMenu');
+        menu.classList.toggle('show');
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('attachmentMenu');
+        const attachBtn = document.querySelector('.attach-btn');
+        if (!menu.contains(e.target) && !attachBtn.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // --- NEW: Textarea Auto-Resize ---
+    userInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        if (this.scrollHeight > 200) {
+            this.style.overflowY = 'auto';
+        } else {
+            this.style.overflowY = 'hidden';
+        }
+    });
+
+    // Handle Enter to Submit, Shift+Enter for Newline
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // 1. Parse Markdown & Hide JSON blocks for existing history messages on load
     document.addEventListener('DOMContentLoaded', () => {
         const messages = document.querySelectorAll('.message');
+
         messages.forEach(msg => {
-            // Only parse if it has content and isn't the file preview or typing indicator
-            if (msg.dataset.markdown) {
-                msg.innerHTML = marked.parse(msg.dataset.markdown);
-            } else if (!msg.classList.contains('document-bubble') && msg.textContent.trim()) {
-                // Fallback for greetings or legacy
-                msg.innerHTML = marked.parse(msg.textContent);
+            if (msg.classList.contains('document-bubble')) return; // Skip files
+
+            let content = msg.dataset.markdown || msg.textContent.trim();
+
+            if (content) {
+                // If historical message contains a hidden JSON block
+                if (jsonRegex.test(content)) {
+                    jsonRegex.lastIndex = 0; // Reset regex index
+                    let cleanText = content.replace(jsonRegex, '').trim();
+
+                    msg.innerHTML = marked.parse(cleanText) + `
+                        <div style="margin-top: 16px; padding: 16px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--brand-light), #E0E7FF); border: 1px solid rgba(79, 70, 229, 0.2); display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm);">
+                            <div style="background: var(--brand-primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 4px 0; font-size: 15px; color: var(--text-primary); font-weight: 800;">Career Report Saved</h4>
+                                <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">Your AI analysis is available in your dashboard.</p>
+                            </div>
+                            <a href="/reports" style="background: var(--bg-surface); color: var(--brand-primary); border: 1px solid var(--brand-primary); padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease;">
+                                View Reports
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    msg.innerHTML = marked.parse(content);
+                }
             }
         });
         scrollToBottom();
     });
 
-    // Handle File Selection
-    docUpload.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            fileNameDisplay.textContent = file.name;
+    // 2. Handle File Selection Preview
+    const imgUpload = document.getElementById('imgUpload');
 
-            // Toggle icon based on type
-            if (file.name.endsWith('.pdf')) {
-                fileIcon.className = 'fa-solid fa-file-pdf';
-            } else {
-                fileIcon.className = 'fa-solid fa-file-word';
-            }
+    function handleFileSelection(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            fileNameDisplay.textContent = file.name;
+            
+            // Set icon based on type
+            const name = file.name.toLowerCase();
+            if (name.endsWith('.pdf')) fileIcon.className = 'fa-solid fa-file-pdf';
+            else if (name.endsWith('.docx')) fileIcon.className = 'fa-solid fa-file-word';
+            else if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => name.endsWith(ext))) fileIcon.className = 'fa-solid fa-image';
+            else fileIcon.className = 'fa-solid fa-file';
 
             filePreview.style.display = 'flex';
         }
-    });
+    }
 
-    // Clear File Selection
+    docUpload.addEventListener('change', () => handleFileSelection(docUpload));
+    imgUpload.addEventListener('change', () => handleFileSelection(imgUpload));
+
     function clearFileSelection() {
         docUpload.value = '';
+        imgUpload.value = '';
         filePreview.style.display = 'none';
     }
 
+    // 3. Handle Live Chat Submission & Stream Parsing
     chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const message = userInput.value.trim();
-        const hasFile = docUpload.files.length > 0;
+        const hasDoc = docUpload.files.length > 0;
+        const hasImg = imgUpload.files.length > 0;
+        const hasFile = hasDoc || hasImg;
 
         if (message || hasFile) {
-            // 1. Add File Bubble first if exists
-            if (hasFile) {
-                const file = docUpload.files[0];
-                addFileBubble(file.name);
-            }
+            if (hasDoc) addFileBubble(docUpload.files[0].name, 'doc');
+            if (hasImg) addFileBubble(imgUpload.files[0].name, 'img');
 
-            // 2. Add Message Bubble if exists
             if (message) {
+                // Disable UI while waiting
+                if (sendBtn) sendBtn.disabled = true;
+                userInput.disabled = true;
+
                 addMessage(message, 'user');
                 userInput.value = '';
 
-                // Show loading animation
+                // Add Typing Indicator
                 const typingId = 'ai-typing-' + Date.now();
                 const typingDiv = document.createElement('div');
                 typingDiv.id = typingId;
                 typingDiv.classList.add('message', 'ai-message');
-                typingDiv.innerHTML = '<div class="loader"></div>';
+                typingDiv.innerHTML = '<div class="loader-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
                 messageHistory.appendChild(typingDiv);
                 scrollToBottom();
 
                 try {
                     const response = await fetch('/chat', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: message }),
                     });
 
                     if (!response.ok) throw new Error("Stream Error");
 
-                    // Remove loader/typing indicator
-                    typingDiv.remove();
-
-                    // 1. Create AI Response Bubble (Empty)
-                    const aiMsgDiv = document.createElement('div');
-                    aiMsgDiv.classList.add('message', 'ai-message');
-                    messageHistory.appendChild(aiMsgDiv);
+                    // Reuse typingDiv as the AI message bubble — keeps dots visible until first chunk
+                    const aiMsgDiv = typingDiv;
+                    let contentReceived = false;
 
                     let fullAiResponse = "";
+                    let isGeneratingReport = false;
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
 
+                    // Read Streaming Response
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
 
-                        const chunk = decoder.decode(value, { stream: true });
-                        fullAiResponse += chunk;
+                        fullAiResponse += decoder.decode(value, { stream: true });
 
-                        // Update UI with partial markdown
-                        aiMsgDiv.innerHTML = marked.parse(fullAiResponse);
-                        scrollToBottom();
+                        // First real chunk — swap out the dots
+                        if (!contentReceived) {
+                            contentReceived = true;
+                            aiMsgDiv.innerHTML = '';
+                        }
+                        if (fullAiResponse.includes("```json") && !isGeneratingReport) {
+                            isGeneratingReport = true;
+                            const preJsonText = fullAiResponse.split("```json")[0].trim();
+
+                            // Show a proper 3-dot loading bubble for report generation
+                            aiMsgDiv.innerHTML = marked.parse(preJsonText);
+
+                            const reportLoadingDiv = document.createElement('div');
+                            reportLoadingDiv.id = 'report-loading-bubble';
+                            reportLoadingDiv.classList.add('message', 'ai-message');
+                            reportLoadingDiv.innerHTML = `
+                                <div class="report-generating-bubble">
+                                    <div class="rg-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                                    <div class="rg-text">
+                                        <span class="rg-label">Generating your career report…</span>
+                                        <div class="rg-dots loader-dots">
+                                            <span class="typing-dot"></span>
+                                            <span class="typing-dot"></span>
+                                            <span class="typing-dot"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            messageHistory.appendChild(reportLoadingDiv);
+                            scrollToBottom();
+                        } else if (!isGeneratingReport) {
+                            aiMsgDiv.innerHTML = marked.parse(fullAiResponse);
+                            scrollToBottom();
+                        }
+                    }
+
+                    // Process complete response for JSON block extraction
+                    jsonRegex.lastIndex = 0;
+                    let match;
+                    let lastMatch;
+                    while ((match = jsonRegex.exec(fullAiResponse)) !== null) {
+                        lastMatch = match;
+                    }
+
+                    if (lastMatch && lastMatch[1]) {
+                        try {
+                            const jsonData = JSON.parse(lastMatch[1]);
+
+                            // Generate Report via Backend
+                            const reportRes = await fetch('/reports/generate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(jsonData),
+                            });
+
+                            // Remove the report loading bubble once we get a response
+                            const loadingBubble = document.getElementById('report-loading-bubble');
+                            if (loadingBubble) loadingBubble.remove();
+
+                            if (reportRes.status === 202 || reportRes.ok) {
+                                const reportData = await reportRes.json();
+                                if (reportData.status === 'success') {
+                                    const preJsonText = fullAiResponse.split("```json")[0].trim();
+
+                                    // Inject "Started" Notification Card
+                                    aiMsgDiv.innerHTML = marked.parse(preJsonText) + `
+                                        <div style="margin-top: 16px; padding: 16px; border-radius: var(--radius-md); background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #93C5FD; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); animation: slideInRight 0.3s ease-out;">
+                                            <div style="background: var(--brand-primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                                                <i class="fa-solid fa-wand-magic-sparkles ai-magic"></i>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <h4 style="margin: 0 0 4px 0; font-size: 15px; color: #1E40AF; font-weight: 800;">Generation Started</h4>
+                                                <p style="margin: 0; font-size: 13px; color: #1E3A8A; font-weight: 500;">AI is building your report. It will appear in your dashboard in a few moments.</p>
+                                            </div>
+                                            <a href="/reports" style="background: var(--brand-primary); color: white; padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+                                                Go to Dashboard
+                                            </a>
+                                        </div>
+                                    `;
+                                    scrollToBottom();
+                                } else { throw new Error("Report generation failed"); }
+                            } else { throw new Error("Report API failed"); }
+
+                        } catch (e) {
+                            console.error("Error processing JSON:", e);
+                            const preJsonText = fullAiResponse.split("```json")[0].trim();
+                            aiMsgDiv.innerHTML = marked.parse(preJsonText) + '<div style="margin-top: 12px; color: var(--error-text); font-size: 14px;"><i class="fa-solid fa-triangle-exclamation"></i> Error generating the report. Please try again.</div>';
+                        }
                     }
                 } catch (error) {
-                    if (document.getElementById(typingId)) {
-                        document.getElementById(typingId).remove();
-                    }
+                    if (document.getElementById(typingId)) document.getElementById(typingId).remove();
                     addMessage("Communication error. Please try again later.", 'ai');
+                } finally {
+                    // Re-enable UI
+                    if (sendBtn) sendBtn.disabled = false;
+                    userInput.disabled = false;
+                    userInput.style.height = 'auto'; // Reset height
+                    userInput.focus();
                 }
             }
             clearFileSelection();
@@ -201,28 +390,22 @@
 
     function addMessage(text, sender) {
         const msgDiv = document.createElement('div');
-        msgDiv.classList.add('message');
-        msgDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
-
-        // Use marked to parse markdown into HTML
+        msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
         msgDiv.innerHTML = marked.parse(text);
-
         messageHistory.appendChild(msgDiv);
         scrollToBottom();
     }
 
-    function addFileBubble(fileName) {
+    function addFileBubble(fileName, type) {
         const fileDiv = document.createElement('div');
         fileDiv.classList.add('document-bubble');
+        
+        let iconClass = 'fa-solid fa-file';
+        if (type === 'img') iconClass = 'fa-solid fa-image';
+        else if (fileName.toLowerCase().endsWith('.pdf')) iconClass = 'fa-solid fa-file-pdf';
+        else if (fileName.toLowerCase().endsWith('.docx')) iconClass = 'fa-solid fa-file-word';
 
-        const isPdf = fileName.toLowerCase().endsWith('.pdf');
-        const iconClass = isPdf ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-word';
-
-        fileDiv.innerHTML = `
-            <i class="${iconClass}"></i>
-            <span class="document-name">${fileName}</span>
-        `;
-
+        fileDiv.innerHTML = `<div class="doc-icon-wrapper"><i class="${iconClass}"></i></div><span class="document-name">${fileName}</span>`;
         messageHistory.appendChild(fileDiv);
         scrollToBottom();
     }

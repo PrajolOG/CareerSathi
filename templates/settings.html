@@ -1,0 +1,508 @@
+<!-- settings.html -->
+{% extends "shared_navbar.html" %}
+
+{% block title %}Settings - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/settings.css">
+{% endblock %}
+
+{% block content %}
+<div class="settings-wrapper">
+    <div class="settings-layout">
+        <!-- Settings Sidebar -->
+        <aside class="settings-sidebar">
+            <div class="sidebar-header">
+                <h1>Settings</h1>
+                <p>Manage your account</p>
+            </div>
+            <nav class="settings-tabs" role="tablist">
+                <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="account"
+                    data-target="account">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Account</span>
+                </button>
+                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="preferences"
+                    data-target="preferences">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Preferences</span>
+                </button>
+                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="security"
+                    data-target="security">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Security</span>
+                </button>
+                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="privacy" data-target="privacy">
+                    <i class="fa-solid fa-gavel" aria-hidden="true"></i>
+                    <span>Legal & Privacy</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Settings Main Content -->
+        <main class="settings-main-content">
+            <!-- Account Tab -->
+            <section id="account" class="settings-tab-pane active" role="tabpanel">
+                <div class="pane-header">
+                    <div class="pane-title-wrapper">
+                        <i class="fa-solid fa-circle-user gradient-icon"></i>
+                        <div>
+                            <h2>Account Settings</h2>
+                            <p>Update your profile information and personal details.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="/updateProfile" method="POST" enctype="multipart/form-data" class="settings-form">
+                    <div class="form-section-header">
+                        <h3>Profile Information</h3>
+                    </div>
+
+                    <div class="profile-pic-section">
+                        <div class="current-avatar-container">
+                            <img id="settingsAvatarPreview"
+                                src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
+                                alt="Avatar Preview">
+                        </div>
+                        <div class="avatar-gallery-wrapper">
+                            <label>Choose a Profile Picture</label>
+                            <div class="avatar-gallery" id="avatarGallery">
+                                {% if minio_avatars %}
+                                {% for avatar_url in minio_avatars %}
+                                <img src="{{ avatar_url }}" class="gallery-item" data-url="{{ avatar_url }}"
+                                    alt="Avatar {{ loop.index }}">
+                                {% endfor %}
+                                {% else %}
+                                <p class="empty-avatar-msg">No custom avatars found in MinIO.</p>
+                                {% endif %}
+                            </div>
+                            <input type="hidden" name="selected_avatar" id="selectedAvatarInput">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="userName">Full Name</label>
+                            <input type="text" id="userName" name="user_name" value="{{ user_name }}" required
+                                placeholder="Your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email Address</label>
+                            <input type="email" id="userEmail" name="user_email" value="{{ user_email }}" readonly
+                                class="input-readonly" placeholder="Your email">
+                        </div>
+                        <div class="form-group">
+                            <label id="eduLabel">Education Level</label>
+                            <div class="premium-dropdown" id="educationDropdown" aria-labelledby="eduLabel">
+                                <div class="dropdown-trigger" role="button" aria-haspopup="listbox"
+                                    aria-expanded="false">
+                                    <div class="selected-value">
+                                        {% set edu_icon = 'fa-graduation-cap' %}
+                                        {% for level in education_levels %}
+                                        {% if grade_level == level.value %}
+                                        {% set edu_icon = level.icon %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        <i class="fa-solid {{ edu_icon }} selected-icon"></i>
+                                        <span class="selected-text">{{ grade_level if grade_level else 'Select Level'
+                                            }}</span>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-down arrow"></i>
+                                </div>
+                                <div class="dropdown-menu" role="listbox">
+                                    {% for level in education_levels %}
+                                    <div class="dropdown-option" role="option" data-value="{{ level.value }}"
+                                        data-icon="{{ level.icon }}">
+                                        <i class="fa-solid {{ level.icon }}"></i>
+                                        <span>{{ level.label }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="grade_level" value="{{ grade_level }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="genderLabel">Gender</label>
+                            <div class="premium-dropdown" id="genderDropdown" aria-labelledby="genderLabel">
+                                <div class="dropdown-trigger" role="button" aria-haspopup="listbox"
+                                    aria-expanded="false">
+                                    <div class="selected-value">
+                                        {% set gen_icon = 'fa-user' %}
+                                        {% for g in genders %}
+                                        {% if gender == g.value %}
+                                        {% set gen_icon = g.icon %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        <i class="fa-solid {{ gen_icon }} selected-icon"></i>
+                                        <span class="selected-text">{{ gender if gender else 'Select Gender' }}</span>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-down arrow"></i>
+                                </div>
+                                <div class="dropdown-menu" role="listbox">
+                                    {% for g in genders %}
+                                    <div class="dropdown-option" role="option" data-value="{{ g.value }}"
+                                        data-icon="{{ g.icon }}">
+                                        <i class="fa-solid {{ g.icon }}"></i>
+                                        <span>{{ g.label }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="gender" value="{{ gender }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">Save changes</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Preferences Tab -->
+            <section id="preferences" class="settings-tab-pane" role="tabpanel">
+                <div class="pane-header">
+                    <div class="pane-title-wrapper">
+                        <i class="fa-solid fa-bell gradient-icon"></i>
+                        <div>
+                            <h2>Preferences</h2>
+                            <p>Manage your notification settings.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Email Notifications</h4>
+                            <p>Stay updated with career reports and reminders.</p>
+                        </div>
+                        <label class="toggle-switch" aria-label="Toggle Email Notifications">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Tab -->
+            <section id="security" class="settings-tab-pane" role="tabpanel">
+                <div class="pane-header">
+                    <div class="pane-title-wrapper">
+                        <i class="fa-solid fa-user-shield gradient-icon"></i>
+                        <div>
+                            <h2>Security & Account</h2>
+                            <p>Manage your account security and data history.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-list">
+                    <div class="setting-item danger">
+                        <div class="setting-info">
+                            <h4>Reset Chat History</h4>
+                            <p>Permanently delete all past AI conversations. This cannot be undone.</p>
+                        </div>
+                        <button type="button" class="btn-danger-outline btn-trigger-modal"
+                            data-modal="deleteConfirmModal">
+                            <i class="fa-solid fa-trash-can"></i> Reset History
+                        </button>
+                    </div>
+
+                    <div class="setting-item danger">
+                        <div class="setting-info">
+                            <h4>Reset Model Context</h4>
+                            <p>Erase your career profile data used by the AI model. You will need to take the assessment
+                                again.</p>
+                        </div>
+                        <button type="button" class="btn-danger-outline btn-trigger-modal"
+                            data-modal="contextConfirmModal">
+                            <i class="fa-solid fa-database"></i> Reset Context
+                        </button>
+                    </div>
+
+                    <div class="setting-item danger">
+                        <div class="setting-info">
+                            <h4>Account Session</h4>
+                            <p>Sign out of your account on this device.</p>
+                        </div>
+                        <button type="button" class="btn-black-outline btn-trigger-modal"
+                            data-modal="logoutConfirmModal">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Privacy Tab -->
+            <section id="privacy" class="settings-tab-pane" role="tabpanel">
+                <div class="pane-header">
+                    <div class="pane-title-wrapper">
+                        <i class="fa-solid fa-shield-halved gradient-icon"></i>
+                        <div>
+                            <h2>Legal & Privacy</h2>
+                            <p>Review our policies and manage your data privacy.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Terms of Service</h4>
+                            <p>Read our full terms and conditions for using the platform.</p>
+                        </div>
+                        <a href="/terms" class="btn-ghost">View Terms</a>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Privacy Policy</h4>
+                            <p>Learn how we protect and handle your personal data.</p>
+                        </div>
+                        <a href="/privacy" class="btn-ghost">View Policy</a>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>AI Model Training</h4>
+                            <p>Allow your anonymized data to help improve career guidance accuracy.</p>
+                        </div>
+                        <label class="toggle-switch" aria-label="Toggle AI Model Training">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Public Profile</h4>
+                            <p>Make your career achievements visible to other students.</p>
+                        </div>
+                        <label class="toggle-switch" aria-label="Toggle Public Profile">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="custom-modal-backdrop" id="deleteConfirmModal" role="dialog" aria-modal="true">
+    <div class="custom-modal">
+        <div class="modal-icon warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3>Delete Chat History?</h3>
+        <p>This will permanently erase all your career counseling conversations. This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel btn-close-modal">Cancel</button>
+            <button class="btn-danger btn-confirm-action" data-action="deleteHistory">
+                <i class="fa-solid fa-trash-can"></i> Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="custom-modal-backdrop" id="contextConfirmModal" role="dialog" aria-modal="true">
+    <div class="custom-modal">
+        <div class="modal-icon warning">
+            <i class="fa-solid fa-database"></i>
+        </div>
+        <h3>Reset Model Context?</h3>
+        <p>This will permanently erase the profile saved for you. The AI won't remember your profile and you will need
+            to re-take the assessment.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel btn-close-modal">Cancel</button>
+            <button class="btn-danger btn-confirm-action" data-action="resetContext">
+                <i class="fa-solid fa-trash"></i> Yes, Reset
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="custom-modal-backdrop" id="logoutConfirmModal" role="dialog" aria-modal="true">
+    <div class="custom-modal">
+        <div class="modal-icon warning blue-icon">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </div>
+        <h3>Sign Out?</h3>
+        <p>Are you sure you want to end your session? You will need to log back in to access Career Sathi.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel btn-close-modal">Cancel</button>
+            <button class="btn-black-fill btn-confirm-action" data-action="logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Yes, Sign Out
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        /* --- Tab Switching Logic --- */
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.settings-tab-pane');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+
+                // Update Tabs
+                tabBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+
+                // Update Panes
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        /* --- Custom Dropdown Logic --- */
+        const dropdowns = document.querySelectorAll('.premium-dropdown');
+
+        dropdowns.forEach(dropdown => {
+            const trigger = dropdown.querySelector('.dropdown-trigger');
+            const options = dropdown.querySelectorAll('.dropdown-option');
+            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+            const selectedText = dropdown.querySelector('.selected-text');
+            const selectedIcon = dropdown.querySelector('.selected-icon');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = dropdown.classList.contains('active');
+
+                // Close all other dropdowns
+                document.querySelectorAll('.premium-dropdown').forEach(d => {
+                    d.classList.remove('active');
+                    d.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
+                });
+
+                if (!isOpen) {
+                    dropdown.classList.add('active');
+                    trigger.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const value = option.getAttribute('data-value');
+                    const iconClass = option.getAttribute('data-icon');
+                    const text = option.querySelector('span').innerText;
+
+                    selectedText.innerText = text;
+                    selectedIcon.className = `fa-solid ${iconClass} selected-icon`;
+                    hiddenInput.value = value;
+
+                    dropdown.classList.remove('active');
+                    trigger.setAttribute('aria-expanded', 'false');
+                });
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.premium-dropdown').forEach(d => {
+                d.classList.remove('active');
+                d.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        /* --- Avatar Selection Logic --- */
+        const avatarGallery = document.getElementById('avatarGallery');
+        const avatarPreview = document.getElementById('settingsAvatarPreview');
+        const avatarInput = document.getElementById('selectedAvatarInput');
+
+        if (avatarGallery) {
+            avatarGallery.addEventListener('click', (e) => {
+                if (e.target.classList.contains('gallery-item')) {
+                    const url = e.target.getAttribute('data-url');
+
+                    // Update Image and Input
+                    avatarPreview.src = url;
+                    avatarInput.value = url;
+
+                    // Update Active State
+                    document.querySelectorAll('.gallery-item').forEach(item => item.classList.remove('active'));
+                    e.target.classList.add('active');
+                }
+            });
+        }
+
+        /* --- Modal Logic --- */
+        const modalTriggers = document.querySelectorAll('.btn-trigger-modal');
+        const closeBtns = document.querySelectorAll('.btn-close-modal');
+        const actionBtns = document.querySelectorAll('.btn-confirm-action');
+
+        // Open Modal
+        modalTriggers.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.getAttribute('data-modal');
+                document.getElementById(modalId).classList.add('active');
+            });
+        });
+
+        // Close Modal Function
+        const closeModal = (modal) => {
+            modal.classList.remove('active');
+        };
+
+        // Bind Close Buttons
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.custom-modal-backdrop');
+                closeModal(modal);
+            });
+        });
+
+        // Bind Action Confirmations
+        actionBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const action = btn.getAttribute('data-action');
+                const originalText = btn.innerHTML;
+                const modal = btn.closest('.custom-modal-backdrop');
+
+                // Set loading state
+                btn.classList.add('btn-loading');
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+
+                try {
+                    if (action === 'deleteHistory') {
+                        const res = await fetch('/chat/history', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+                        if (res.ok) handleSuccess(btn, 'Deleted', modal);
+                        else throw new Error('Failed to delete history');
+                    }
+                    else if (action === 'resetContext') {
+                        const res = await fetch('/profile/context', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+                        if (res.ok) handleSuccess(btn, 'Reset Complete', modal);
+                        else throw new Error('Failed to reset context');
+                    }
+                    else if (action === 'logout') {
+                        setTimeout(() => window.location.href = '/logout', 500);
+                    }
+                } catch (error) {
+                    console.error('Action Error:', error);
+                    alert("An error occurred. Please try again.");
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-loading');
+                }
+            });
+        });
+
+        function handleSuccess(btn, successText, modal) {
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> ${successText}`;
+            btn.style.background = '#10b981'; // Success Green
+            setTimeout(() => {
+                closeModal(modal);
+                window.location.reload();
+            }, 800);
+        }
+    });
+</script>
+{% endblock %}

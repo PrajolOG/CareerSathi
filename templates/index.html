@@ -3,23 +3,440 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Career Sathi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Sathi | Nepal's First AI Career Counseling</title>
+
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/index.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="/static/assets/cc_ico.png">
 </head>
 
-<body>
-    <div>
-        <img src="/static/assets/careersathi.png" alt="Career sathi logo">
-    </div>
-    <div class="auth-wrapper">
-        <h1>Quick Links Below</h1>
-        <a href="/login" class="auth-link">Login</a>
-        <a href="/signup" class="auth-link">Sign Up</a>
-        <a href="/chat" class="auth-link">Chat</a>
-    </div>
+<body class="landing-body">
+
+    <!-- Navigation -->
+    <nav class="landing-nav" id="main-nav">
+        <div class="nav-container">
+            <a class="nav-brand" href="/" aria-label="Career Sathi Home">
+                <img src="/static/assets/careersathi.png" alt="Career Sathi Logo">
+            </a>
+
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#showcase" class="nav-link">Showcase</a>
+                <a href="#how-it-works" class="nav-link">Process</a>
+                <a href="#testimonials" class="nav-link">Stories</a>
+            </div>
+
+            <div class="nav-actions">
+                {% if user_name %}
+                <div class="nav-user-profile">
+                    <a href="/userProfile" class="btn-dashboard">Dashboard</a>
+                    <a href="/userProfile" class="nav-avatar-link">
+                        <img src="{{ user_avatar }}" alt="{{ user_name }}" class="nav-user-avatar">
+                    </a>
+                </div>
+                {% else %}
+                <a href="/login" class="btn-login">Log In</a>
+                <a href="/signup" class="btn-signup">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Awesome Symmetrical Hero Section -->
+    <header class="hero" id="main">
+        <!-- Background Video with Frosted Overlay -->
+        <div class="hero-bg" aria-hidden="true">
+            <video class="hero-video" autoplay muted playsinline loop preload="metadata"
+                poster="/static/assets/careerreport.png">
+                <source src="/static/assets/hero.webm" type="video/webm">
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
+
+        <div class="hero-inner">
+            <!-- Centered Copy -->
+            <div class="hero-copy reveal fade-up">
+                <div class="hero-badges">
+                    <span class="pill"><i class="fa-solid fa-flag"></i> Nepal's AI Counseling</span>
+                    <span class="pill pill-soft"><span class="np">+2 • IOE • CEE • CMAT</span>
+                </div>
+
+                <h1>
+                    Find Your Perfect <span class="gradient-text">Career Path</span> in Nepal
+                </h1>
+
+                <h2 class="headline-accent">Top 3 recommendations, roadmaps, and college suggestions.</h2>
+
+                <p class="hero-subtitle">
+                    Career Sathi uses a custom ML model and an intelligent AI counselor to help you choose the right
+                    path based on grades, interests, and entrance scores.
+                </p>
+
+                <div class="hero-buttons">
+                    {% if user_name %}
+                    <a href="/chat" class="btn-primary-large"><i class="fa-solid fa-robot"></i> Talk to AI</a>
+                    <a href="/reports" class="btn-secondary-large"><i class="fa-solid fa-chart-pie"></i> View
+                        Reports</a>
+                    {% else %}
+                    <a href="/signup" class="btn-primary-large"><i class="fa-solid fa-rocket"></i> Start Free</a>
+                    <a href="#features" class="btn-secondary-large"><i class="fa-solid fa-sparkles"></i> Explore
+                        Features</a>
+                    {% endif %}
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-ico"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="stat-txt">
+                            <div class="stat-title">Top 3 Matches</div>
+                            <div class="stat-sub">Custom ML Model</div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-ico"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="stat-txt">
+                            <div class="stat-title">Saved Reports</div>
+                            <div class="stat-sub">Track Progress</div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-ico"><i class="fa-solid fa-building-columns"></i></div>
+                        <div class="stat-txt">
+                            <div class="stat-title">Colleges</div>
+                            <div class="stat-sub">Nepal & Global</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Symmetrical 3-Column Showcase -->
+            <div class="hero-showcase reveal fade-up" style="transition-delay: 0.2s;">
+                <div class="showcase-grid">
+                    <!-- AI Card -->
+                    <div class="showcase-card sc-chat float-anim">
+                        <div class="sc-head">
+                            <span class="sc-title"><i class="fa-solid fa-robot"></i> AI Counselor</span>
+                            <span class="sc-chip pulse">Live</span>
+                        </div>
+                        <div class="sc-body">
+                            <div class="bubble ai">Namaste! What are your interests after +2?</div>
+                            <div class="bubble user">I like Computers and Physics.</div>
+                            <div class="bubble ai">Perfect. Let's look at Engineering and CS options in Nepal.</div>
+                            <div class="typing" aria-hidden="true"><span></span><span></span><span></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Report Card -->
+                    <div class="showcase-card sc-report float-anim" style="animation-delay: 1s;">
+                        <div class="sc-head">
+                            <span class="sc-title"><i class="fa-solid fa-chart-pie"></i> Career Report</span>
+                            <span class="sc-chip">Top 3</span>
+                        </div>
+                        <div class="sc-media">
+                            <img src="/static/assets/careerreport.png" alt="Report Preview" loading="lazy">
+                        </div>
+                    </div>
+
+                    <!-- Search Card -->
+                    <div class="showcase-card sc-find float-anim" style="animation-delay: 2s;">
+                        <div class="sc-head">
+                            <span class="sc-title"><i class="fa-solid fa-magnifying-glass"></i> Find</span>
+                            <span class="sc-chip">Courses</span>
+                        </div>
+                        <div class="sc-body sc-mini-list">
+                            <div class="mini-row">
+                                <span class="mini-dot"></span>
+                                <span class="mini-main">Kathmandu University</span>
+                                <span class="mini-tag">Top</span>
+                            </div>
+                            <div class="mini-row">
+                                <span class="mini-dot"></span>
+                                <span class="mini-main">Tribhuvan University</span>
+                                <span class="mini-tag">IOE</span>
+                            </div>
+                            <a class="mini-link" href="/search/universities">Browse All <i
+                                    class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="section-header reveal fade-up">
+            <h2>Modern Counseling for Modern Students</h2>
+            <p>Everything you need from prediction to enrollment in one place, beautifully organized.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal fade-up">
+                <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                <h3>AI Counselor Chat</h3>
+                <p>Natural language guidance for entrance exams and specific career steps.</p>
+            </div>
+            <div class="feature-card reveal fade-up" style="transition-delay: 0.1s;">
+                <div class="feature-icon"><i class="fa-solid fa-ranking-star"></i></div>
+                <h3>Top 3 Prediction</h3>
+                <p>ML-powered career matching based on your unique academic profile.</p>
+            </div>
+            <div class="feature-card reveal fade-up" style="transition-delay: 0.2s;">
+                <div class="feature-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                <h3>Saved Reports</h3>
+                <p>Keep your personalized career roadmaps safe in your interactive dashboard.</p>
+            </div>
+            <div class="feature-card reveal fade-up" style="transition-delay: 0.3s;">
+                <div class="feature-icon"><i class="fa-solid fa-building-columns"></i></div>
+                <h3>College Finder</h3>
+                <p>Recommended universities in Nepal and abroad specifically tailored for your path.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spotlight / Showcase Section -->
+    <section id="showcase" class="showcase-section">
+        <div class="spotlights">
+            <article class="spotlight reveal fade-up">
+                <div class="spotlight-copy">
+                    <span class="spotlight-kicker"><span class="np">करियर काउन्सेलर</span> • AI CHAT</span>
+                    <h2>Advice that truly understands Nepal.</h2>
+                    <p>From IOE preparation to CEE exam patterns, our AI knows exactly what Nepali students face and
+                        provides tailored guidance.</p>
+                    <div class="spotlight-points">
+                        <div class="pt"><i class="fa-solid fa-circle-check"></i> 24/7 Unlimited AI availability</div>
+                        <div class="pt"><i class="fa-solid fa-circle-check"></i> Reads your specific documents</div>
+                        <div class="pt"><i class="fa-solid fa-circle-check"></i> Understands Nepali academic context
+                        </div>
+                    </div>
+                    <div class="spotlight-cta">
+                        <a href="/chat" class="btn-ghost">Try AI Counselor <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="spotlight-media">
+                    <div class="mock-window">
+                        <div class="mock-top">
+                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        </div>
+                        <div class="mock-chat">
+                            <div class="mock-bubble ai">Should we look at Private or Govt colleges?</div>
+                            <div class="mock-bubble user">Govt colleges preferred for IOE.</div>
+                            <div class="mock-bubble ai">Got it. Pulchowk and Thapathali are top choices based on your
+                                mock scores. Let's prepare a roadmap!</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Steps Section -->
+    <section id="how-it-works" class="steps-section">
+        <div class="section-header reveal fade-up">
+            <h2>A Simple 3-Step Process</h2>
+            <p>Your journey to the perfect career starts here.</p>
+        </div>
+        <div class="steps-container">
+            <div class="step reveal fade-up">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Sign Up</h4>
+                    <p>Create your profile with your +2 stream details and grades.</p>
+                </div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step reveal fade-up" style="transition-delay: 0.1s;">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Chat & Predict</h4>
+                    <p>Tell the AI your goals and get your Top 3 personalized matches.</p>
+                </div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step reveal fade-up" style="transition-delay: 0.2s;">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Explore Colleges</h4>
+                    <p>See highly rated courses and universities for your selected path.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="section-header reveal fade-up">
+            <h2>What Students Say</h2>
+            <p>Real stories from students who found their direction.</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="t-card t-float" style="animation-delay: 0s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"The Top 3 matches were exactly what I was thinking but couldn't decide on. The roadmap made my CEE preparation so much clearer!"</p>
+                <div class="t-meta">
+                    <span class="t-avatar">A</span>
+                    <div>
+                        <div class="t-name">Anish Gurung</div>
+                        <div class="t-sub">+2 Science Graduate</div>
+                    </div>
+                </div>
+            </div>
+            <div class="t-card t-float" style="animation-delay: 0.8s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"Saving reports helped me discuss options with my parents easily. The AI counselor answered all my doubts about studying abroad."</p>
+                <div class="t-meta">
+                    <span class="t-avatar">S</span>
+                    <div>
+                        <div class="t-name">Sita Thapa</div>
+                        <div class="t-sub">BIT Aspirant</div>
+                    </div>
+                </div>
+            </div>
+            <div class="t-card t-float" style="animation-delay: 1.6s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"I was confused between Management and Science. Career Sathi showed me exactly why BBA at KU matched my strengths. Life-changing!"</p>
+                <div class="t-meta">
+                    <span class="t-avatar">R</span>
+                    <div>
+                        <div class="t-name">Rajan Shrestha</div>
+                        <div class="t-sub">BBA Student, KU</div>
+                    </div>
+                </div>
+            </div>
+            <div class="t-card t-float" style="animation-delay: 0.4s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"The AI counselor understood my IOE score and immediately suggested Pulchowk Engineering. I got admitted this year!"</p>
+                <div class="t-meta">
+                    <span class="t-avatar">P</span>
+                    <div>
+                        <div class="t-name">Priya Maharjan</div>
+                        <div class="t-sub">IOE Engineering, Pulchowk</div>
+                    </div>
+                </div>
+            </div>
+            <div class="t-card t-float" style="animation-delay: 1.2s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"The college suggestions based on my CMAT score were spot on. I never thought I'd have so many good options in Nepal!"</p>
+                <div class="t-meta">
+                    <span class="t-avatar">B</span>
+                    <div>
+                        <div class="t-name">Bikash Adhikari</div>
+                        <div class="t-sub">MBA Aspirant</div>
+                    </div>
+                </div>
+            </div>
+            <div class="t-card t-float" style="animation-delay: 2.0s;">
+                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <p class="t-quote">"As a +2 Commerce student, I was lost. Career Sathi helped me discover Data Science as a perfect fit. The roadmap was incredibly detailed."</p>
+                <div class="t-meta">
+                    <span class="t-avatar">M</span>
+                    <div>
+                        <div class="t-name">Manisha Karki</div>
+                        <div class="t-sub">+2 Commerce Graduate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section reveal fade-up">
+        <div class="cta-card">
+            <h2>Ready to find your true path?</h2>
+            <p>Join thousands of Nepali students making smarter career choices today.</p>
+            <div class="cta-actions">
+                <a href="/signup" class="btn-signup-large">Create Free Account</a>
+            </div>
+            <div class="cta-decor"></div>
+        </div>
+    </section>
+
+    <!-- Enhanced Footer -->
+    <footer class="landing-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <div class="footer-logo">
+                        <img src="/static/assets/cc_ico.png" alt="Icon">
+                        <span>Career Sathi</span>
+                    </div>
+                    <p>Nepal's first dedicated AI career counseling platform, guiding students from confusion to
+                        clarity.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Platform</h4>
+                    <a href="#features">Features</a>
+                    <a href="#showcase">AI Showcase</a>
+                    <a href="#how-it-works">How it Works</a>
+                    <a href="/reports">Reports</a>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Resources</h4>
+                    <a href="#">Universities</a>
+                    <a href="#">Entrance Exams</a>
+                    <a href="#">Study Abroad</a>
+                    <a href="#">Blog</a>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Support</h4>
+                    <a href="#">Contact Us</a>
+                    <a href="#">FAQ</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Career Sathi.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reveal & Setup Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navbar Scroll Effect
+            const nav = document.getElementById('main-nav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
+
+            // Reveal Animation
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            reveals.forEach(reveal => observer.observe(reveal));
+        });
+    </script>
 </body>
 
 </html>

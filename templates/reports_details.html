@@ -1,0 +1,336 @@
+<!-- reports_details.html -->
+{% extends "shared_navbar.html" %}
+
+{% block title %}My Report Details - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/reports_details.css">
+{% endblock %}
+
+{% block content %}
+<div class="reports-wrapper">
+    <div class="reports-container">
+
+        <!-- Navigation & Header -->
+        <a href="/reports" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reports</a>
+
+        <div class="reports-header">
+            <div>
+                <h1 class="animated-title">Career <span class="ai-glow">Insight</span> Report</h1>
+                <p>Analyzed on {{ formatted_date }} for {{ user_name }}</p>
+            </div>
+            {% if report.pdf_url %}
+            <a href="{{ report.pdf_url }}" target="_blank" class="btn-primary ai-gradient-hover">
+                <i class="fa-solid fa-download"></i> Download PDF
+            </a>
+            {% else %}
+            <button class="btn-primary" disabled>
+                <i class="fa-solid fa-file-pdf"></i> PDF Unavailable
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+
+            <!-- Left Column: Rankings & Factors -->
+            <div class="dashboard-left">
+                <div class="metric-card primary-card">
+                    <div class="card-label"><i class="fa-solid fa-crosshairs"></i> Top 3 AI Recommendations</div>
+
+                    <!-- Interactive Rank Selection -->
+                    <div class="rank-grid">
+                        {% for option in career_options %}
+                        <button type="button" class="rank-card {% if loop.first %}active top-rank{% endif %}"
+                            data-career-index="{{ loop.index0 }}" data-rank="{{ option.rank }}"
+                            onclick="switchCareer({{ loop.index0 }})">
+                            <span class="rank-chip">Top {{ option.rank }}</span>
+                            <h3 class="rank-career">{{ option.career }}</h3>
+                            {% if loop.first %}
+                            <span class="rank-note"><i class="fa-solid fa-star"
+                                    style="color: #F59E0B; font-size: 10px;"></i> Best Match</span>
+                            {% else %}
+                            <span class="rank-note">Alternative Option</span>
+                            {% endif %}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Selected Career Focus -->
+                    <div class="selected-career">
+                        <div class="selected-label">
+                            <span class="selected-badge" id="selectedRankBadge">Top 1</span>
+                            <span>Selected Career Path</span>
+                        </div>
+                        <h2 class="career-title ai-text-gradient" id="selectedCareerTitle">{{ primary_prediction }}</h2>
+                    </div>
+                </div>
+
+                <!-- AI Matching Factors -->
+                <div class="metric-card">
+                    <div class="card-label"><i class="fa-solid fa-microchip"></i> AI Matching Insights</div>
+                    <div id="careerMatchingFactor" style="font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px; background: rgba(79, 70, 229, 0.03); padding: 16px; border-radius: var(--radius-md); border-left: 4px solid var(--brand-primary); min-height: 80px;">
+                        <ul class="factor-list" id="factorList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Recommended Institutions -->
+            <div class="dashboard-right">
+                <div class="metric-card h-100">
+                    <div class="uni-header">
+                        <div>
+                            <div class="card-label"><i class="fa-solid fa-building-columns"></i> Recommended
+                                Institutions</div>
+                            <p class="active-career-subtext">Showing options for <strong id="selectedCourseCareer"
+                                    class="text-brand">{{ primary_prediction }}</strong></p>
+                        </div>
+
+                        <!-- Sleek Pill Toggle -->
+                        <div class="location-toggle">
+                            <div class="toggle-slider" id="toggleSlider"></div>
+                            <button class="toggle-btn active" id="btn-nepal" onclick="switchTab('nepal')">Nepal</button>
+                            <button class="toggle-btn" id="btn-global" onclick="switchTab('global')">Global</button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Course Stack -->
+                    <div class="courses-stack">
+                        {% for option in career_options %}
+                        <div class="career-course-set {% if loop.first %}active{% endif %}"
+                            data-career-index="{{ loop.index0 }}">
+
+                            <!-- Nepal List -->
+                            <div class="uni-list" data-loc="nepal" {% if not loop.first %}style="display: none;" {%
+                                endif %}>
+                                {% for course in option.nepal_courses %}
+                                <div class="uni-card">
+                                    <div class="uni-icon">NP</div>
+                                    <div class="uni-details">
+                                        <h4>{{ course.university_name }}</h4>
+                                        <p>{{ course.course_name }} &bull; {{ course.location }}</p>
+                                    </div>
+                                    <a href="{{ course.website_link }}" target="_blank" class="uni-link"><i
+                                            class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                </div>
+                                {% else %}
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-school-flag"></i>
+                                    <p>No institutions found for this category in Nepal.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Global List -->
+                            <div class="uni-list" data-loc="global" style="display: none;">
+                                {% for course in option.global_courses %}
+                                <div class="uni-card">
+                                    <div class="uni-icon global-icon"><i class="fa-solid fa-globe"></i></div>
+                                    <div class="uni-details">
+                                        <h4>{{ course.university_name }}</h4>
+                                        <p>{{ course.course_name }} &bull; {{ course.location }}</p>
+                                    </div>
+                                    <a href="{{ course.website_link }}" target="_blank" class="uni-link"><i
+                                            class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                </div>
+                                {% else %}
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-earth-americas"></i>
+                                    <p>No international institutions found for this category.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.dashboard-grid -->
+
+        <!-- ============================================
+             CAREER ROADMAP SECTION
+        ============================================ -->
+        <div class="roadmap-section" id="roadmapSection">
+            <div class="roadmap-header">
+                <div class="card-label"><i class="fa-solid fa-map-location-dot"></i> Career Roadmap</div>
+                <p class="roadmap-subtext">Step-by-step path for <strong id="roadmapCareerName" class="text-brand">{{ primary_prediction }}</strong></p>
+            </div>
+            <div class="roadmap-timeline" id="roadmapTimeline">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+    <!-- Hidden data store for AI enriched results -->
+    <div id="aiDataStore" style="display: none;" 
+         data-roadmap='{{ report.roadmap | tojson | safe if report.roadmap else "[]" }}'
+         data-factors='{{ report.matching_factor | tojson | safe if report.matching_factor else "[]" }}'>
+    </div>
+</div><!-- /.reports-wrapper -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeCareerIndex = 0;
+    let activeTab = 'nepal';
+
+    // Data from Database (Separated & Non-Redundant)
+    const store = document.getElementById('aiDataStore');
+
+    // Safe parse: handle both string JSON and already-parsed objects
+    function safeParse(raw) {
+        if (!raw || raw === '[]' || raw === 'null') return [];
+        try {
+            const parsed = JSON.parse(raw);
+            // If tojson double-encoded (string inside string), parse again
+            if (typeof parsed === 'string') return JSON.parse(parsed);
+            return parsed;
+        } catch(e) {
+            console.warn('JSON parse failed:', e, raw);
+            return [];
+        }
+    }
+
+    const DB_SPECIFIC_ROADMAPS = safeParse(store.dataset.roadmap);
+    const DB_MATCHING_FACTORS = safeParse(store.dataset.factors);
+
+    console.log('[Debug] Roadmaps loaded:', DB_SPECIFIC_ROADMAPS);
+    console.log('[Debug] Matching Factors loaded:', DB_MATCHING_FACTORS);
+
+    // Minimal fallback for legacy reports
+    const ROADMAP_FALLBACK = [
+        { icon: "fa-seedling",      color: "#10B981", title: "Foundation",       steps: ["Complete +2 / relevant degree", "Build basic subject knowledge", "Identify your strengths & interests"] },
+        { icon: "fa-book-open",     color: "#3B82F6", title: "Core Skills",       steps: ["Enroll in a bachelor's program", "Learn domain-specific tools & software", "Join clubs and competitions"] },
+        { icon: "fa-medal",         color: "#8B5CF6", title: "Specialization",    steps: ["Choose a sub-field to specialize in", "Complete internships & projects", "Earn relevant certifications"] },
+        { icon: "fa-briefcase",     color: "#F59E0B", title: "Career Entry",      steps: ["Build a strong portfolio / CV", "Apply for entry-level roles", "Network through LinkedIn & events"] },
+    ];
+
+    function renderRoadmap(careerName, index) {
+        // 1. Try to find AI-generated roadmap in DB data first
+        let phases = null;
+        if (DB_SPECIFIC_ROADMAPS && DB_SPECIFIC_ROADMAPS[index]) {
+            phases = DB_SPECIFIC_ROADMAPS[index].phases;
+        }
+
+        // 2. Fallback to generic if no AI roadmap found
+        if (!phases) {
+            phases = ROADMAP_FALLBACK;
+        }
+
+        const timeline = document.getElementById('roadmapTimeline');
+        document.getElementById('roadmapCareerName').textContent = careerName;
+
+        timeline.innerHTML = phases.map((phase, i) => `
+            <div class="roadmap-phase" style="animation-delay: ${i * 0.12}s">
+                <div class="roadmap-phase-icon" style="background: ${phase.color}20; border-color: ${phase.color}40;">
+                    <i class="fa-solid ${phase.icon}" style="color: ${phase.color};"></i>
+                </div>
+                <div class="roadmap-phase-num" style="background:${phase.color};">${i + 1}</div>
+                <div class="roadmap-phase-body">
+                    <h4 class="roadmap-phase-title" style="color: ${phase.color};">${phase.title}</h4>
+                    <ul class="roadmap-steps">
+                        ${phase.steps.map(s => `<li><i class="fa-solid fa-circle-dot" style="color:${phase.color};opacity:.6;font-size:9px;"></i>${s}</li>`).join('')}
+                    </ul>
+                </div>
+                ${i < phases.length - 1 ? `<div class="roadmap-connector"><div class="connector-line" style="background: linear-gradient(90deg, ${phase.color}, ${phases[i+1].color});"></div><i class="fa-solid fa-chevron-right connector-arrow"></i></div>` : ''}
+            </div>
+        `).join('');
+
+        // 3. Update Matching Insight bullets
+        const factorList = document.getElementById('factorList');
+        factorList.innerHTML = '';
+
+        let factors = null;
+        if (DB_MATCHING_FACTORS && DB_MATCHING_FACTORS[index]) {
+            factors = DB_MATCHING_FACTORS[index];
+        }
+
+        if (factors && Array.isArray(factors)) {
+            // Nested array: [["point1", "point2", "point3"], ...]
+            factors.forEach(point => {
+                const li = document.createElement('li');
+                li.style.cssText = 'display: flex; align-items: flex-start; gap: 10px;';
+                li.innerHTML = `
+                    <div style="min-width: 22px; height: 22px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 2px;">
+                        <i class="fa-solid fa-check" style="color: var(--brand-primary); font-size: 10px;"></i>
+                    </div>
+                    <span>${point}</span>
+                `;
+                factorList.appendChild(li);
+            });
+        } else if (factors && typeof factors === 'string') {
+            // Single string fallback (old format)
+            const li = document.createElement('li');
+            li.style.cssText = 'display: flex; align-items: flex-start; gap: 10px;';
+            li.innerHTML = `
+                <div style="min-width: 22px; height: 22px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 2px;">
+                    <i class="fa-solid fa-check" style="color: var(--brand-primary); font-size: 10px;"></i>
+                </div>
+                <span>${factors}</span>
+            `;
+            factorList.appendChild(li);
+        } else {
+            factorList.innerHTML = '<li style="color: var(--text-secondary);">This career aligns with your profile and academic performance across key subjects.</li>';
+        }
+    }
+
+    // ── Career switching ──────────────────────────────────────────────────────
+    function applyCourseVisibility() {
+        const courseSets = document.querySelectorAll('.career-course-set');
+        courseSets.forEach((set, index) => {
+            const isActiveCareer = index === activeCareerIndex;
+            set.classList.toggle('active', isActiveCareer);
+            const nepalList = set.querySelector('[data-loc="nepal"]');
+            const globalList = set.querySelector('[data-loc="global"]');
+            if (!isActiveCareer) { nepalList.style.display = 'none'; globalList.style.display = 'none'; return; }
+            nepalList.style.display = activeTab === 'nepal' ? 'flex' : 'none';
+            globalList.style.display = activeTab === 'global' ? 'flex' : 'none';
+        });
+    }
+
+    function switchCareer(index) {
+        activeCareerIndex = index;
+        const rankCards = document.querySelectorAll('.rank-card');
+        rankCards.forEach((card, i) => card.classList.toggle('active', i === index));
+
+        const activeCard = document.querySelector(`.rank-card[data-career-index="${index}"]`);
+        const selectedName = activeCard ? activeCard.querySelector('.rank-career').textContent.trim() : '';
+        const selectedRank = activeCard ? activeCard.dataset.rank : '1';
+
+        const titleEl = document.getElementById('selectedCareerTitle');
+        titleEl.style.opacity = 0;
+        setTimeout(() => { titleEl.textContent = selectedName; titleEl.style.opacity = 1; }, 150);
+
+        document.getElementById('selectedCourseCareer').textContent = selectedName;
+        document.getElementById('selectedRankBadge').textContent = `Top ${selectedRank}`;
+
+        applyCourseVisibility();
+        renderRoadmap(selectedName, index);
+    }
+
+    function switchTab(tab) {
+        const slider = document.getElementById('toggleSlider');
+        const btnNepal = document.getElementById('btn-nepal');
+        const btnGlobal = document.getElementById('btn-global');
+        activeTab = tab;
+        if (tab === 'global') {
+            slider.style.transform = 'translateX(100%)';
+            btnGlobal.classList.add('active');
+            btnNepal.classList.remove('active');
+        } else {
+            slider.style.transform = 'translateX(0)';
+            btnNepal.classList.add('active');
+            btnGlobal.classList.remove('active');
+        }
+        applyCourseVisibility();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        switchCareer(0);
+        switchTab('nepal');
+    });
+</script>
+{% endblock %}

@@ -1,20 +1,296 @@
-from fastapi import APIRouter
+# reports.py
+from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
+from app.database import supabase, url, key
+from supabase import create_client, ClientOptions
+from datetime import datetime
+from app.schemas import ReportGenerationRequest
+import json
+from app.services.ml_service import predict_career
+from app.services.gemini_pool import gemini_pool
 
-# Tag is "Reports" so it shows up separately in documentation
 router = APIRouter(tags=["Student Reports"])
+templates = Jinja2Templates(directory="templates")
+
+def format_iso_date(iso_str):
+    try:
+        dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
+        return dt.strftime("%B %d, %Y")
+    except:
+        return "Unknown Date"
+
+async def process_report_background(report_data: ReportGenerationRequest, user_id: str, access_token: str):
+    """Heavy lifting logic moved to background to prevent UI blocking."""
+    try:
+        # Create scoped client for the background session
+        auth_client = create_client(
+            url, 
+            key, 
+            options=ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
+        )
+        
+        # 1. Predict career using ML service
+        ml_input = report_data.model_dump()
+        top_recommendations = predict_career(ml_input)
+        if isinstance(top_recommendations, str):
+            top_recommendations = [top_recommendations]
+        top_recommendations = [career for career in top_recommendations if career]
+        career_prediction_text = ", ".join(top_recommendations[:3]) if top_recommendations else "Software Engineering"
+        
+        # 2. Save User Features
+        features_data = {
+            "user_id": user_id,
+            "city_type": report_data.general_info.city_type,
+            "family_income": report_data.general_info.family_income,
+            "plus2_stream": report_data.general_info.plus2_stream,
+            "plus2_gpa": float(report_data.general_info.plus2_gpa),
+            
+            "grade_english": report_data.grades.english,
+            "grade_nepali": report_data.grades.nepali,
+            "grade_social": report_data.grades.social,
+            "grade_math": report_data.grades.math,
+            "grade_physics": report_data.grades.physics,
+            "grade_chemistry": report_data.grades.chemistry,
+            "grade_biology": report_data.grades.biology,
+            "grade_computer": report_data.grades.computer,
+            "grade_accounts": report_data.grades.accounts,
+            "grade_economics": report_data.grades.economics,
+            "grade_law": report_data.grades.law,
+
+            "interest_technology": report_data.interests.technology,
+            "interest_math_stats": report_data.interests.math_stats,
+            "interest_art_design": report_data.interests.art_design,
+            "interest_business_money": report_data.interests.business_money,
+            "interest_social_people": report_data.interests.social_people,
+            "interest_bio_health": report_data.interests.bio_health,
+            "interest_nature_agri": report_data.interests.nature_agri,
+            "interest_construction": report_data.interests.construction,
+            "interest_law_politics": report_data.interests.law_politics,
+            "interest_hospitality_food": report_data.interests.hospitality_food,
+            "interest_gaming_entertainment": report_data.interests.gaming_entertainment,
+            "interest_history_culture": report_data.interests.history_culture,
+
+            "score_ioe": report_data.entrance_scores.ioe,
+            "score_cee": report_data.entrance_scores.cee,
+            "score_cmat": report_data.entrance_scores.cmat
+        }
+        
+        try:
+             auth_client.table("User_Features").upsert(features_data).execute()
+        except Exception as embed_e:
+             print(f"Error saving user features background: {embed_e}")
+             
+        # 3. AI Enrichment (Gemini)
+        enriched_data = {"matching_factors": [], "roadmaps": []}
+        try:
+            enrich_prompt = f"""
+            Identify the career match for a student with this profile:
+            - Plus2 Stream: {report_data.general_info.plus2_stream} (GPA: {report_data.general_info.plus2_gpa})
+            - Top Interests: {report_data.interests}
+            - Entrance Scores: IOE={report_data.entrance_scores.ioe}, CEE={report_data.entrance_scores.cee}, CMAT={report_data.entrance_scores.cmat}
+            - Grades: {report_data.grades}
+
+            The ML Model has predicted these Top 3 Careers: {career_prediction_text}
+
+            TASK:
+            For each of these 3 careers, provide:
+            1. matching_factors (list of strings): Provide 3 specific bullet points (sentences) explaining WHY this career fits this student based on their grades, stream, and interests.
+            2. A roadmap (object): 4 phases (Foundation, Core Skills, Specialization, Career Entry) with 3 specific steps each. Use icons from FontAwesome (e.g., fa-code, fa-seedling).
+
+            OUTPUT FORMAT (Strict JSON):
+            {{
+                "matching_factors": [
+                    ["Point 1 for career 1", "Point 2 for career 1", "Point 3 for career 1"],
+                    ["Point 1 for career 2", "Point 2 for career 2", "Point 3 for career 2"],
+                    ["Point 1 for career 3", "Point 2 for career 3", "Point 3 for career 3"]
+                ],
+                "roadmaps": [
+                    {{
+                        "career": "Name",
+                        "phases": [
+                            {{ "title": "Foundation", "icon": "fa-seedling", "color": "#10B981", "steps": ["step1", "step2", "step3"] }},
+                            ...3 more phases
+                        ]
+                    }},
+                    ...2 more roadmaps
+                ]
+            }}
+            """
+            
+            gemini_res = await gemini_pool.generate_content(
+                prompt=enrich_prompt,
+                system_instruction="You are an expert career advisor. Return ONLY raw valid JSON."
+            )
+            raw_text = gemini_res.text.strip()
+            if "```json" in raw_text:
+                raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+            enriched_data = json.loads(raw_text)
+        except Exception as ai_e:
+            print(f"AI Enrichment background failed: {ai_e}")
+
+        # 4. Save to Reports
+        matching_factors = enriched_data.get("matching_factors", ["Matches based on academic profile and interests"])
+        roadmaps = enriched_data.get("roadmaps", [])
+        
+        new_report = {
+            "user_id": user_id,
+            "career_prediction": career_prediction_text,
+            "matching_factor": json.dumps(matching_factors), # Store reasons as JSON array
+            "roadmap": roadmaps, # Store ONLY roadmaps list
+            "pdf_url": ""
+        }
+        auth_client.table("Reports").insert(new_report).execute()
+        print(f"Successfully generated background report for user {user_id}")
+
+    except Exception as e:
+        print(f"BACKGROUND TASK ERROR: {e}")
+
+@router.post("/reports/generate")
+async def generate_report(request: Request, report_data: ReportGenerationRequest, background_tasks: BackgroundTasks):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+        
+        # Start the background task
+        background_tasks.add_task(process_report_background, report_data, user.id, access_token)
+        
+        # Return immediately
+        return JSONResponse(status_code=202, content={
+            "status": "success", 
+            "message": "Career report generation started in the background. It will appear in your reports list shortly."
+        })
+            
+    except Exception as e:
+        print(f"Error starting background report: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+            
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/reports")
-def get_student_reports():
-    # Logic: Fetch the career assessment report for the logged-in student
-    return {
-        "student_id": 1,
-        "reports": [
-            {
-                "report_id": 101,
-                "title": "Career Prediction Report",
-                "date": "2023-10-27",
-                "recommended_career": "Software Engineering",
-                "score": "85%"
-            },
-        ]
-    }
+async def get_reports_list(request: Request):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception as e:
+        print(f"Auth failed in reports list: {e}")
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+
+    try:
+        # Fetch profile
+        profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
+        user_name = profile.data.get("full_name", "User")
+
+        # Fetch all reports for the user
+        reports_res = supabase.table("Reports").select("*").eq("user_id", user.id).order("created_at", desc=True).execute()
+        
+        reports_list = []
+        for r in reports_res.data:
+            r['formatted_date'] = format_iso_date(r.get('created_at', ''))
+            reports_list.append(r)
+
+        return templates.TemplateResponse("reports.html", {
+            "request": request,
+            "user_name": user_name,
+            "reports": reports_list
+        })
+        
+    except Exception as e:
+        print(f"Error loading reports list data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load reports. Please try again.")
+
+@router.get("/reports/{report_id}")
+async def get_report_details(request: Request, report_id: str):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception as e:
+        print(f"Auth failed in report details: {e}")
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+
+    try:
+        # Fetch profile
+        profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
+        user_name = profile.data.get("full_name", "User")
+
+        # Fetch the specific report
+        report_res = supabase.table("Reports").select("*").eq("id", report_id).eq("user_id", user.id).single().execute()
+        
+        if not report_res.data:
+            raise HTTPException(status_code=404, detail="Report not found")
+            
+        report = report_res.data
+        formatted_date = format_iso_date(report.get("created_at", ""))
+        prediction = report.get("career_prediction", "Software Engineering")
+        top_recommendations = [career.strip() for career in prediction.split(",") if career.strip()][:3]
+        if not top_recommendations:
+            top_recommendations = ["Software Engineering"]
+
+        career_options = []
+        for idx, career_name in enumerate(top_recommendations):
+            courses_res = supabase.table("Courses_DB").select("*").ilike("career_category", f"%{career_name}%").execute()
+
+            nepal_courses = []
+            global_courses = []
+
+            if courses_res.data:
+                for c in courses_res.data:
+                    loc = c.get("location", "").lower()
+                    if any(x in loc for x in ["nepal", "kathmandu", "lalitpur", "pokhara", "dhulikhel"]):
+                        nepal_courses.append(c)
+                    else:
+                        global_courses.append(c)
+            else:
+                nepal_courses = []
+                global_courses = []
+
+            career_options.append({
+                "rank": idx + 1,
+                "career": career_name,
+                "nepal_courses": nepal_courses,
+                "global_courses": global_courses
+            })
+
+        primary_prediction = career_options[0]["career"]
+        nepal_courses = career_options[0]["nepal_courses"]
+        global_courses = career_options[0]["global_courses"]
+
+        return templates.TemplateResponse("reports_details.html", {
+            "request": request,
+            "user_name": user_name,
+            "report": report,
+            "top_recommendations": top_recommendations,
+            "career_options": career_options,
+            "primary_prediction": primary_prediction,
+            "formatted_date": formatted_date,
+            "nepal_courses": nepal_courses,
+            "global_courses": global_courses
+        })
+        
+    except HTTPException as he:
+        # Pass through expected HTTP errors (like 404)
+        if he.status_code == 404:
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(url="/reports")
+        raise he
+    except Exception as e:
+        print(f"Error loading report details data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load report details.")

@@ -3,239 +3,173 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Career Sathi</title>
-    <link rel="stylesheet" href="/static/css/theme.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
-    <link rel="icon" href="/static/assets/cc_ico.png">
-    <style>
-        .welcome-page-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2rem;
-            width: 100%;
-            max-width: 1100px;
-        }
 
-        .welcome-logo {
-            max-width: 240px;
-            height: auto;
-        }
+    <!-- Link to the separated CSS -->
+    <link rel="stylesheet" href="/static/css/newuserwelcome.css">
 
-        .welcome-container {
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-            background: var(--surface-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            min-height: 500px;
-        }
-
-        .welcome-step {
-            display: none;
-            padding: 3rem;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .welcome-step.active {
-            display: flex;
-            align-items: center;
-            gap: 3rem;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .welcome-step.fade-out {
-            animation: fadeOut 0.4s ease forwards;
-        }
-
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-        }
-
-        .welcome-image {
-            flex: 1;
-            max-width: 50%;
-        }
-
-        .welcome-image img {
-            width: 100%;
-            height: auto;
-            border-radius: var(--radius-md);
-        }
-
-        .welcome-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .welcome-content h1 {
-            color: var(--brand-primary);
-            font-size: 2rem;
-            margin: 0;
-        }
-
-        .welcome-content p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .step-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-        }
-
-        .dot-indicators {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--border-color);
-            transition: background-color 0.3s;
-        }
-
-        .dot.active {
-            background-color: var(--brand-secondary);
-        }
-
-        .welcome-btn {
-            padding: 0.75rem 2rem;
-            width: auto;
-            margin-top: 0;
-        }
-
-        @media (max-width: 768px) {
-            .welcome-step.active {
-                flex-direction: column;
-                text-align: center;
-                padding: 2rem;
-            }
-
-            .welcome-image {
-                max-width: 100%;
-            }
-        }
-    </style>
+    <!-- FontAwesome & Google Fonts (Inter) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body
-    style="background-color: var(--bg-color); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; box-sizing: border-box;">
+<body>
 
-    <div class="welcome-page-wrapper">
-        <img src="/static/assets/careersathi.png" alt="Career Sathi" class="welcome-logo">
+    <div class="onboarding-wrapper">
 
-        <div class="welcome-container">
-            <!-- Step 1 -->
-            <div class="welcome-step active" id="step1">
-                <div class="welcome-image">
-                    <img src="/static/assets/welcome1.png" alt="Welcome to Career Sathi">
-                </div>
-                <div class="welcome-content">
-                    <h1>Welcome to Career Sathi</h1>
-                    <p>We are excited to help you navigate your professional journey. Career Sathi is designed to
-                        provide
-                        personalized guidance for your future.</p>
-                    <div class="step-footer">
-                        <div class="dot-indicators">
-                            <div class="dot active"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                        </div>
-                        <button class="welcome-btn" onclick="nextStep(1)">Next Step</button>
-                    </div>
-                </div>
+        <!-- LEFT PANEL: Dynamic Background Images -->
+        <div class="image-section">
+            <div class="brand-logo-overlay">
+                <!-- Using a generic icon if the image fails to load -->
+                <img src="/static/assets/careersathi.png" alt="Logo">
             </div>
 
-            <!-- Step 2 -->
-            <div class="welcome-step" id="step2">
-                <div class="welcome-image">
-                    <img src="/static/assets/welcome2.png" alt="Discover Your Potential">
-                </div>
-                <div class="welcome-content">
-                    <h1>Discover Your Potential</h1>
-                    <p>Our platform uses advanced analysis to match your skills and interests with the best career paths
-                        and
-                        educational opportunities.</p>
-                    <div class="step-footer">
-                        <div class="dot-indicators">
-                            <div class="dot"></div>
-                            <div class="dot active"></div>
-                            <div class="dot"></div>
-                        </div>
-                        <button class="welcome-btn" onclick="nextStep(2)">Continue</button>
-                    </div>
-                </div>
-            </div>
+            <div class="image-overlay"></div>
 
-            <!-- Step 3 -->
-            <div class="welcome-step" id="step3">
-                <div class="welcome-image">
-                    <img src="/static/assets/welcome3.png" alt="Start Your Journey">
-                </div>
-                <div class="welcome-content">
-                    <h1>Ready to Start?</h1>
-                    <p>Your profile is now set up. Log in to explore your dashboard, connect with advisors, and take the
-                        first step towards a bright career.</p>
-                    <div class="step-footer">
-                        <div class="dot-indicators">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot active"></div>
-                        </div>
-                        <button class="welcome-btn" onclick="finish()">Get Started</button>
-                    </div>
-                </div>
+            <!-- Preloaded Placeholder Images from Unsplash -->
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
+                class="bg-image active" id="bg-1" alt="Student Counseling">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
+                class="bg-image" id="bg-2" alt="Data Dashboard">
+            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
+                class="bg-image" id="bg-3" alt="Machine Learning Match">
+            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                class="bg-image" id="bg-4" alt="Success Roadmap">
+
+            <!-- Optional Quote Overlay for a premium feel -->
+            <div class="quote-box">
+                <p>"The future depends on what you do today. Let AI guide you to the perfect academic path seamlessly."
+                </p>
+                <div class="quote-author">Career Sathi Vision</div>
             </div>
         </div>
 
-        <script>
-            function nextStep(current) {
-                const currentEl = document.getElementById('step' + current);
-                const nextEl = document.getElementById('step' + (current + 1));
+        <!-- RIGHT PANEL: Onboarding Content -->
+        <div class="content-section">
 
-                // Add fade-out class
-                currentEl.classList.add('fade-out');
+            <div class="content-body">
+                <!-- Slide 1 -->
+                <div class="slide-content active" id="content-1">
+                    <span class="step-badge"><i class="fa-solid fa-robot" style="margin-right:6px;"></i> Step 1 of
+                        4</span>
+                    <h1>Discover yourself through natural chat.</h1>
+                    <p>No more lengthy, boring forms. Have a natural conversation with our intelligent AI counselor. It
+                        dynamically understands your academic background, strengths, and genuine interests.</p>
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check"></i> 24/7 AI Availability</li>
+                        <li><i class="fa-solid fa-check"></i> Natural Language Processing</li>
+                    </ul>
+                </div>
 
-                // Wait for animation to finish
-                setTimeout(() => {
-                    currentEl.classList.remove('active', 'fade-out');
-                    nextEl.classList.add('active');
-                }, 400); // Matches CSS animation duration
+                <!-- Slide 2 -->
+                <div class="slide-content" id="content-2">
+                    <span class="step-badge"><i class="fa-solid fa-brain" style="margin-right:6px;"></i> Step 2 of
+                        4</span>
+                    <h1>Context saved automatically.</h1>
+                    <p>After your session, Career Sathi safely extracts your unique profile from your +2 streams to your
+                        psychometric traits. Next time you log in, the AI remembers exactly who you are.</p>
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check"></i> Smart Profile Building</li>
+                        <li><i class="fa-solid fa-check"></i> Secure Data Storage</li>
+                    </ul>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="slide-content" id="content-3">
+                    <span class="step-badge"><i class="fa-solid fa-chart-pie" style="margin-right:6px;"></i> Step 3 of
+                        4</span>
+                    <h1>Data-driven matchmaking.</h1>
+                    <p>Your profile is securely processed by our custom-trained models. We compare your
+                        metrics against successful alumni to output highly accurate career match percentages.</p>
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check"></i> AI/ML Algorithms</li>
+                        <li><i class="fa-solid fa-check"></i> High Accuracy Predictions</li>
+                    </ul>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="slide-content" id="content-4">
+                    <span class="step-badge"><i class="fa-solid fa-map-location-dot" style="margin-right:6px;"></i> Step
+                        4 of 4</span>
+                    <h1>Your personalized roadmap.</h1>
+                    <p>Knowing your perfect career is just the beginning. We dynamically build semester-by-semester
+                        roadmaps and recommend local universities tailored specifically to your goals.</p>
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check"></i> Local University Referrals</li>
+                        <li><i class="fa-solid fa-check"></i> Step-by-Step Action Plans</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="controls-wrapper">
+                <div class="controls-header">
+                    <!-- Progress Indicators (Lines instead of dots for modern look) -->
+                    <div class="indicators">
+                        <div class="dot active" onclick="goToSlide(1)"></div>
+                        <div class="dot" onclick="goToSlide(2)"></div>
+                        <div class="dot" onclick="goToSlide(3)"></div>
+                        <div class="dot" onclick="goToSlide(4)"></div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="btn-group">
+                        <button class="btn-skip" onclick="skipToApp()">Skip</button>
+                        <button class="btn-primary" id="nextBtn" onclick="nextSlide()">
+                            Continue <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 4;
+
+        function goToSlide(n) {
+            // Update Text Content
+            document.getElementById(`content-${currentSlide}`).classList.remove('active');
+            document.getElementById(`content-${n}`).classList.add('active');
+
+            // Update Background Image
+            document.getElementById(`bg-${currentSlide}`).classList.remove('active');
+            document.getElementById(`bg-${n}`).classList.add('active');
+
+            // Update Line Indicators
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === n - 1);
+            });
+
+            currentSlide = n;
+
+            // Update Main Button Status
+            const btn = document.getElementById('nextBtn');
+            if (currentSlide === totalSlides) {
+                btn.innerHTML = 'Get Started <i class="fa-solid fa-paper-plane"></i>';
+                // Trigger action for the final step (e.g., go to dashboard)
+                btn.onclick = () => window.location.href = '/chat';
+            } else {
+                btn.innerHTML = 'Continue <i class="fa-solid fa-arrow-right"></i>';
+                btn.onclick = () => nextSlide();
             }
+        }
 
-            function finish() {
-                window.location.href = '/chat';
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
             }
-        </script>
+        }
+
+        function skipToApp() {
+            // Bypass the onboarding and jump straight to the app
+            window.location.href = '/chat';
+        }
+    </script>
 </body>
 
 </html>

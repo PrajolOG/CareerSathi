@@ -47,7 +47,7 @@ def signup(
         
         # Also set the access token if session is available (email confirm disabled)
         if auth_response.session:
-            response.set_cookie(key="access_token", value=auth_response.session.access_token, httponly=True, secure=True)
+            response.set_cookie(key="access_token", value=auth_response.session.access_token, httponly=True, secure=False, samesite="lax")
             
         return response
 
@@ -72,8 +72,8 @@ def login(request: Request, email: str = Form(...), password: str = Form(...)):
 
         # Redirect to chat page on success and set session cookie
         from fastapi.responses import RedirectResponse
-        response = RedirectResponse(url="/chat", status_code=303)
-        response.set_cookie(key="access_token", value=auth_response.session.access_token, httponly=True, secure=True)
+        response = RedirectResponse(url="/userProfile", status_code=303)
+        response.set_cookie(key="access_token", value=auth_response.session.access_token, httponly=True, secure=False, samesite="lax")
         return response
 
     except Exception as e:

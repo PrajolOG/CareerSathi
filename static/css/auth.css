@@ -2,8 +2,8 @@
     --card-bg: rgba(10, 15, 20, 0.85);
     --card-border: rgba(255, 255, 255, 0.1);
     --input-bg-dark: rgba(255, 255, 255, 0.05);
-    --brand-teal: #008080;
-    --himalaya-teal: #00e5ff;
+    --brand-blue: #2563eb;
+    --himalaya-blue: #60a5fa;
     --nepal-red: #DC143C;
     /* Safe area variables for notched phones */
     --sat: env(safe-area-inset-top);
@@ -75,7 +75,7 @@ body {
     padding: clamp(2rem, 5vw, 4rem);
     /* Fluid padding */
     position: relative;
-    background: radial-gradient(circle at 20% 50%, rgba(0, 128, 128, 0.15) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.15) 0%, transparent 50%);
 }
 
 .branding-content {
@@ -87,14 +87,14 @@ body {
     max-width: clamp(150px, 20vw, 220px);
     /* Fluid image size */
     margin-bottom: clamp(1rem, 3vh, 1.5rem);
-    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.2));
+    filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.2));
     height: auto;
 }
 
 .namaste-text {
     display: block;
     font-size: clamp(0.9rem, 2vw, 1.1rem);
-    color: var(--himalaya-teal);
+    color: var(--himalaya-blue);
     font-weight: 600;
     margin-bottom: 0.75rem;
     letter-spacing: 1px;
@@ -111,8 +111,8 @@ body {
 }
 
 .branding-title span {
-    color: var(--brand-teal);
-    background: linear-gradient(90deg, var(--himalaya-teal), #ffffff);
+    color: var(--brand-blue);
+    background: linear-gradient(90deg, var(--himalaya-blue), #ffffff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -139,7 +139,7 @@ body {
 }
 
 .trust-icons span:hover {
-    color: var(--himalaya-teal);
+    color: var(--himalaya-blue);
     transform: translateY(-2px);
 }
 
@@ -228,9 +228,9 @@ input[type="password"] {
 
 input:focus {
     outline: none;
-    border-color: var(--himalaya-teal);
+    border-color: var(--himalaya-blue);
     background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
 }
 
 /* Bubble Group Responsive Tweak */
@@ -281,10 +281,10 @@ input:focus {
 }
 
 .bubble-item input:checked+.bubble {
-    background: linear-gradient(135deg, var(--brand-teal), #005f5f);
-    border-color: var(--himalaya-teal);
+    background: linear-gradient(135deg, var(--brand-blue), #1e3a8a);
+    border-color: var(--himalaya-blue);
     color: white;
-    box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
     transform: translateY(-1px);
 }
 
@@ -312,12 +312,12 @@ input:focus {
 }
 
 .password-toggle:hover {
-    color: var(--himalaya-teal);
+    color: var(--himalaya-blue);
 }
 
 .submit-btn {
     margin-top: 0.5rem;
-    background: linear-gradient(90deg, var(--brand-teal), #00a3a3);
+    background: linear-gradient(90deg, var(--brand-blue), #3b82f6);
     color: white;
     border: none;
     border-radius: 0.75rem;
@@ -332,7 +332,7 @@ input:focus {
 
 .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(0, 128, 128, 0.4);
+    box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
     filter: brightness(1.1);
 }
 
@@ -349,7 +349,7 @@ input:focus {
 }
 
 .terms-notice a {
-    color: var(--himalaya-teal);
+    color: var(--himalaya-blue);
     text-decoration: none;
 }
 
@@ -367,7 +367,7 @@ input:focus {
 }
 
 .auth-card-footer a {
-    color: var(--himalaya-teal);
+    color: var(--himalaya-blue);
     text-decoration: none;
     font-weight: 600;
     margin-left: 0.5rem;
@@ -537,4 +537,28 @@ input:focus {
         flex-direction: column;
         align-items: center;
     }
+}
+
+/* --- Loading Spinner for Auth Buttons --- */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
