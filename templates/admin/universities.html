@@ -1,0 +1,475 @@
+{% extends "admin/shared_admin_navbar.html" %}
+
+{% block title %}Manage Universities - Career Sathi Admin{% endblock %}
+{% block breadcrumb %}Manage Universities{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin/universities.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>Manage Universities</h1>
+        <p>Review and manage all university records and their respective courses.</p>
+    </div>
+
+    <div class="table-controls">
+        <div class="tab-counts">
+            Total records <span class="count">{{ courses|length if courses else 0 }}</span>
+        </div>
+        
+        <div class="actions-row" id="defaultActions">
+            <div class="filter-tiles">
+                <button class="filter-tile active" onclick="setTypeFilter('all', this)">All</button>
+                <button class="filter-tile" onclick="setTypeFilter('global', this)">Global</button>
+                <button class="filter-tile" onclick="setTypeFilter('local', this)">Local</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search courses..." onkeyup="filterUniversities()">
+            </div>
+            <button class="btn-primary" onclick="openForm(null, null)"><i class="fas fa-plus"></i> Add university</button>
+        </div>
+        
+        <div class="actions-row bulk-actions" id="bulkActions">
+            <span id="selectedCount" class="selected-count">0 selected</span>
+            <button class="btn-secondary bulk-cancel-btn" onclick="clearSelection()">Cancel</button>
+            <button class="btn-primary btn-danger" onclick="confirmBulkDelete()">
+                <i class="fas fa-trash-alt"></i> Delete Selected
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" id="selectAll" class="select-all-checkbox">
+                    </th>
+                    <th>University Name</th>
+                    <th>Course Name</th>
+                    <th>Location</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Website</th>
+                    <th class="action-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr class="user-row" data-type="{{ course.college_type or 'local' }}" data-search="{{ (course.university_name ~ ' ' ~ course.course_name)|lower }}">
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="row-checkbox" value="{{ course.id }}">
+                    </td>
+                    <td><span class="user-name university-name">{{ course.university_name }}</span></td>
+                    <td><span class="user-email course-name">{{ course.course_name }}</span></td>
+                    <td><span class="text-sub"><i class="fas fa-map-marker-alt location-icon"></i>{{ course.location }}</span></td>
+                    <td>
+                        <div class="badge-group">
+                            <span class="badge-blue">{{ course.career_category }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if course.college_type == 'global' %}
+                        <span title="Global (International)" class="flag-badge"><img src="/static/assets/global.svg" alt="Global" class="flag-icon"></span>
+                        {% else %}
+                        <span title="Local (Domestic)" class="flag-badge"><img src="/static/assets/nepal.svg" alt="Nepal" class="flag-icon"></span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if course.website_link %}
+                        <a href="{{ course.website_link }}" target="_blank" title="Visit Website" class="website-link"><i class="fas fa-external-link-alt"></i></a>
+                        {% else %}
+                        <span class="text-sub">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn-edit-row" title="Edit Course"
+                            onclick="openForm('{{ course.id }}', this)"
+                            data-uname="{{ course.university_name }}"
+                            data-cname="{{ course.course_name }}"
+                            data-loc="{{ course.location }}"
+                            data-cat="{{ course.career_category }}"
+                            data-type="{{ course.college_type or 'local' }}"
+                            data-web="{{ course.website_link or '' }}">
+                            <i class="far fa-edit icon-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-row-cell">No universities found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Slide-over Right Panel for Form -->
+<div class="side-panel-overlay" id="formOverlay" onclick="closeForm()"></div>
+<div class="side-panel" id="uniFormPanel">
+    <div class="panel-header">
+        <h2 id="formTitle">Add University</h2>
+        <button class="close-panel-btn" onclick="closeForm()" type="button"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="panel-content">
+        <form id="uniForm" onsubmit="submitUniForm(event)">
+            <input type="hidden" id="uniId">
+            
+            <div class="form-group">
+                <label>University Name <span class="required-star">*</span></label>
+                <input type="text" id="uniName" required placeholder="E.g. Harvard University">
+            </div>
+
+            <div class="form-group">
+                <label>Course Name <span class="required-star">*</span></label>
+                <input type="text" id="courseName" required placeholder="E.g. BSc Computer Science">
+            </div>
+
+            <div class="form-group">
+                <label>Location <span class="required-star">*</span></label>
+                <input type="text" id="uniLocation" required placeholder="E.g. Cambridge, MA">
+            </div>
+
+            <div class="form-group">
+                <label>College Type</label>
+                <div class="custom-select">
+                    <div class="select-selected" onclick="toggleSelect('typeOptions')">
+                        <span id="typeSelectedText">Local (Domestic)</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="select-items" id="typeOptions">
+                        <div class="opt" onclick="selectOption('typeOptions', 'local', 'Local (Domestic)', 'collegeType')">Local (Domestic)</div>
+                        <div class="opt" onclick="selectOption('typeOptions', 'global', 'Global (International)', 'collegeType')">Global (International)</div>
+                    </div>
+                    <input type="hidden" id="collegeType" value="local">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Career Category</label>
+                <div class="custom-select">
+                    <div class="select-selected" onclick="toggleSelect('careerOptions')">
+                        <span id="careerSelectedText">Select a category...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="select-items" id="careerOptions">
+                        <div class="select-group">Agriculture</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Forestry Specialist', 'Forestry Specialist', 'careerCat')">Forestry Specialist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Agricultural Scientist', 'Agricultural Scientist', 'careerCat')">Agricultural Scientist</div>
+                        
+                        <div class="select-group">Engineering</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Architect', 'Architect', 'careerCat')">Architect</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Civil Engineer', 'Civil Engineer', 'careerCat')">Civil Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Computer Engineer', 'Computer Engineer', 'careerCat')">Computer Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Electronics & Communication Engineer', 'Electronics & Communication Engineer', 'careerCat')">Electronics & Communication Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Geomatics Engineer', 'Geomatics Engineer', 'careerCat')">Geomatics Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Mechanical Engineer', 'Mechanical Engineer', 'careerCat')">Mechanical Engineer</div>
+                        
+                        <div class="select-group">Humanities</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Economist', 'Economist', 'careerCat')">Economist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Journalist', 'Journalist', 'careerCat')">Journalist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Political Scientist', 'Political Scientist', 'careerCat')">Political Scientist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Psychologist', 'Psychologist', 'careerCat')">Psychologist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Social Worker (BSW)', 'Social Worker (BSW)', 'careerCat')">Social Worker (BSW)</div>
+                        
+                        <div class="select-group">IT</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'AI / ML Engineer', 'AI / ML Engineer', 'careerCat')">AI / ML Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Cloud Engineer', 'Cloud Engineer', 'careerCat')">Cloud Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Cybersecurity Analyst', 'Cybersecurity Analyst', 'careerCat')">Cybersecurity Analyst</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Data Scientist', 'Data Scientist', 'careerCat')">Data Scientist</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Game Developer', 'Game Developer', 'careerCat')">Game Developer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'QA Engineer', 'QA Engineer', 'careerCat')">QA Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Software Engineer', 'Software Engineer', 'careerCat')">Software Engineer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'UI/UX Designer', 'UI/UX Designer', 'careerCat')">UI/UX Designer</div>
+                        
+                        <div class="select-group">Law</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Corporate Lawyer', 'Corporate Lawyer', 'careerCat')">Corporate Lawyer</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Criminal Lawyer', 'Criminal Lawyer', 'careerCat')">Criminal Lawyer</div>
+                        
+                        <div class="select-group">Medical</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Dentist (BDS)', 'Dentist (BDS)', 'careerCat')">Dentist (BDS)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Nursing (BSc)', 'Nursing (BSc)', 'careerCat')">Nursing (BSc)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Pharmacist (B.Pharm)', 'Pharmacist (B.Pharm)', 'careerCat')">Pharmacist (B.Pharm)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Health Assistant (HA)', 'Health Assistant (HA)', 'careerCat')">Health Assistant (HA)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Lab Technician', 'Lab Technician', 'careerCat')">Lab Technician</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Doctor (MBBS)', 'Doctor (MBBS)', 'careerCat')">Doctor (MBBS)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Public Health (BPH)', 'Public Health (BPH)', 'careerCat')">Public Health (BPH)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Veterinary Doctor', 'Veterinary Doctor', 'careerCat')">Veterinary Doctor</div>
+                        
+                        <div class="select-group">Management</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Finance (BBA)', 'Finance (BBA)', 'careerCat')">Finance (BBA)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Marketing (BBA)', 'Marketing (BBA)', 'careerCat')">Marketing (BBA)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Chartered Accountant (CA)', 'Chartered Accountant (CA)', 'careerCat')">Chartered Accountant (CA)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Entrepreneur', 'Entrepreneur', 'careerCat')">Entrepreneur</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'HR Manager', 'HR Manager', 'careerCat')">HR Manager</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Hotel Management (BHM)', 'Hotel Management (BHM)', 'careerCat')">Hotel Management (BHM)</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Supply Chain Manager', 'Supply Chain Manager', 'careerCat')">Supply Chain Manager</div>
+                        
+                        <div class="select-group">Other</div>
+                        <div class="opt" onclick="selectOption('careerOptions', 'Other', 'Other', 'careerCat')">Other</div>
+                    </div>
+                    <input type="hidden" id="careerCat" value="">
+                </div>
+            </div>
+
+            <div class="form-group form-group-spaced">
+                <label>Website Link</label>
+                <input type="url" id="websiteLink" placeholder="https://">
+            </div>
+
+            <div class="panel-actions">
+                <button type="button" class="btn-secondary panel-btn" onclick="closeForm()">Cancel</button>
+                <button type="submit" class="btn-primary panel-btn" id="submitBtn">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Custom Delete Confirmation Modal -->
+<div class="side-panel-overlay delete-modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
+<div id="deleteModal" class="delete-modal">
+    <div class="delete-modal-body">
+        <div class="delete-modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="delete-modal-title">Delete records</h3>
+        <p class="delete-modal-text" id="deleteModalText">Are you sure you want to delete these records? This action cannot be undone.</p>
+    </div>
+    <div class="delete-modal-footer">
+        <button type="button" class="btn-secondary delete-modal-btn" onclick="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn-primary delete-modal-btn delete-modal-btn-danger" id="confirmDeleteBtn" onclick="executeBulkDelete()">Delete</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentTypeFilter = 'all';
+
+    function setTypeFilter(type, btn) {
+        currentTypeFilter = type;
+        const tiles = document.querySelectorAll('.filter-tile');
+        tiles.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        filterUniversities();
+    }
+
+    function filterUniversities() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.user-row');
+
+        rows.forEach(row => {
+            const searchData = row.getAttribute('data-search') || "";
+            const rowType = row.getAttribute('data-type') || "local";
+            
+            const matchSearch = searchData.includes(searchText);
+            const matchType = (currentTypeFilter === 'all' || rowType === currentTypeFilter);
+            
+            row.style.display = (matchSearch && matchType) ? '' : 'none';
+        });
+    }
+
+    // Form logic
+    function openForm(editId, btn) {
+        document.getElementById('formOverlay').classList.add('active');
+        document.getElementById('uniFormPanel').classList.add('active');
+        
+        const form = document.getElementById('uniForm');
+        form.reset();
+        document.getElementById('uniId').value = '';
+        document.getElementById('formTitle').textContent = 'Add Course';
+        document.getElementById('submitBtn').innerHTML = 'Add record';
+
+        if (editId && btn) {
+            document.getElementById('uniId').value = editId;
+            document.getElementById('formTitle').textContent = 'Edit Course';
+            document.getElementById('submitBtn').innerHTML = 'Save changes';
+            
+            document.getElementById('uniName').value = btn.getAttribute('data-uname');
+            document.getElementById('courseName').value = btn.getAttribute('data-cname');
+            document.getElementById('uniLocation').value = btn.getAttribute('data-loc');
+            document.getElementById('websiteLink').value = btn.getAttribute('data-web');
+            
+            const cat = btn.getAttribute('data-cat') || '';
+            document.getElementById('careerCat').value = cat;
+            document.getElementById('careerSelectedText').textContent = cat || 'Select a category...';
+            
+            const type = btn.getAttribute('data-type');
+            document.getElementById('collegeType').value = type;
+            document.getElementById('typeSelectedText').textContent = type === 'global' ? 'Global (International)' : 'Local (Domestic)';
+        } else {
+            // Setup defaults for Add new
+            document.getElementById('collegeType').value = 'local';
+            document.getElementById('typeSelectedText').textContent = 'Local (Domestic)';
+            document.getElementById('careerCat').value = '';
+            document.getElementById('careerSelectedText').textContent = 'Select a category...';
+        }
+    }
+
+    // Custom Select Interaction Logic
+    function toggleSelect(id) {
+        const el = document.getElementById(id);
+        const isShowing = el.classList.contains('select-show');
+        
+        document.querySelectorAll('.select-items').forEach(item => item.classList.remove('select-show'));
+        if (!isShowing) el.classList.add('select-show');
+    }
+
+    function selectOption(wrapperId, value, text, inputId) {
+        document.getElementById(inputId).value = value;
+        if (inputId === 'collegeType') document.getElementById('typeSelectedText').textContent = text;
+        if (inputId === 'careerCat') document.getElementById('careerSelectedText').textContent = text;
+        document.getElementById(wrapperId).classList.remove('select-show');
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.custom-select')) {
+            document.querySelectorAll('.select-items').forEach(item => item.classList.remove('select-show'));
+        }
+    });
+
+    function closeForm() {
+        document.getElementById('formOverlay').classList.remove('active');
+        document.getElementById('uniFormPanel').classList.remove('active');
+    }
+
+    async function submitUniForm(e) {
+        e.preventDefault();
+        const id = document.getElementById('uniId').value;
+        const data = {
+            university_name: document.getElementById('uniName').value,
+            course_name: document.getElementById('courseName').value,
+            location: document.getElementById('uniLocation').value,
+            career_category: document.getElementById('careerCat').value,
+            college_type: document.getElementById('collegeType').value,
+            website_link: document.getElementById('websiteLink').value
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/admin/api/universities/${id}` : `/admin/api/universities`;
+
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if(result.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to save record.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch(err) {
+            console.error(err);
+            alert('An error occurred.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    // Checkbox and Bulk Actions Logic
+    const selectAllCb = document.getElementById('selectAll');
+    const rowCbs = document.querySelectorAll('.row-checkbox');
+    let selectedIds = [];
+
+    if(selectAllCb) {
+        selectAllCb.addEventListener('change', (e) => {
+            rowCbs.forEach(cb => {
+                cb.checked = e.target.checked;
+                const tr = cb.closest('tr');
+                if (e.target.checked) tr.classList.add('row-selected');
+                else tr.classList.remove('row-selected');
+            });
+            updateBulkActions();
+        });
+    }
+
+    rowCbs.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const tr = cb.closest('tr');
+            if (e.target.checked) tr.classList.add('row-selected');
+            else tr.classList.remove('row-selected');
+            
+            const allChecked = Array.from(rowCbs).every(c => c.checked);
+            const someChecked = Array.from(rowCbs).some(c => c.checked);
+            selectAllCb.checked = allChecked;
+            selectAllCb.indeterminate = someChecked && !allChecked;
+            
+            updateBulkActions();
+        });
+    });
+
+    function updateBulkActions() {
+        selectedIds = Array.from(rowCbs).filter(c => c.checked).map(c => parseInt(c.value));
+        if (selectedIds.length > 0) {
+            document.getElementById('defaultActions').style.display = 'none';
+            document.getElementById('bulkActions').style.display = 'flex';
+            document.getElementById('selectedCount').textContent = selectedIds.length + ' selected';
+        } else {
+            document.getElementById('defaultActions').style.display = 'flex';
+            document.getElementById('bulkActions').style.display = 'none';
+        }
+    }
+
+    function clearSelection() {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        rowCbs.forEach(c => {
+            c.checked = false;
+            c.closest('tr').classList.remove('row-selected');
+        });
+        updateBulkActions();
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModalOverlay').classList.remove('active');
+        document.getElementById('deleteModal').style.display = 'none';
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Delete';
+    }
+
+    function confirmBulkDelete() {
+        document.getElementById('deleteModalText').textContent = `Are you sure you want to permanently delete ${selectedIds.length} course(s)? This action cannot be undone.`;
+        document.getElementById('deleteModalOverlay').classList.add('active');
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    async function executeBulkDelete() {
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        try {
+            const res = await fetch('/admin/api/universities/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ids: selectedIds})
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to delete records');
+                closeDeleteModal();
+            }
+        } catch(e) {
+            console.error(e);
+            alert('An error occurred');
+            closeDeleteModal();
+        }
+    }
+</script>
+{% endblock %}

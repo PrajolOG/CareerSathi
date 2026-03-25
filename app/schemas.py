@@ -76,3 +76,9 @@ class UserResponse(BaseModel):
     id: str
     username: str
     email: EmailStr
+
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    grade_level: Optional[str] = None
+    gender: Optional[str] = None
+    profile_url: Optional[str] = None

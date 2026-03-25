@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - Career Sathi{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/admin/shared_admin_shell.css">
+    <link rel="icon" href="/static/assets/cc_ico.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/assets/careersathi.png" alt="Logo" class="brand-logo">
+        </div>
+        
+        <div class="sidebar-group-title">GENERAL</div>
+        <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="nav-item {% if request and '/admin/dashboard' in request.url.path %}active{% endif %}">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="/admin/database" class="nav-item {% if request and '/admin/database' in request.url.path %}active{% endif %}">
+                <i class="fas fa-database"></i> Database
+            </a>
+        </nav>
+
+        <div class="sidebar-group-title">CAREER SATHI</div>
+        <nav class="sidebar-nav">
+            <a href="/admin/users" class="nav-item {% if request and '/admin/users' in request.url.path %}active{% endif %}">
+                <i class="fas fa-users"></i> User management
+            </a>
+            <a href="/admin/universities" class="nav-item {% if request and '/admin/universities' in request.url.path %}active{% endif %}">
+                <i class="fas fa-university"></i> Manage Universities
+            </a>
+            <a href="/userProfile" class="nav-item" target="_blank">
+                <i class="fas fa-user-graduate"></i> Student Portal
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="javascript:void(0)" onclick="openLogoutModal()" class="nav-item nav-item-muted">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-nav">
+            <div class="breadcrumbs">
+                <img src="/static/assets/cc_ico.png" alt="Icon">
+                <i class="fas fa-chevron-right"></i>
+                <span>Career Sathi</span>
+                <i class="fas fa-chevron-right"></i>
+                <span class="active-crumb">{% block breadcrumb %}Dashboard{% endblock %}</span>
+            </div>
+            <div class="top-user">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=F2F4F7&color=101828" alt="Admin">
+                <span>{{ message | default('Admin User') }}</span>
+            </div>
+        </header>
+        <div class="main-body">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <!-- Logout Confirmation Modal -->
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-header">
+                <div class="logout-modal-icon-wrapper">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h2>Confirm Logout</h2>
+                <p>Are you sure you want to log out of the admin panel?</p>
+            </div>
+            <div class="logout-modal-actions">
+                <button class="logout-btn-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="logout-btn-confirm" onclick="executeLogout()">Log out</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+        function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+        function executeLogout() { window.location.href = '/logout'; }
+        
+        // Close on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event.target == modal) closeLogoutModal();
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

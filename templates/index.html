@@ -39,16 +39,51 @@
 
             <div class="nav-actions">
                 {% if user_name %}
-                <div class="nav-user-profile">
-                    <a href="/userProfile" class="btn-dashboard">Dashboard</a>
-                    <a href="/userProfile" class="nav-avatar-link">
-                        <img src="{{ user_avatar }}" alt="{{ user_name }}" class="nav-user-avatar">
-                    </a>
+                <div class="nav-user-profile dropdown" id="userDropdown">
+                    <button class="nav-avatar-btn" aria-label="User Menu" id="dropdownToggle">
+                        <img src="{{ user_profile_pic }}" alt="{{ user_name }}" class="nav-user-avatar">
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <span class="user-name">{{ user_name }}</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="/userProfile" class="dropdown-item">Dashboard</a>
+                        <a href="/reports" class="dropdown-item">Reports</a>
+                        <a href="/chat" class="dropdown-item">Chat</a>
+                    </div>
                 </div>
                 {% else %}
                 <a href="/login" class="btn-login">Log In</a>
                 <a href="/signup" class="btn-signup">Get Started</a>
                 {% endif %}
+            </div>
+
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu"
+                aria-controls="mobileNavPanel" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="mobile-nav-panel" id="mobileNavPanel">
+                <div class="mobile-nav-links">
+                    <a href="#features" class="mobile-nav-link">Features</a>
+                    <a href="#showcase" class="mobile-nav-link">Showcase</a>
+                    <a href="#how-it-works" class="mobile-nav-link">Process</a>
+                    <a href="#testimonials" class="mobile-nav-link">Stories</a>
+                </div>
+                <div class="mobile-nav-divider"></div>
+                <div class="mobile-nav-actions">
+                    {% if user_name %}
+                    <a href="/userProfile" class="mobile-nav-btn mobile-nav-primary">Dashboard</a>
+                    <a href="/reports" class="mobile-nav-btn">Reports</a>
+                    <a href="/chat" class="mobile-nav-btn">Chat</a>
+                    {% else %}
+                    <a href="/login" class="mobile-nav-btn">Log In</a>
+                    <a href="/signup" class="mobile-nav-btn mobile-nav-primary">Get Started</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
@@ -68,8 +103,8 @@
             <!-- Centered Copy -->
             <div class="hero-copy reveal fade-up">
                 <div class="hero-badges">
-                    <span class="pill"><i class="fa-solid fa-flag"></i> Nepal's AI Counseling</span>
-                    <span class="pill pill-soft"><span class="np">+2 • IOE • CEE • CMAT</span>
+                    <span class="pill"><img src="/static/assets/nepal.svg" alt="Nepal Flag" class="pill-ico"> Nepal's AI Counseling</span>
+                    <span class="pill pill-soft"><span class="np">+2 | IOE | CEE | CMAT</span></span>
                 </div>
 
                 <h1>
@@ -205,6 +240,58 @@
         </div>
     </section>
 
+    <!-- Pain Behind The Pain Section -->
+    <section id="pain-map" class="stakes-section">
+        <div class="stakes-shell">
+            <div class="stakes-head pain-step" data-step="1">
+                <p class="stakes-kicker">WE UNDERSTAND</p>
+                <h2>The pain behind the pain</h2>
+            </div>
+
+            <article class="surface-pain-card pain-step" data-step="2">
+                <span class="surface-label">SURFACE PAIN</span>
+                <p>"I don't know what career to pursue."</p>
+            </article>
+
+            <div class="under-fears-label pain-step" data-step="3">
+                <span>REAL FEARS UNDERNEATH</span>
+            </div>
+
+            <div class="fear-map">
+                <svg class="fear-lines pain-step" data-step="4" viewBox="0 0 1000 210" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="fear-line line-1" d="M500 12 L130 190"></path>
+                    <path class="fear-line line-2" d="M500 12 L370 190"></path>
+                    <path class="fear-line line-3" d="M500 12 L630 190"></path>
+                    <path class="fear-line line-4" d="M500 12 L870 190"></path>
+                </svg>
+
+                <div class="fear-grid">
+                    <div class="fear-pill pain-step" data-step="5">
+                        <span class="fear-dot"></span>
+                        <p>Wasting years on the wrong path</p>
+                    </div>
+                    <div class="fear-pill pain-step" data-step="6">
+                        <span class="fear-dot"></span>
+                        <p>Never reaching your real potential</p>
+                    </div>
+                    <div class="fear-pill pain-step" data-step="7">
+                        <span class="fear-dot"></span>
+                        <p>Regretting the life path you chose</p>
+                    </div>
+                    <div class="fear-pill pain-step" data-step="8">
+                        <span class="fear-dot"></span>
+                        <p>Becoming obsolete in the AI era</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="stakes-note pain-step" data-step="9">
+                We don't just help you pick a career.
+                <strong>We help you face what's actually at stake.</strong>
+            </p>
+        </div>
+    </section>
+
     <!-- Spotlight / Showcase Section -->
     <section id="showcase" class="showcase-section">
         <div class="spotlights">
@@ -280,70 +367,72 @@
             <h2>What Students Say</h2>
             <p>Real stories from students who found their direction.</p>
         </div>
-        <div class="testimonials-grid">
-            <div class="t-card t-float" style="animation-delay: 0s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"The Top 3 matches were exactly what I was thinking but couldn't decide on. The roadmap made my CEE preparation so much clearer!"</p>
-                <div class="t-meta">
-                    <span class="t-avatar">A</span>
-                    <div>
-                        <div class="t-name">Anish Gurung</div>
-                        <div class="t-sub">+2 Science Graduate</div>
+        <div class="testimonials-marquee">
+            <div class="testimonials-grid">
+                <div class="t-card t-float" style="animation-delay: 0s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"The Top 3 matches were exactly what I was thinking but couldn't decide on. The roadmap made my CEE preparation so much clearer!"</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">A</span>
+                        <div>
+                            <div class="t-name">Anish Gurung</div>
+                            <div class="t-sub">+2 Science Graduate</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="t-card t-float" style="animation-delay: 0.8s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"Saving reports helped me discuss options with my parents easily. The AI counselor answered all my doubts about studying abroad."</p>
-                <div class="t-meta">
-                    <span class="t-avatar">S</span>
-                    <div>
-                        <div class="t-name">Sita Thapa</div>
-                        <div class="t-sub">BIT Aspirant</div>
+                <div class="t-card t-float" style="animation-delay: 0.8s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"Saving reports helped me discuss options with my parents easily. The AI counselor answered all my doubts about studying abroad."</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">S</span>
+                        <div>
+                            <div class="t-name">Sita Thapa</div>
+                            <div class="t-sub">BIT Aspirant</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="t-card t-float" style="animation-delay: 1.6s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"I was confused between Management and Science. Career Sathi showed me exactly why BBA at KU matched my strengths. Life-changing!"</p>
-                <div class="t-meta">
-                    <span class="t-avatar">R</span>
-                    <div>
-                        <div class="t-name">Rajan Shrestha</div>
-                        <div class="t-sub">BBA Student, KU</div>
+                <div class="t-card t-float" style="animation-delay: 1.6s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"I was confused between Management and Science. Career Sathi showed me exactly why BBA at KU matched my strengths. Life-changing!"</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">R</span>
+                        <div>
+                            <div class="t-name">Rajan Shrestha</div>
+                            <div class="t-sub">BBA Student, KU</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="t-card t-float" style="animation-delay: 0.4s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"The AI counselor understood my IOE score and immediately suggested Pulchowk Engineering. I got admitted this year!"</p>
-                <div class="t-meta">
-                    <span class="t-avatar">P</span>
-                    <div>
-                        <div class="t-name">Priya Maharjan</div>
-                        <div class="t-sub">IOE Engineering, Pulchowk</div>
+                <div class="t-card t-float" style="animation-delay: 0.4s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"The AI counselor understood my IOE score and immediately suggested Pulchowk Engineering. I got admitted this year!"</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">P</span>
+                        <div>
+                            <div class="t-name">Priya Maharjan</div>
+                            <div class="t-sub">IOE Engineering, Pulchowk</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="t-card t-float" style="animation-delay: 1.2s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"The college suggestions based on my CMAT score were spot on. I never thought I'd have so many good options in Nepal!"</p>
-                <div class="t-meta">
-                    <span class="t-avatar">B</span>
-                    <div>
-                        <div class="t-name">Bikash Adhikari</div>
-                        <div class="t-sub">MBA Aspirant</div>
+                <div class="t-card t-float" style="animation-delay: 1.2s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"The college suggestions based on my CMAT score were spot on. I never thought I'd have so many good options in Nepal!"</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">B</span>
+                        <div>
+                            <div class="t-name">Bikash Adhikari</div>
+                            <div class="t-sub">MBA Aspirant</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="t-card t-float" style="animation-delay: 2.0s;">
-                <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-                <p class="t-quote">"As a +2 Commerce student, I was lost. Career Sathi helped me discover Data Science as a perfect fit. The roadmap was incredibly detailed."</p>
-                <div class="t-meta">
-                    <span class="t-avatar">M</span>
-                    <div>
-                        <div class="t-name">Manisha Karki</div>
-                        <div class="t-sub">+2 Commerce Graduate</div>
+                <div class="t-card t-float" style="animation-delay: 2.0s;">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+                    <p class="t-quote">"As a +2 Commerce student, I was lost. Career Sathi helped me discover Data Science as a perfect fit. The roadmap was incredibly detailed."</p>
+                    <div class="t-meta">
+                        <span class="t-avatar">M</span>
+                        <div>
+                            <div class="t-name">Manisha Karki</div>
+                            <div class="t-sub">+2 Commerce Graduate</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -353,12 +442,19 @@
     <!-- CTA Section -->
     <section class="cta-section reveal fade-up">
         <div class="cta-card">
-            <h2>Ready to find your true path?</h2>
-            <p>Join thousands of Nepali students making smarter career choices today.</p>
+            <h2 class="cta-title">
+                <span>Stop wondering.</span>
+                <span class="cta-accent">Start knowing.</span>
+            </h2>
+            <p class="cta-copy">15 minutes to more career clarity than you've gotten in years. Free to start. No credit card required.</p>
             <div class="cta-actions">
-                <a href="/signup" class="btn-signup-large">Create Free Account</a>
+                <a href="/signup" class="btn-signup-large">Take the Free Assessment <i class="fa-solid fa-arrow-right"></i></a>
             </div>
-            <div class="cta-decor"></div>
+            <div class="cta-points">
+                <span class="cta-point">Science-backed methodology</span>
+                <span class="cta-point">No credit card required</span>
+                <span class="cta-point">Results in minutes</span>
+            </div>
         </div>
     </section>
 
@@ -406,7 +502,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2026 Career Sathi.</p>
+                <p> &copy; 2026 Career Sathi.</p>
             </div>
         </div>
     </footer>
@@ -435,8 +531,127 @@
             }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
             reveals.forEach(reveal => observer.observe(reveal));
+
+            // User Dropdown Toggle
+            const dropdownToggle = document.getElementById('dropdownToggle');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!dropdownMenu.contains(e.target) && !dropdownToggle.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // Mobile nav toggle
+            const mobileNavToggle = document.getElementById('mobileNavToggle');
+            const mobileNavPanel = document.getElementById('mobileNavPanel');
+            if (mobileNavToggle && mobileNavPanel) {
+                const closeMobileNav = () => {
+                    mobileNavPanel.classList.remove('show');
+                    mobileNavToggle.classList.remove('active');
+                    mobileNavToggle.setAttribute('aria-expanded', 'false');
+                };
+
+                mobileNavToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = mobileNavPanel.classList.contains('show');
+                    if (isOpen) {
+                        closeMobileNav();
+                    } else {
+                        mobileNavPanel.classList.add('show');
+                        mobileNavToggle.classList.add('active');
+                        mobileNavToggle.setAttribute('aria-expanded', 'true');
+                    }
+                });
+
+                mobileNavPanel.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', closeMobileNav);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!mobileNavPanel.contains(e.target) && !mobileNavToggle.contains(e.target)) {
+                        closeMobileNav();
+                    }
+                });
+
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 900) {
+                        closeMobileNav();
+                    }
+                });
+            }
+
+            // Testimonials right-to-left flow
+            const testimonialsGrid = document.querySelector('.testimonials-grid');
+            if (testimonialsGrid && !testimonialsGrid.dataset.marqueeReady) {
+                const originalCards = Array.from(testimonialsGrid.children);
+                originalCards.forEach((card) => {
+                    const clone = card.cloneNode(true);
+                    clone.setAttribute('aria-hidden', 'true');
+                    testimonialsGrid.appendChild(clone);
+                });
+                testimonialsGrid.dataset.marqueeReady = 'true';
+                testimonialsGrid.classList.add('marquee-ready');
+            }
+
+            // Pain section staged scroll reveal
+            const painSection = document.getElementById('pain-map');
+            if (painSection) {
+                painSection.classList.add('pain-animated');
+                const painSteps = Array.from(painSection.querySelectorAll('.pain-step'));
+                const maxStep = painSteps.reduce((acc, el) => Math.max(acc, Number(el.dataset.step || 0)), 0);
+                let rafId = null;
+
+                const updatePainStage = () => {
+                    const rect = painSection.getBoundingClientRect();
+                    const vh = window.innerHeight || document.documentElement.clientHeight;
+                    const intersects = rect.top < vh && rect.bottom > 0;
+                    const isPinned = rect.top <= 0 && rect.bottom >= vh;
+                    const stickyTravel = Math.max(rect.height - vh, 1);
+                    const traveled = Math.min(stickyTravel, Math.max(0, -rect.top));
+                    const progress = Math.min(1, Math.max(0, traveled / stickyTravel));
+                    painSection.classList.toggle('pain-pinned', isPinned);
+
+                    let stage = Math.min(maxStep, Math.max(0, Math.ceil(progress * maxStep)));
+                    if (intersects) {
+                        stage = Math.max(1, stage);
+                    }
+                    if (rect.bottom <= vh * 1.02) {
+                        stage = maxStep;
+                    }
+
+                    painSection.setAttribute('data-stage', String(stage));
+                    painSteps.forEach((stepEl) => {
+                        const stepValue = Number(stepEl.dataset.step || 0);
+                        stepEl.classList.toggle('visible', stage >= stepValue);
+                    });
+                };
+
+                const onScroll = () => {
+                    if (rafId !== null) {
+                        return;
+                    }
+                    rafId = requestAnimationFrame(() => {
+                        updatePainStage();
+                        rafId = null;
+                    });
+                };
+
+                window.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', updatePainStage);
+                updatePainStage();
+                window.setTimeout(updatePainStage, 120);
+            }
         });
     </script>
 </body>
 
 </html>
+

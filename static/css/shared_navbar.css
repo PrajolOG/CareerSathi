@@ -13,10 +13,10 @@ body {
 
 :root {
     --bg-body: #F9FAFB;
-    --bg-surface: rgba(255, 255, 255, 0.85);
-    --bg-hover: rgba(79, 70, 229, 0.1);
+    --bg-surface: #FFFFFF;
+    --bg-hover: rgba(79, 70, 229, 0.06);
 
-    --border-light: rgba(229, 231, 235, 0.5);
+    --border-light: #E5E7EB;
     --border-focus: rgba(79, 70, 229, 0.3);
 
     --text-primary: #111827;
@@ -26,19 +26,26 @@ body {
     --brand-hover: #4338CA;
     --brand-light: #EEF2FF;
 
-    --sidebar-width: 240px;
-    --sidebar-pill-margin: 20px;
+    --sidebar-width: 320px;
+    --sidebar-pill-margin: 16px;
     --radius-pill: 32px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-full: 50%;
 
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: var(--bg-body);
-    background-image: radial-gradient(var(--border-light) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.14), transparent 30%),
+        radial-gradient(circle at 88% 14%, rgba(37, 99, 235, 0.11), transparent 36%),
+        linear-gradient(90deg, #dde8f5 0%, #e8f1fb 16%, #f8fbff 50%, #e8f1fb 84%, #dde8f5 100%);
     color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
 }
 
 .chat-wrapper {
@@ -51,7 +58,7 @@ body {
 .sidebar {
     position: fixed;
     top: 50%;
-    left: var(--sidebar-pill-margin);
+    left: 0;
     transform: translateY(-50%);
     width: var(--sidebar-width);
     height: calc(100vh - (var(--sidebar-pill-margin) * 2));
@@ -62,15 +69,14 @@ body {
 .sidebar-pill {
     height: 100%;
     background: var(--bg-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-pill);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-left: none;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    padding: 32px 16px;
-    gap: 40px;
+    padding: 28px 16px;
+    gap: 32px;
 }
 
 .sidebar-top {
@@ -80,7 +86,7 @@ body {
 }
 
 .sidebar-logo img {
-    height: 70px;
+    height: 100px;
     width: auto;
     object-fit: contain;
     transition: transform 0.3s ease;
@@ -101,14 +107,17 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 18px;
+    padding: 12px 16px;
     text-decoration: none;
     color: var(--text-secondary);
-    border-radius: 20px;
+    border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
+
 
 .nav-item i {
     font-size: 18px;
@@ -117,15 +126,29 @@ body {
 }
 
 .nav-item:hover {
-    color: var(--brand-primary);
+    color: var(--text-primary);
     background: var(--bg-hover);
-    transform: translateX(4px);
 }
 
 .nav-item.active {
+    background: linear-gradient(90deg, var(--brand-light), transparent);
+    color: var(--brand-primary);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 4px;
     background: var(--brand-primary);
-    color: white;
-    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-item.active i {
+    color: var(--brand-primary);
 }
 
 .sidebar-bottom {
@@ -133,20 +156,33 @@ body {
 }
 
 .user-pill {
-    background: var(--bg-body);
+    background: var(--bg-surface);
     border: 1px solid var(--border-light);
-    border-radius: 24px;
-    padding: 8px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    width: 100%;
+    max-width: 280px;
+}
+
+.user-pill-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
 }
 
 .user-pill-link {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-decoration: none;
     flex: 1;
 }
@@ -156,17 +192,13 @@ body {
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid white;
+    background: var(--brand-light);
+    border: 1px solid var(--border-light);
 }
 
 .user-pill-info {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
+    display: flex;
+    flex-direction: column;
 }
 
 .user-pill-actions .action-btn {
@@ -175,20 +207,35 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 8px;
     color: var(--text-secondary);
+    background: var(--bg-body);
+    border: 1px solid transparent;
     transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.user-pill:hover {
+    border-color: var(--border-focus);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.user-pill-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .action-btn:hover {
     background: var(--brand-light);
     color: var(--brand-primary);
+    border-color: rgba(79, 70, 229, 0.2);
 }
 
 /* --- MAIN CONTENT AREA --- */
 .chat-main {
     flex: 1;
-    margin-left: calc(var(--sidebar-width) + (var(--sidebar-pill-margin) * 2));
+    margin-left: calc(var(--sidebar-width) + var(--sidebar-pill-margin));
     height: 100vh;
     display: flex;
     flex-direction: column;

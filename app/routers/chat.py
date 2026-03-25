@@ -53,6 +53,7 @@ def get_chat_page(request: Request):
             "request": request,
             "user_name": profile.data.get("full_name", "User"),
             "user_email": user.email,
+            "user_profile_pic": profile.data.get("profile_url"),
             "chat_history": chat_history
         })
 

@@ -1,0 +1,411 @@
+{% extends "admin/shared_admin_navbar.html" %}
+
+{% block title %}Bucket: {{ bucket_name }} - Career Sathi Admin{% endblock %}
+{% block breadcrumb %}<a href="/admin/database" class="breadcrumb-link">Database</a> <i class="fas fa-chevron-right breadcrumb-separator"></i> {{ bucket_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin/bucket_detail.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header page-header-split">
+        <div>
+            <h1><i class="fas fa-folder-open bucket-title-icon"></i> {{ bucket_name }}</h1>
+            <p>View and manage files within this bucket.</p>
+        </div>
+        <div class="back-buckets-wrap">
+            <a href="/admin/database" class="btn-secondary back-buckets-link">
+                <i class="fas fa-arrow-left"></i> Back to Buckets
+            </a>
+        </div>
+    </div>
+
+    <div class="table-controls">
+        <div class="tab-counts">
+            Total Files <span class="count">{{ objects|length if objects else 0 }}</span>
+        </div>
+        <div class="actions-row">
+            <div class="filter-tiles filter-placeholder">
+                <!-- Space reservation -->
+                <button class="filter-tile active">All</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search files..." onkeyup="filterFiles()">
+            </div>
+            <button class="btn-secondary btn-danger-soft" id="deleteDataBtn" onclick="openDeleteModal()"><i class="fas fa-trash-alt"></i> Delete Selected <span id="deleteCountBadge" class="delete-count-badge">0</span></button>
+            <button class="btn-primary btn-migrate" id="migrateDataBtn" onclick="openMigrateModal()" disabled><i class="fas fa-exchange-alt"></i> Migrate Data <span id="migrateCountBadge" class="migrate-count-badge">0</span></button>
+            <input type="file" id="uploadInput" class="upload-input-hidden" multiple onchange="handleFileUpload(event)">
+            <button class="btn-secondary" id="uploadBtn" onclick="document.getElementById('uploadInput').click()"><i class="fas fa-upload upload-icon-muted"></i> Upload Files</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th class="col-checkbox">
+                        <label class="custom-checkbox-wrapper">
+                            <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)">
+                            <span class="custom-checkbox-box"></span>
+                        </label>
+                    </th>
+                    <th class="col-id">ID</th>
+                    <th>File Name</th>
+                    <th>Size</th>
+                    <th>Last Modified</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if objects %}
+                    {% for obj in objects %}
+                    <tr>
+                        <td class="checkbox-cell-center">
+                            <label class="custom-checkbox-wrapper">
+                                <input type="checkbox" class="file-checkbox" value="{{ obj.name }}" onclick="updateMigrateButton()">
+                                <span class="custom-checkbox-box"></span>
+                            </label>
+                        </td>
+                        <td class="row-index">#{{ loop.index }}</td>
+                        <td>
+                            <span class="file-name-wrap">
+                                <i class="far fa-file file-icon"></i>
+                                {{ obj.name }}
+                            </span>
+                        </td>
+                        <td><span class="text-sub">{{ obj.size }}</span></td>
+                        <td><span class="text-sub"><i class="far fa-clock meta-icon"></i>{{ obj.last_modified|string|truncate(19, True, '') if obj.last_modified else 'N/A' }}</span></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-row-cell">This bucket is empty.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Migrate Modal -->
+<div class="modal-overlay" id="migrateModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Migrate Bucket Data</h2>
+            <button class="btn-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="migrateFormSection">
+            <div class="modal-body">
+                <p id="migrateModalSubtitle" class="modal-subtitle">
+                    Choose a destination bucket. This will move all files from <strong>{{ bucket_name }}</strong>.
+                </p>
+                <div class="form-group">
+                    <label>Destination Bucket</label>
+                    <div class="custom-dropup" id="migrateDropup">
+                        <div class="custom-dropup-trigger" onclick="toggleDropup()">
+                            <span id="targetBucketText" class="target-bucket-text">Select a bucket...</span>
+                            <i class="fas fa-chevron-up dropup-icon" id="dropupIcon"></i>
+                        </div>
+                        <div class="custom-dropup-options">
+                            {% for tb in target_buckets %}
+                                <div class="custom-option" onclick="selectBucket('{{ tb }}')">
+                                    <i class="fas fa-folder custom-option-icon"></i>
+                                    {{ tb }}
+                                </div>
+                            {% else %}
+                                <div class="custom-option custom-option-empty">No destination buckets available immediately</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <input type="hidden" id="targetBucket" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary modal-action-btn" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary modal-action-btn" id="btnSubmitModal" onclick="submitMigration()">Start Migration</button>
+            </div>
+        </div>
+
+        <div id="migrateSuccessSection" class="migrate-success-section">
+            <div class="modal-body modal-body-success">
+                <div class="success-icon-wrap">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h3 class="success-title">Migration Complete</h3>
+                <p class="success-text">All files have been successfully copied to the target bucket.</p>
+            </div>
+            <div class="modal-footer modal-footer-center">
+                <button type="button" class="btn-primary modal-action-btn modal-done-btn" onclick="window.location.reload()">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Delete Confirmation Modal -->
+<div class="delete-modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
+<div id="deleteModal" class="delete-modal">
+    <div class="delete-modal-body">
+        <div class="delete-modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="delete-modal-title">Delete Files</h3>
+        <p class="delete-modal-text" id="deleteModalText">Are you sure you want to delete these files?</p>
+    </div>
+    <div class="delete-modal-footer">
+        <button type="button" class="btn-secondary delete-modal-btn" onclick="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn-primary delete-modal-btn delete-modal-confirm" id="confirmDeleteBtn" onclick="executeDelete()">Delete</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Selection Logic
+    function filterFiles() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const fileNameElement = row.querySelector('span[style*="font-weight: 500"]');
+            if (fileNameElement) {
+                const fileName = fileNameElement.textContent.trim().toLowerCase();
+                row.style.display = fileName.includes(searchText) ? '' : 'none';
+            }
+        });
+    }
+
+    function getSelectedFiles() {
+        const checkboxes = document.querySelectorAll('.file-checkbox:checked');
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.file-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateMigrateButton();
+    }
+
+    function updateMigrateButton() {
+        const selectedFiles = getSelectedFiles();
+        const migrateBtn = document.getElementById('migrateDataBtn');
+        const migrateCountBadge = document.getElementById('migrateCountBadge');
+        
+        const deleteBtn = document.getElementById('deleteDataBtn');
+        const deleteCountBadge = document.getElementById('deleteCountBadge');
+        
+        if (selectedFiles.length > 0) {
+            migrateBtn.disabled = false;
+            migrateBtn.style.opacity = '1';
+            migrateBtn.style.cursor = 'pointer';
+            migrateCountBadge.style.display = 'inline-block';
+            migrateCountBadge.textContent = selectedFiles.length;
+
+            deleteBtn.style.display = 'inline-flex';
+            deleteCountBadge.textContent = selectedFiles.length;
+        } else {
+            migrateBtn.disabled = true;
+            migrateBtn.style.opacity = '0.5';
+            migrateBtn.style.cursor = 'not-allowed';
+            migrateCountBadge.style.display = 'none';
+
+            deleteBtn.style.display = 'none';
+        }
+
+        // Keep Select All checked status synced
+        const checkboxes = document.querySelectorAll('.file-checkbox');
+        const selectAll = document.getElementById('selectAllCheckbox');
+        if (checkboxes.length > 0) {
+            selectAll.checked = selectedFiles.length === checkboxes.length;
+        }
+    }
+
+    // Custom Dropup Logic
+    function toggleDropup() {
+        const dropup = document.getElementById('migrateDropup');
+        const icon = document.getElementById('dropupIcon');
+        dropup.classList.toggle('open');
+        if (dropup.classList.contains('open')) {
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    function selectBucket(value) {
+        document.getElementById('targetBucket').value = value;
+        const textSpan = document.getElementById('targetBucketText');
+        textSpan.textContent = value;
+        textSpan.style.color = "var(--text-main)";
+        textSpan.style.fontWeight = "500";
+        document.getElementById('migrateDropup').classList.remove('open');
+        document.getElementById('dropupIcon').style.transform = 'rotate(0deg)';
+    }
+
+    // Close dropup if clicked outside
+    document.addEventListener('click', function(event) {
+        const dropup = document.getElementById('migrateDropup');
+        if (dropup && !dropup.contains(event.target)) {
+            dropup.classList.remove('open');
+            const icon = document.getElementById('dropupIcon');
+            if(icon) icon.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    function openMigrateModal() {
+        const selectedFiles = getSelectedFiles();
+        if (selectedFiles.length === 0) return; // Safeguard
+
+        document.getElementById('migrateFormSection').style.display = 'block';
+        document.getElementById('migrateSuccessSection').style.display = 'none';
+
+        document.getElementById('migrateModalSubtitle').innerHTML = `Choose a destination bucket. This will move <strong>${selectedFiles.length}</strong> selected file(s) from <strong>{{ bucket_name }}</strong>.`;
+
+        document.getElementById('targetBucket').value = '';
+        const textSpan = document.getElementById('targetBucketText');
+        textSpan.textContent = 'Select a bucket...';
+        textSpan.style.color = '#9CA3AF';
+        textSpan.style.fontWeight = "normal";
+        document.getElementById('migrateDropup').classList.remove('open');
+        const icon = document.getElementById('dropupIcon');
+        if(icon) icon.style.transform = 'rotate(0deg)';
+
+        document.getElementById('btnSubmitModal').textContent = 'Start Migration';
+        document.getElementById('btnSubmitModal').disabled = false;
+        document.getElementById('migrateModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('migrateModal').classList.remove('active');
+    }
+
+    async function submitMigration() {
+        const sourceBucket = "{{ bucket_name }}";
+        const targetBucket = document.getElementById('targetBucket').value;
+        const selectedFiles = getSelectedFiles();
+        const btn = document.getElementById('btnSubmitModal');
+
+        if (!targetBucket) {
+            return alert("Please select a destination bucket.");
+        }
+        if (selectedFiles.length === 0) {
+            return alert("No files selected.");
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Migrating...';
+
+        try {
+            const res = await fetch(`/admin/api/buckets/migrate`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({source: sourceBucket, target: targetBucket, objects: selectedFiles})
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                document.getElementById('migrateFormSection').style.display = 'none';
+                document.getElementById('migrateSuccessSection').style.display = 'block';
+            } else {
+                alert(data.message || "Failed to migrate bucket.");
+                btn.disabled = false;
+                btn.textContent = 'Start Migration';
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network error occurred.");
+            btn.disabled = false;
+            btn.textContent = 'Start Migration';
+        }
+    }
+
+    // New Delete Logic
+    let filesToDelete = [];
+    function openDeleteModal(filename = null) {
+        if (filename) {
+            filesToDelete = [filename];
+            document.getElementById('deleteModalText').innerHTML = `Are you sure you want to delete file <strong>'${filename}'</strong>?`;
+        } else {
+            filesToDelete = getSelectedFiles();
+            if (filesToDelete.length === 0) return;
+            document.getElementById('deleteModalText').innerHTML = `Are you sure you want to delete <strong>${filesToDelete.length}</strong> selected file(s)?`;
+        }
+        document.getElementById('deleteModalOverlay').style.display = 'block';
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModalOverlay').style.display = 'none';
+        document.getElementById('deleteModal').style.display = 'none';
+        filesToDelete = [];
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Delete';
+    }
+
+    async function executeDelete() {
+        if (filesToDelete.length === 0) return;
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const res = await fetch(`/admin/api/buckets/{{ bucket_name }}/objects`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({objects: filesToDelete})
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || "Failed to delete files.");
+                closeDeleteModal();
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network error occurred.");
+            closeDeleteModal();
+        }
+    }
+
+    // New Upload Logic
+    async function handleFileUpload(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        const uploadBtn = document.getElementById('uploadBtn');
+        const originalHtml = uploadBtn.innerHTML;
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+            formData.append('files', file);
+        });
+
+        try {
+            const res = await fetch(`/admin/api/buckets/{{ bucket_name }}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || "Upload failed");
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = originalHtml;
+                event.target.value = '';
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network error occurred.");
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = originalHtml;
+            event.target.value = '';
+        }
+    }
+</script>
+{% endblock %}

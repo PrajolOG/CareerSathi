@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from app.database import supabase
 from app.minio_handler import minio_client
@@ -25,7 +25,7 @@ def get_profile_page(request: Request):
 
         # Fetch recent chats for preview (last 6 messages to show some context)
         # Using correct table name: Chat_History
-        chats_res = supabase.table("Chat_History").select("*").eq("user_id", user.id).order("created_at", desc=True).limit(6).execute()
+        chats_res = supabase.table("Chat_History").select("*").eq("user_id", user.id).order("created_at", desc=True).limit(12).execute()
         recent_chats = chats_res.data[::-1] if chats_res.data else [] 
 
         # Fetch User_Features safely
@@ -42,6 +42,7 @@ def get_profile_page(request: Request):
             "user_email": user.email,
             "grade_level": profile.data.get("grade_level", "Not set"),
             "gender": profile.data.get("gender", "Not set"),
+            "user_profile_pic": profile.data.get("profile_url"),
             "reports_count": reports_count,
             "recent_chats": recent_chats,
             "user_features": user_features
@@ -69,8 +70,10 @@ async def get_settings_page(request: Request):
         # Fetch profile data to pass to the settings page
         profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
         
-        # Fetch avatars from MinIO
-        minio_images = minio_client.get_all_images()
+        # Fetch avatars from both buckets to ensure all options are available
+        avatars_1 = minio_client.get_all_images("user-icons")
+        avatars_2 = minio_client.get_all_images("careersathi")
+        minio_images = list(set(avatars_1 + avatars_2)) # deduplicate just in case
         
         return templates.TemplateResponse("settings.html", {
             "request": request,
@@ -79,6 +82,7 @@ async def get_settings_page(request: Request):
             "user_email": user.email,
             "grade_level": profile.data.get("grade_level", ""),
             "gender": profile.data.get("gender", ""),
+            "user_profile_pic": profile.data.get("profile_url"),
             "education_levels": [
                 {"label": "High School (+2 Science)", "value": "High School (+2 Science)", "icon": "fa-flask"},
                 {"label": "High School (+2 Management)", "value": "High School (+2 Management)", "icon": "fa-briefcase"},
@@ -97,6 +101,42 @@ async def get_settings_page(request: Request):
         return RedirectResponse(url="/login")
 
 
+
+
+@router.post("/settings/update")
+async def update_profile_settings(
+    request: Request,
+    full_name: str = Form(None),
+    grade_level: str = Form(None),
+    gender: str = Form(None),
+    selected_avatar: str = Form(None)
+):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+
+        # Build update dictionary dynamically
+        update_data = {}
+        if full_name: update_data["full_name"] = full_name
+        if grade_level: update_data["grade_level"] = grade_level
+        if gender: update_data["gender"] = gender
+        if selected_avatar: update_data["profile_url"] = selected_avatar
+
+        if update_data:
+            supabase.table("Profiles").update(update_data).eq("id", user.id).execute()
+
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/settings", status_code=303)
+
+    except Exception as e:
+        print(f"Error updating profile: {e}")
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/settings")
 
 
 @router.delete("/profile/context")

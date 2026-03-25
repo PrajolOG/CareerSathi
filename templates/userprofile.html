@@ -1,4 +1,5 @@
 <!-- user_profile.html -->
+
 {% extends "shared_navbar.html" %}
 
 {% block title %}Profile - Career Sathi{% endblock %}
@@ -6,249 +7,168 @@
 {% block extra_css %}
 <style>
     .profile-wrapper {
-        padding: 40px;
+        padding: 24px;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
+        align-items: stretch;
         height: 100%;
-        overflow-y: auto;
+        overflow: hidden;
+    }
+    
+    .profile-wrapper::-webkit-scrollbar {
+        display: none;
     }
 
     .profile-content-grid {
         display: grid;
-        grid-template-columns: 350px 1fr 380px;
+        grid-template-columns: 350px 1fr 400px;
+        grid-template-rows: 1fr;
         gap: 24px;
         width: 100%;
-        max-width: 1600px;
-        align-items: flex-start;
+        max-width: 1800px;
+        height: 100%;
+        align-items: stretch;
     }
 
     .profile-sidebar-column {
         display: flex;
         flex-direction: column;
         gap: 24px;
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-light) transparent;
     }
 
-    .profile-container-main {
-        background-color: var(--bg-surface);
-        padding: 24px;
+    .profile-sidebar-column::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .profile-sidebar-column::-webkit-scrollbar-thumb {
+        background: var(--border-light);
+        border-radius: 10px;
+    }
+
+    /* --- Phase 1: Student Identity Card --- */
+    .identity-card {
+        background: var(--bg-surface);
         border-radius: var(--radius-lg);
         border: 1px solid var(--border-light);
         box-shadow: var(--shadow-sm);
+        overflow: hidden;
         display: flex;
         flex-direction: column;
-        gap: 20px;
     }
 
-    /* Stats Cards */
-    .dashboard-stats-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 16px;
+    .identity-banner {
+        height: 100px;
+        background: linear-gradient(135deg, var(--brand-light) 0%, var(--brand-primary) 100%);
+        position: relative;
     }
 
-    .stat-card {
+    .identity-content {
+        padding: 0 24px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: -50px;
+    }
+
+    .identity-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid var(--bg-surface);
         background: var(--bg-surface);
-        padding: 24px;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        transition: transform 0.2s;
+        object-fit: cover;
+        margin-bottom: 12px;
+        z-index: 2;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .identity-name {
         font-size: 20px;
-    }
-
-    .stat-val {
-        font-size: 24px;
-        font-weight: 800;
+        font-weight: 700;
         color: var(--text-primary);
-        line-height: 1;
+        margin: 0 0 4px 0;
+        text-align: center;
     }
 
-    .stat-label {
+    .identity-role {
         font-size: 13px;
         color: var(--text-secondary);
         font-weight: 500;
+        margin: 0 0 24px 0;
     }
 
-    /* Chat Preview */
-    .chat-preview-card {
-        background: var(--bg-surface);
-        border-radius: var(--radius-lg);
+    .identity-progress {
+        width: 100%;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
         border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+    }
+
+    .progress-value {
+        color: var(--text-primary);
+        font-weight: 800;
+    }
+
+    .progress-bar-bg {
+        background: var(--border-light);
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        background: var(--brand-primary);
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .identity-info-list {
+        width: 100%;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
-        height: 500px;
+        gap: 12px;
+        margin-bottom: 24px;
     }
 
-    .chat-preview-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border-light);
+    .info-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--bg-body);
-    }
-
-    .chat-preview-body {
-        flex: 1;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        overflow-y: auto;
-        background: #f9fafb;
-        scrollbar-width: none;
-        /* Firefox */
-        -ms-overflow-style: none;
-        /* IE and Edge */
-    }
-
-    .chat-preview-body::-webkit-scrollbar {
-        display: none;
-        /* Chrome, Safari and Opera */
-    }
-
-    .preview-msg {
-        max-width: 85%;
-        padding: 12px 16px;
-        border-radius: var(--radius-md);
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    .msg-user {
-        align-self: flex-end;
-        background: var(--brand-primary);
-        color: white;
-        border-bottom-right-radius: 4px;
-    }
-
-    .msg-ai {
-        align-self: flex-start;
-        background: white;
-        color: var(--text-primary);
-        border: 1px solid var(--border-light);
-        border-bottom-left-radius: 4px;
-    }
-
-    .chat-preview-footer {
-        padding: 16px 24px;
-        border-top: 1px solid var(--border-light);
-    }
-
-    .btn-fullscreen {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px;
-        background: var(--brand-light);
-        color: var(--brand-primary);
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-fullscreen:hover {
-        background: var(--brand-primary);
-        color: white;
-    }
-
-    /* Resources Sidebar */
-    .resources-card-sidebar {
-        background-color: var(--bg-surface);
-        padding: 24px;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .profile-header-main {
-        display: flex;
-        align-items: center;
-        gap: 24px;
+        padding-bottom: 12px;
         border-bottom: 1px solid var(--border-light);
-        padding-bottom: 24px;
     }
 
-    .profile-avatar-large {
-        width: 100px;
-        height: 100px;
-        border-radius: var(--radius-full);
-        background: var(--brand-light);
-        color: var(--brand-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        object-fit: cover;
-        border: 2px solid var(--border-light);
-        padding: 4px;
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
     }
 
-    .profile-header-info h1 {
-        font-size: 24px;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-        color: var(--text-primary);
-        letter-spacing: -0.5px;
-    }
-
-    .profile-header-info p {
+    .info-label {
+        font-size: 13px;
         color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .info-value {
         font-size: 14px;
-        margin: 0;
-        font-weight: 500;
-    }
-
-    .profile-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-
-    .info-item label {
-        display: block;
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .info-item p {
-        font-size: 15px;
         color: var(--text-primary);
         font-weight: 600;
-        margin: 0;
-        padding: 14px 16px;
-        background: var(--bg-body);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-sm);
     }
 
     .btn-edit-profile {
@@ -265,8 +185,8 @@
         border: none;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: inherit;
-        width: auto;
+        text-decoration: none;
+        width: 100%;
     }
 
     .btn-edit-profile:hover {
@@ -275,18 +195,140 @@
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
     }
 
+    /* --- Phase 2: Career DNA Matrix --- */
+    .dna-card {
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .dna-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dna-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dna-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .dna-badge {
+        background: var(--bg-body);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+        padding: 6px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+
+    .dna-badge:hover {
+        border-color: var(--brand-primary);
+        background: var(--brand-light);
+        color: var(--brand-primary);
+        transform: translateY(-1px);
+    }
+
+    .dna-badge i {
+        color: var(--brand-primary);
+        font-size: 10px;
+    }
+
+    .empty-context {
+        align-items: center;
+        text-align: center;
+        padding: 40px 24px;
+    }
+
+    .empty-context-icon {
+        background: var(--brand-light);
+        color: var(--brand-primary);
+        margin: 0 auto 16px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .empty-context h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .empty-context p {
+        margin: 0 0 24px 0;
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    /* Resources */
+    .resources-card-sidebar {
+        background: var(--bg-surface);
+        padding: 24px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-card-header {
+        margin-bottom: 16px;
+    }
+
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-subtitle {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
     .resource-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 16px;
-        margin-top: 20px;
+        gap: 12px;
     }
 
     .resource-card {
         background: var(--bg-body);
         border: 1px solid var(--border-light);
         border-radius: var(--radius-md);
-        padding: 16px;
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         gap: 16px;
@@ -333,8 +375,6 @@
     }
 
     .resource-download {
-        color: var(--text-secondary);
-        font-size: 16px;
         transition: color 0.2s;
     }
 
@@ -342,8 +382,201 @@
         color: var(--brand-primary);
     }
 
+    /* --- Phase 3: AI Mentor Chat Window --- */
+    .chat-preview-card {
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .chat-preview-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-surface);
+    }
+
+    .chat-header-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .chat-header-subtitle {
+        margin: 2px 0 0 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .ai-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .chat-preview-body {
+        flex: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        overflow-y: auto;
+        background: var(--bg-surface);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-light) transparent;
+    }
+
+    .chat-preview-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-preview-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-preview-body::-webkit-scrollbar-thumb {
+        background-color: var(--border-light);
+        border-radius: 10px;
+    }
+
+    .preview-msg {
+        max-width: 80%;
+        padding: 14px 18px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-msg ul,
+    .preview-msg ol {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+
+    .preview-msg a:not(.report-chip-btn) {
+        color: inherit;
+        text-decoration: underline;
+    }
+
+    .msg-user {
+        align-self: flex-end;
+        background: var(--brand-primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .msg-ai {
+        align-self: flex-start;
+        background: var(--bg-body);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-ai p {
+        margin: 0 0 8px 0;
+    }
+
+    .msg-ai p:last-child {
+        margin: 0;
+    }
+
+    .chat-preview-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-light);
+        background: var(--bg-surface);
+    }
+
+    .btn-fullscreen {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        background: var(--brand-light);
+        color: var(--brand-primary);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-fullscreen:hover {
+        background: var(--brand-primary);
+        color: white;
+    }
+
+    .report-chip-btn {
+        margin-top: 12px;
+        padding: 10px 16px;
+        background: var(--brand-primary);
+        color: white;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .report-chip-btn:hover {
+        background: var(--brand-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    /* --- Phase 4: Responsiveness --- */
     @media (max-width: 1200px) {
         .profile-content-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .dna-column {
+            grid-column: span 2;
+            display: grid;
             grid-template-columns: 1fr 1fr;
         }
     }
@@ -353,16 +586,20 @@
             grid-template-columns: 1fr;
             max-width: 700px;
         }
+
+        .dna-column {
+            grid-column: span 1;
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 768px) {
         .profile-wrapper {
-            padding: 24px;
+            padding: 24px 16px;
         }
 
-        .profile-info-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
+        .chat-preview-card {
+            height: 500px;
         }
     }
 </style>
@@ -371,62 +608,230 @@
 {% block content %}
 <div class="profile-wrapper">
     <div class="profile-content-grid">
-        <!-- Dashboard Column 1: Info & Stats -->
-        <div class="profile-sidebar-column">
-            <!-- Stats Card -->
-            <div class="stat-card">
-                <div class="stat-icon" style="background: var(--brand-light); color: var(--brand-primary);">
-                    <i class="fa-solid fa-file-contract"></i>
+
+        <!-- Dashboard Column 1: Info & Stats (Phase 1) -->
+        <div class="profile-sidebar-column identity-column">
+            <div class="identity-card">
+                <div class="identity-banner"></div>
+                <div class="identity-content">
+                    <img class="identity-avatar" id="mainAvatarDisplay"
+                        src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
+                        alt="Profile">
+                    <h1 class="identity-name">{{ user_name }}</h1>
+                    <p class="identity-role">Student Account</p>
+
+                    <div class="identity-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Reports Generated</span>
+                            <span class="progress-value">{{ reports_count }}/3</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill"
+                                style="width: calc({{ reports_count | default(0) }} / 3 * 100%);"></div>
+                        </div>
+                    </div>
+
+                    <div class="identity-info-list">
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ user_email }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Education</span>
+                            <span class="info-value">{{ grade_level }}</span>
+                        </div>
+                    </div>
+
+                    <a href="/settings" class="btn-edit-profile">
+                        <i class="fa-solid fa-user-gear"></i> Edit Profile
+                    </a>
                 </div>
-                <div>
-                    <div class="stat-val">{{ reports_count }}</div>
-                    <div class="stat-label">Total Reports</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Column 2: Shared Resources & Context (Phase 2) -->
+        <div class="profile-sidebar-column dna-column">
+
+            <div class="resources-card-sidebar">
+                <div class="sidebar-card-header">
+                    <h2 class="sidebar-title"><i class="fa-solid fa-folder-open"
+                            style="color: var(--brand-primary);"></i> Resources</h2>
+                    <p class="sidebar-subtitle">Helpful guides & documents.</p>
+                </div>
+
+                <div class="resource-grid">
+                    <a href="#" class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div class="resource-info">
+                            <h4>Career Roadmap 2024</h4>
+                            <p>PDF • 2.4 MB</p>
+                        </div>
+                        <i class="fa-solid fa-download resource-download"
+                            style="color: var(--text-secondary); margin-left: auto;"></i>
+                    </a>
+
+                    <a href="#" class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fa-solid fa-file-word"></i>
+                        </div>
+                        <div class="resource-info">
+                            <h4>Interview Tips</h4>
+                            <p>DOCX • 1.1 MB</p>
+                        </div>
+                        <i class="fa-solid fa-download resource-download"
+                            style="color: var(--text-secondary); margin-left: auto;"></i>
+                    </a>
+
+                    <a href="#" class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fa-solid fa-file-powerpoint"></i>
+                        </div>
+                        <div class="resource-info">
+                            <h4>Study Techniques</h4>
+                            <p>PPTX • 5.8 MB</p>
+                        </div>
+                        <i class="fa-solid fa-download resource-download"
+                            style="color: var(--text-secondary); margin-left: auto;"></i>
+                    </a>
                 </div>
             </div>
 
-            <!-- Profile Info Card -->
-            <div class="profile-container-main">
-                <div class="profile-header-main" style="flex-direction: column; text-align: center; gap: 16px;">
-                    <img class="profile-avatar-large" id="mainAvatarDisplay"
-                        src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
-                        alt="Profile" style="width: 120px; height: 120px;">
-                    <div class="profile-header-info">
-                        <h1 style="font-size: 20px;">{{ user_name }}</h1>
-                        <p>Student Account</p>
+            <!-- User Features (AI Context) Card -->
+            {% if user_features %}
+            <div class="dna-card">
+                <div class="sidebar-card-header">
+                    <h2 class="sidebar-title">
+                        <i class="fa-solid fa-dna" style="color: var(--brand-primary);"></i> Personal Career DNA
+                    </h2>
+                    <p class="sidebar-subtitle">Your unique profile traits mapped by AI.</p>
+                </div>
+
+                <div class="dna-section">
+                    <div class="dna-section-header">
+                        <i class="fa-solid fa-graduation-cap"></i> Academics & General
+                    </div>
+                    <div class="dna-badges">
+                        {% if user_features.plus2_stream and user_features.plus2_stream != 'string' %}
+                        <span class="dna-badge">
+                            <i class="fa-solid fa-layer-group"></i> Stream: {{ user_features.plus2_stream }}
+                        </span>
+                        {% endif %}
+                        {% if user_features.plus2_gpa %}
+                        <span class="dna-badge">
+                            <i class="fa-solid fa-star-half-stroke"></i> GPA: {{ user_features.plus2_gpa }}
+                        </span>
+                        {% endif %}
+                        {% if user_features.city_type and user_features.city_type != 'string' %}
+                        <span class="dna-badge">
+                            <i class="fa-solid fa-city"></i> {{ user_features.city_type }}
+                        </span>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div class="info-item">
-                    <label>Email</label>
-                    <p style="padding: 10px 12px; font-size: 13px;">{{ user_email }}</p>
+                <!-- Grades -->
+                {% set has_grades = (user_features.grade_math or user_features.grade_physics or
+                user_features.grade_chemistry or user_features.grade_biology or user_features.grade_computer or
+                user_features.grade_accounts or user_features.grade_economics or user_features.grade_english or
+                user_features.grade_nepali or user_features.grade_social or user_features.grade_law) %}
+                {% if has_grades %}
+                <div class="dna-section">
+                    <div class="dna-section-header">
+                        <i class="fa-solid fa-book-open"></i> Core Grades
+                    </div>
+                    <div class="dna-badges">
+                        {% for k, v in user_features.items() %}
+                        {% if k.startswith('grade_') and v %}
+                        <span class="dna-badge">
+                            {% if 'biology' in k %}<i class="fa-solid fa-dna"></i>
+                            {% elif 'computer' in k %}<i class="fa-solid fa-laptop-code"></i>
+                            {% elif 'math' in k %}<i class="fa-solid fa-calculator"></i>
+                            {% elif 'physics' in k %}<i class="fa-solid fa-atom"></i>
+                            {% elif 'chemistry' in k %}<i class="fa-solid fa-flask"></i>
+                            {% elif 'accounts' in k or 'economics' in k %}<i class="fa-solid fa-chart-line"></i>
+                            {% elif 'english' in k or 'nepali' in k %}<i class="fa-solid fa-language"></i>
+                            {% else %}<i class="fa-solid fa-check-circle"></i>{% endif %}
+                            {{ k.replace('grade_', '') | title }}: {{ v }}
+                        </span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endif %}
 
-                <div class="info-item">
-                    <label>Education</label>
-                    <p style="padding: 10px 12px; font-size: 13px;">{{ grade_level }}</p>
+                <!-- Scores -->
+                {% set has_scores = (user_features.score_ioe or user_features.score_cee or user_features.score_cmat) %}
+                {% if has_scores %}
+                <div class="dna-section">
+                    <div class="dna-section-header">
+                        <i class="fa-solid fa-ranking-star"></i> Entrance Scores
+                    </div>
+                    <div class="dna-badges">
+                        {% for k, v in user_features.items() %}
+                        {% if k.startswith('score_') and v > 0 %}
+                        <span class="dna-badge">
+                            <i class="fa-solid fa-award"></i> {{ k.replace('score_', '') | upper }}: {{ v }}
+                        </span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endif %}
 
-                <a href="/settings" class="btn-edit-profile" style="width: 100%; text-decoration: none;">
-                    <i class="fa-solid fa-user-gear"></i> Edit Profile
+                <!-- Interests -->
+                {% set has_interests = (user_features.interest_technology or user_features.interest_math_stats or
+                user_features.interest_art_design or user_features.interest_business_money or
+                user_features.interest_social_people or user_features.interest_bio_health or
+                user_features.interest_nature_agri or user_features.interest_construction or
+                user_features.interest_law_politics or user_features.interest_hospitality_food or
+                user_features.interest_gaming_entertainment or user_features.interest_history_culture) %}
+                {% if has_interests %}
+                <div class="dna-section">
+                    <div class="dna-section-header">
+                        <i class="fa-solid fa-heart"></i> Top Interests
+                    </div>
+                    <div class="dna-badges">
+                        {% for k, v in user_features.items() %}
+                        {% if k.startswith('interest_') and v > 0 %}
+                        <span class="dna-badge">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            {{ k.replace('interest_', '').replace('_', ' ') | title }}: {{ v }}/10
+                        </span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- Missing Context Fallback -->
+            <div class="dna-card empty-context">
+                <div class="empty-context-icon">
+                    <i class="fa-solid fa-dna"></i>
+                </div>
+                <h3>No Career DNA Found</h3>
+                <p>
+                    The Career Sathi AI doesn't know about your academic background or interests yet. Build your profile
+                    context by taking the AI assessment!
+                </p>
+                <a href="/chat" class="btn-edit-profile">
+                    <i class="fa-solid fa-message"></i> Chat with AI Now
                 </a>
             </div>
-
-
+            {% endif %}
         </div>
 
-        <!-- Dashboard Column 2: Chat Assistant Preview -->
+        <!-- Dashboard Column 3: Chat Assistant Preview (Phase 3) -->
         <div class="chat-preview-card">
             <div class="chat-preview-header">
                 <div>
-                    <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--text-primary);">Career Sathi
-                        AI</h3>
-                    <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-secondary);">Last active recently
-                    </p>
+                    <h3 class="chat-header-title">Career Sathi AI</h3>
+                    <p class="chat-header-subtitle">Last active recently</p>
                 </div>
-                <div class="ai-status"
-                    style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10b981; font-weight: 700;">
-                    <span class="status-dot"
-                        style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                <div class="ai-status">
+                    <span class="status-dot"></span>
                     Online
                 </div>
             </div>
@@ -452,172 +857,13 @@
                 </a>
             </div>
         </div>
-
-        <!-- Dashboard Column 3: Shared Resources & Context -->
-        <div class="profile-sidebar-column">
-            <div class="resources-card-sidebar">
-                <div class="sidebar-card-header">
-                    <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">
-                        Resources
-                    </h2>
-                    <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Helpful guides & documents.</p>
-                </div>
-
-                <div class="resource-grid">
-                    <a href="#" class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fa-solid fa-file-pdf"></i>
-                        </div>
-                        <div class="resource-info">
-                            <h4>Career Roadmap 2024</h4>
-                            <p>PDF • 2.4 MB</p>
-                        </div>
-                    </a>
-
-                    <a href="#" class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fa-solid fa-file-word"></i>
-                        </div>
-                        <div class="resource-info">
-                            <h4>Interview Tips</h4>
-                            <p>DOCX • 1.1 MB</p>
-                        </div>
-                    </a>
-
-                    <a href="#" class="resource-card">
-                        <div class="resource-icon">
-                            <i class="fa-solid fa-file-powerpoint"></i>
-                        </div>
-                        <div class="resource-info">
-                            <h4>Study Techniques</h4>
-                            <p>PPTX • 5.8 MB</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- User Features (AI Context) Card -->
-            {% if user_features %}
-            <div class="profile-container-main" style="margin-top: 0;">
-                <div class="sidebar-card-header" style="margin-bottom: 8px;">
-                    <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">
-                        <i class="fa-solid fa-brain" style="color: var(--brand-primary); margin-right: 6px;"></i> Known
-                        Context
-                    </h2>
-                    <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Data currently known by the AI
-                        model.</p>
-                </div>
-
-                <div class="info-item" style="margin-top: 8px;">
-                    <label>Academics & General</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        {% if user_features.plus2_stream and user_features.plus2_stream != 'string' %}
-                        <span
-                            style="background: var(--bg-body); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600;">Stream:
-                            {{ user_features.plus2_stream }}</span>
-                        {% endif %}
-                        {% if user_features.plus2_gpa %}
-                        <span
-                            style="background: var(--bg-body); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600;">GPA:
-                            {{ user_features.plus2_gpa }}</span>
-                        {% endif %}
-                        {% if user_features.city_type and user_features.city_type != 'string' %}
-                        <span
-                            style="background: var(--bg-body); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600;">{{
-                            user_features.city_type }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Grades -->
-                {% set has_grades = (user_features.grade_math or user_features.grade_physics or
-                user_features.grade_chemistry or user_features.grade_biology or user_features.grade_computer or
-                user_features.grade_accounts or user_features.grade_economics or user_features.grade_english or
-                user_features.grade_nepali or user_features.grade_social or user_features.grade_law) %}
-                {% if has_grades %}
-                <div class="info-item">
-                    <label>Grades</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        {% for k, v in user_features.items() %}
-                        {% if k.startswith('grade_') and v %}
-                        <span
-                            style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;">
-                            {{ k.replace('grade_', '') | title }}: {{ v }}
-                        </span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Scores -->
-                {% set has_scores = (user_features.score_ioe or user_features.score_cee or user_features.score_cmat) %}
-                {% if has_scores %}
-                <div class="info-item">
-                    <label>Entrance Scores</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        {% for k, v in user_features.items() %}
-                        {% if k.startswith('score_') and v > 0 %}
-                        <span
-                            style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;">
-                            {{ k.replace('score_', '') | upper }}: {{ v }}
-                        </span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Interests -->
-                {% set has_interests = (user_features.interest_technology or user_features.interest_math_stats or
-                user_features.interest_art_design or user_features.interest_business_money or
-                user_features.interest_social_people or user_features.interest_bio_health or
-                user_features.interest_nature_agri or user_features.interest_construction or
-                user_features.interest_law_politics or user_features.interest_hospitality_food or
-                user_features.interest_gaming_entertainment or user_features.interest_history_culture) %}
-                {% if has_interests %}
-                <div class="info-item">
-                    <label>Top Interests</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        {% for k, v in user_features.items() %}
-                        {% if k.startswith('interest_') and v > 0 %}
-                        <span
-                            style="background: rgba(99, 102, 241, 0.1); color: var(--brand-primary); border: 1px solid rgba(99, 102, 241, 0.2); padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;">
-                            {{ k.replace('interest_', '').replace('_', ' ') | title }}: {{ v }}/10
-                        </span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% else %}
-        <!-- Missing Context Fallback -->
-        <div class="profile-container-main"
-            style="margin-top: 0; align-items: center; text-align: center; padding: 40px 24px;">
-            <div class="modal-icon warning"
-                style="background: rgba(99, 102, 241, 0.1); color: var(--brand-primary); margin: 0 auto 16px; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                <i class="fa-solid fa-brain"></i>
-            </div>
-            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; color: var(--text-primary);">No AI Context
-                Found</h3>
-            <p style="margin: 0 0 24px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.5;">
-                The Career Sathi AI doesn't know about your academic background or interests yet. Build your profile
-                context by taking the AI assessment!
-            </p>
-            <a href="/chat" class="btn-edit-profile" style="text-decoration: none;">
-                <i class="fa-solid fa-message"></i> Chat with AI Now
-            </a>
-        </div>
-        {% endif %}
     </div>
-</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
     // Initialize Markdown parsing for chat preview
     document.addEventListener('DOMContentLoaded', () => {
@@ -634,11 +880,11 @@
                 // Remove the raw JSON code from the text
                 let cleanText = rawContent.replace(jsonRegex, '').trim();
 
-                // Render the clean text and add a compact "Report" chip
+                // Render the clean text and add an Actionable Premium Button
                 msg.innerHTML = marked.parse(cleanText) + `
-                    <div style="margin-top: 8px; padding: 6px 12px; background: var(--brand-light); color: var(--brand-primary); border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(79, 70, 229, 0.2);">
-                        <i class="fa-solid fa-chart-pie"></i> Career Report Generated
-                    </div>
+                    <a href="/reports" class="report-chip-btn">
+                        <i class="fa-solid fa-chart-pie"></i> View Generated Report
+                    </a>
                 `;
             } else {
                 // Normal message processing

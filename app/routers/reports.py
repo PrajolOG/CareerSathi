@@ -20,6 +20,8 @@ def format_iso_date(iso_str):
     except:
         return "Unknown Date"
 
+import time
+
 async def process_report_background(report_data: ReportGenerationRequest, user_id: str, access_token: str):
     """Heavy lifting logic moved to background to prevent UI blocking."""
     try:
@@ -30,15 +32,22 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             options=ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
         )
         
+        # Start total timer
+        start_total = time.perf_counter_ns()
+        
         # 1. Predict career using ML service
+        start_ml = time.perf_counter_ns()
         ml_input = report_data.model_dump()
         top_recommendations = predict_career(ml_input)
+        end_ml = time.perf_counter_ns()
+        ml_latency = (end_ml - start_ml) // 1_000_000 # Convert to ms
+        
         if isinstance(top_recommendations, str):
             top_recommendations = [top_recommendations]
         top_recommendations = [career for career in top_recommendations if career]
         career_prediction_text = ", ".join(top_recommendations[:3]) if top_recommendations else "Software Engineering"
         
-        # 2. Save User Features
+        # 2. Save User Features (Same as before)
         features_data = {
             "user_id": user_id,
             "city_type": report_data.general_info.city_type,
@@ -82,6 +91,7 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
              print(f"Error saving user features background: {embed_e}")
              
         # 3. AI Enrichment (Gemini)
+        start_ai = time.perf_counter_ns()
         enriched_data = {"matching_factors": [], "roadmaps": []}
         try:
             enrich_prompt = f"""
@@ -128,6 +138,11 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             enriched_data = json.loads(raw_text)
         except Exception as ai_e:
             print(f"AI Enrichment background failed: {ai_e}")
+        
+        end_ai = time.perf_counter_ns()
+        ai_latency = (end_ai - start_ai) // 1_000_000
+        end_total = time.perf_counter_ns()
+        total_latency = (end_total - start_total) // 1_000_000
 
         # 4. Save to Reports
         matching_factors = enriched_data.get("matching_factors", ["Matches based on academic profile and interests"])
@@ -138,7 +153,10 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             "career_prediction": career_prediction_text,
             "matching_factor": json.dumps(matching_factors), # Store reasons as JSON array
             "roadmap": roadmaps, # Store ONLY roadmaps list
-            "pdf_url": ""
+            "pdf_url": "",
+            "ml_latency_ms": ml_latency,
+            "ai_latency_ms": ai_latency,
+            "total_latency_ms": total_latency
         }
         auth_client.table("Reports").insert(new_report).execute()
         print(f"Successfully generated background report for user {user_id}")
@@ -156,6 +174,16 @@ async def generate_report(request: Request, report_data: ReportGenerationRequest
         user_response = supabase.auth.get_user(access_token)
         user = user_response.user
         
+        # 0. Check Usage Limits (Max 3 reports)
+        existing_reports = supabase.table("Reports").select("id", count="exact").eq("user_id", user.id).execute()
+        report_count = existing_reports.count if existing_reports.count is not None else 0
+        
+        if report_count >= 3:
+            raise HTTPException(
+                status_code=403, 
+                detail="You have reached the maximum limit of 3 career reports. Please delete an older report to generate a new one."
+            )
+
         # Start the background task
         background_tasks.add_task(process_report_background, report_data, user.id, access_token)
         
@@ -165,12 +193,11 @@ async def generate_report(request: Request, report_data: ReportGenerationRequest
             "message": "Career report generation started in the background. It will appear in your reports list shortly."
         })
             
+    except HTTPException as he:
+        # Re-raise HTTP exceptions (like our 403 limit)
+        raise he
     except Exception as e:
         print(f"Error starting background report: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-            
-    except Exception as e:
-        print(f"Error generating report: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/reports")
@@ -192,6 +219,7 @@ async def get_reports_list(request: Request):
         # Fetch profile
         profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
         user_name = profile.data.get("full_name", "User")
+        user_profile_pic = profile.data.get("profile_url")
 
         # Fetch all reports for the user
         reports_res = supabase.table("Reports").select("*").eq("user_id", user.id).order("created_at", desc=True).execute()
@@ -204,6 +232,7 @@ async def get_reports_list(request: Request):
         return templates.TemplateResponse("reports.html", {
             "request": request,
             "user_name": user_name,
+            "user_profile_pic": user_profile_pic,
             "reports": reports_list
         })
         
@@ -230,9 +259,16 @@ async def get_report_details(request: Request, report_id: str):
         # Fetch profile
         profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
         user_name = profile.data.get("full_name", "User")
+        user_profile_pic = profile.data.get("profile_url")
 
         # Fetch the specific report
-        report_res = supabase.table("Reports").select("*").eq("id", report_id).eq("user_id", user.id).single().execute()
+        query = supabase.table("Reports").select("*").eq("id", report_id)
+        
+        # If not admin, restrict to own reports
+        if profile.data.get("role") != "admin":
+            query = query.eq("user_id", user.id)
+            
+        report_res = query.maybe_single().execute()
         
         if not report_res.data:
             raise HTTPException(status_code=404, detail="Report not found")
@@ -276,6 +312,7 @@ async def get_report_details(request: Request, report_id: str):
         return templates.TemplateResponse("reports_details.html", {
             "request": request,
             "user_name": user_name,
+            "user_profile_pic": user_profile_pic,
             "report": report,
             "top_recommendations": top_recommendations,
             "career_options": career_options,

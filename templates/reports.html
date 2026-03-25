@@ -1,4 +1,3 @@
-<!-- reports.html -->
 {% extends "shared_navbar.html" %}
 
 {% block title %}My Reports - Career Sathi{% endblock %}
@@ -8,74 +7,82 @@
 {% endblock %}
 
 {% block content %}
-<div class="reports-wrapper">
-    <div class="reports-container">
+<section class="reports-frame">
+    <div class="reports-bg-media" aria-hidden="true">
+        <!-- Placeholder image: replace with your own local image path later -->
+        <img src="/static/assets/careerreport.png" alt="">
+    </div>
+    <div class="reports-shell">
+        <header class="reports-heading">
+            <h1>My Career Reports</h1>
+            <p>Your personalized roadmap to success. These curated paths are designed specifically for your unique strengths and the evolving global job market.</p>
+        </header>
 
-        <!-- Symmetrical Centered Header -->
-        <div class="reports-header text-center">
-            <h1 class="animated-title">My Career <span class="ai-glow">Reports</span></h1>
-            <p>Track every assessment and compare your top recommended paths.</p>
-        </div>
-
-        <!-- Report Image Banner -->
-        <div class="report-banner">
-            <img src="/static/assets/careerreport.png" alt="Career Insight Report Banner">
-        </div>
-
-        <!-- Reports Grid -->
-        <div class="reports-list-grid">
+        <div class="reports-grid">
             {% for report in reports %}
-            <div class="report-card">
-                <div class="report-card-header">
-                    <div class="report-icon">
-                        <i class="fa-solid fa-chart-pie"></i>
-                    </div>
-                    <div class="report-score">
-                        <span class="score-badge">Top 3 Match</span>
-                    </div>
-                </div>
+            {% set prediction_text = report.career_prediction if report.career_prediction else '' %}
+            {% set careers = prediction_text.split(',') if prediction_text else [] %}
+            {% set top1 = careers[0].strip() if careers and careers[0].strip() else 'Career Path Pending' %}
+            {% set top2 = careers[1].strip() if careers|length > 1 and careers[1].strip() else 'Skill Foundation Sprint' %}
+            {% set top3 = careers[2].strip() if careers|length > 2 and careers[2].strip() else 'Industry Readiness Track' %}
+            {% set lower = top1.lower() %}
 
-                <div class="report-card-body">
-                    {% set prediction_text = report.career_prediction if report.career_prediction else '' %}
-                    {% set careers = prediction_text.split(',') if prediction_text else [] %}
-                    {% set top1 = careers[0].strip() if careers else 'No recommendation found' %}
-
-                    <div class="top1-block">
-                        <span class="rank-pill"><i class="fa-solid fa-crown"></i> Top 1</span>
-                        <h3>{{ top1 }}</h3>
-                    </div>
-
-                    <div class="other-options">
-                        {% for career in careers[1:3] %}
-                        {% if career.strip() %}
-                        <span class="option-chip">Top {{ loop.index + 1 }}: {{ career.strip() }}</span>
+            <article class="report-card">
+                <div class="report-top">
+                    <span class="role-icon">
+                        {% if 'software' in lower or 'developer' in lower or 'engineer' in lower %}
+                        <i class="fa-solid fa-code"></i>
+                        {% elif 'cloud' in lower %}
+                        <i class="fa-solid fa-cloud"></i>
+                        {% elif 'strategist' in lower or 'marketing' in lower or 'digital' in lower %}
+                        <i class="fa-solid fa-chart-line"></i>
+                        {% else %}
+                        <i class="fa-solid fa-briefcase"></i>
                         {% endif %}
-                        {% endfor %}
-                    </div>
-
-                    <p class="date-text"><i class="fa-regular fa-calendar"></i> Analyzed on {{ report.formatted_date }}
-                    </p>
+                    </span>
+                    <span class="match-pill">Top 3 Match</span>
                 </div>
 
-                <div class="report-card-footer">
-                    <a href="/reports/{{ report.id }}" class="btn-outline">
-                        View Full Details <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
+                <h3>{{ top1 }}</h3>
+
+                <p class="report-description">
+                    {% if 'software' in lower or 'developer' in lower or 'engineer' in lower %}
+                    Build modern digital products by combining problem-solving, scalable architecture, and practical engineering execution.
+                    {% elif 'cloud' in lower %}
+                    Design and manage secure cloud infrastructure while enabling high performance for modern web applications.
+                    {% elif 'strategist' in lower or 'marketing' in lower or 'digital' in lower %}
+                    Turn market insights into high-impact campaigns and product direction through structured strategic thinking.
+                    {% elif 'data' in lower or 'analyst' in lower %}
+                    Use data-driven reasoning to uncover patterns, guide decisions, and shape measurable growth outcomes.
+                    {% else %}
+                    Shape your strengths into a structured career pathway with practical milestones and actionable skill development.
+                    {% endif %}
+                </p>
+
+                <p class="paths-label">Recommended Paths</p>
+                <ul class="paths-list">
+                    <li>{{ top1 }}</li>
+                    <li>{{ top2 }}</li>
+                    <li>{{ top3 }}</li>
+                </ul>
+
+                <a href="/reports/{{ report.id }}" class="details-btn">View Full Details</a>
+            </article>
             {% else %}
-
-            <!-- Empty State -->
             <div class="empty-reports">
-                <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                 <h3>No reports found</h3>
-                <p>You haven't taken any career assessments yet.<br>Head over to the Chat to generate your first AI
-                    report.</p>
+                <p>You have not generated any career reports yet. Visit AI Counselor to create your first report.</p>
             </div>
-
             {% endfor %}
         </div>
 
+        {% if reports %}
+        <div class="reports-verification">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Expert Verified Consultation by Career Sathi AI</span>
+        </div>
+        {% endif %}
     </div>
-</div>
+</section>
 {% endblock %}

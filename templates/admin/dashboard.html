@@ -1,0 +1,486 @@
+{% extends "admin/shared_admin_navbar.html" %}
+
+{% block title %}Admin Dashboard - Career Sathi{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin/dashboard.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-canvas">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back, Admin. Here is an overview of the platform.</p>
+    </div>
+
+    <div class="stats-row">
+        <!-- Stat 1: Total Students with Sparkline background -->
+        <div class="stat-card has-sparkline students-kpi">
+            <div class="stat-header">
+                <span class="stat-title">Total Students</span>
+                <div class="growth-badge {{ 'positive' if growth_percent >= 0 else 'negative' }}">
+                    <i class="fas fa-arrow-{{ 'up' if growth_percent >= 0 else 'down' }}"></i>
+                    {{ growth_percent }}%
+                </div>
+            </div>
+            <p class="stat-value">{{ "{:,}".format(total_users) }}</p>
+
+            <div class="mini-line-chart" aria-hidden="true">
+                {% set point_count = signup_heights|length %}
+                {% set step = 100 / ((point_count - 1) if point_count > 1 else 1) %}
+                <svg class="mini-line-svg" viewBox="0 0 100 44" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="studentsSparkFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#101828" stop-opacity="0.24" />
+                            <stop offset="100%" stop-color="#101828" stop-opacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path class="mini-line-area" d="M 0 42 {% for h in signup_heights %}L {{ (loop.index0 * step)|round(2) }} {{ (42 - h)|round(2) }} {% endfor %}L 100 42 Z" />
+                    <polyline class="mini-line-path" points="{% for h in signup_heights %}{{ (loop.index0 * step)|round(2) }},{{ (42 - h)|round(2) }}{% if not loop.last %} {% endif %}{% endfor %}" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Active (24h)</span>
+                <i class="fas fa-chart-line stat-icon"></i>
+            </div>
+            <p class="stat-value">{{ active_sessions }}</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">New Reports (24h)</span>
+                <i class="fas fa-file-alt stat-icon"></i>
+            </div>
+            <p class="stat-value">{{ new_reports }}</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Avg. Latency</span>
+                <div class="growth-badge {{ 'positive' if avg_total_latency < 3000 else 'negative' }}">
+                    {{ (avg_total_latency / 1000) | round(1) }}s
+                </div>
+            </div>
+            <p class="stat-value">{{ avg_total_latency }}ms</p>
+            <div class="stat-sub">ML: {{ avg_ml_latency }}ms | AI: {{ avg_ai_latency }}ms</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Total Storage</span>
+                <i class="fas fa-database stat-icon"></i>
+            </div>
+            <p class="stat-value">{{ total_storage }}</p>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Chat Volume Line Chart -->
+        <div class="grid-card line-chart-card">
+            <div class="card-header">
+                <h3>Chat Volume</h3>
+                <div class="chart-tabs">
+                    <button class="tab-btn active" data-range="week">Week</button>
+                    <button class="tab-btn" data-range="month">Month</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chatVolumeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Right: Career Distribution Doughnut Chart (EXISTING) -->
+        <div class="grid-card doughnut-card">
+            <div class="card-header">
+                <h3>Trending Career Paths</h3>
+            </div>
+            <div class="card-content-side">
+                <div class="doughnut-wrapper">
+                    <canvas id="careerDistChart"></canvas>
+                    <div class="chart-center-text">
+                        <span class="chart-center-value">0%</span>
+                        <span class="chart-center-label">FOCUS</span>
+                    </div>
+                </div>
+                <div id="careerLegend" class="custom-legend"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Right: NEW Database Coverage Chart -->
+        <div class="grid-card university-card">
+            <div class="card-header">
+                <h3>Universities Coverage</h3>
+                <span class="badge-blue">Courses DB</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="universityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Prediction Latency Chart -->
+        <div class="grid-card latency-chart-card">
+            <div class="card-header">
+                <h3>Prediction Latency (7d)</h3>
+                <span class="badge-purple">Performance</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="latencyChart"></canvas>
+            </div>
+            <div class="latency-summary">
+                <div class="sum-item">
+                    <span class="latency-label">ML Model</span>
+                    <span class="latency-value latency-value-ml">{{ avg_ml_latency }}ms</span>
+                </div>
+                <div class="sum-item">
+                    <span class="latency-label">Gemini AI</span>
+                    <span class="latency-value latency-value-ai">{{ avg_ai_latency }}ms</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="grid-card table-card">
+            <div class="card-header">
+                <h3>Recent Activity</h3>
+                <a href="/admin/users" class="btn-secondary-small">View All</a>
+            </div>
+            <div class="table-scroll-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Message</th>
+                            <th>Sender</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chat in recent_chats %}
+                        <tr class="user-row">
+                            <td class="recent-user-cell">
+                                <div class="recent-user">
+                                    <img class="recent-user-avatar"
+                                        src="{{ chat.user_avatar or ('https://ui-avatars.com/api/?name=' ~ (chat.user_name|urlencode) ~ '&background=F2F4F7&color=101828') }}"
+                                        alt="{{ chat.user_name }}">
+                                    <span class="recent-user-name">{{ chat.user_name }}</span>
+                                </div>
+                            </td>
+                            <td class="message-cell">
+                                {{ chat.message }}
+                            </td>
+                            <td>
+                                <span class="badge-{{ 'purple' if chat.sender == 'bot' else 'blue' }}">
+                                    {{ chat.sender | capitalize }}
+                                </span>
+                            </td>
+                            <td class="text-sub">{{ chat.created_at[:16]|replace('T', ' ') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="table-empty-row">No
+                                activity.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        // 1. Chat Volume Line Chart
+        const ctxVolume = document.getElementById('chatVolumeChart').getContext('2d');
+
+        // Create Gradient
+        const gradient = ctxVolume.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 24, 40, 0.08)');
+        gradient.addColorStop(1, 'rgba(16, 24, 40, 0)');
+
+        // Tab Switching Logic
+        const weekLabels = {{ chart_dates_week | tojson | safe }};
+        const weekData = {{ chat_counts_week | tojson | safe }};
+        const monthLabels = {{ chart_dates_month | tojson | safe }};
+        const monthData = {{ chat_counts_month | tojson | safe }};
+        const formatAxisDate = (rawLabel) => {
+            if (!rawLabel) return '';
+            const parsed = new Date(rawLabel);
+            if (!Number.isNaN(parsed.getTime())) {
+                return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+            const label = String(rawLabel);
+            return label.length > 10 ? label.slice(0, 10) : label;
+        };
+
+        const volumeChart = new Chart(ctxVolume, {
+            type: 'line',
+            data: {
+                labels: weekLabels,
+                datasets: [{
+                    label: 'Messages',
+                    data: weekData,
+                    borderColor: '#101828',
+                    backgroundColor: gradient,
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#101828',
+                    pointHoverBorderColor: '#FFFFFF',
+                    pointHoverBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        bottom: 22
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#101828',
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: (context) => `${context.parsed.y} Messages`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#F2F4F7',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'inherit', size: 11 },
+                            color: '#667085',
+                            maxTicksLimit: 5
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'inherit', size: 12, weight: '600' },
+                            color: '#475467',
+                            maxTicksLimit: 10,
+                            autoSkip: true,
+                            minRotation: 0,
+                            maxRotation: 0,
+                            padding: 12,
+                            callback: function (value) {
+                                return formatAxisDate(this.getLabelForValue(value));
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.getAttribute('data-range');
+
+                // UI Toggle
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Data Toggle
+                if (range === 'month') {
+                    volumeChart.data.labels = monthLabels;
+                    volumeChart.data.datasets[0].data = monthData;
+                } else {
+                    volumeChart.data.labels = weekLabels;
+                    volumeChart.data.datasets[0].data = weekData;
+                }
+                volumeChart.update();
+            });
+        });
+
+        // 2. Career Distribution Pie Chart
+        const ctxCareer = document.getElementById('careerDistChart').getContext('2d');
+        const careerData = {{ career_values | tojson }};
+        const careerLabels = {{ career_labels | tojson }};
+
+        // Calculate Top Percentage
+        const total = careerData.reduce((a, b) => a + b, 0);
+        const topVal = careerData.length > 0 ? careerData[0] : 0;
+        const topPercent = total > 0 ? Math.round((topVal / total) * 100) : 0;
+        const topLabel = careerLabels.length > 0 ? careerLabels[0].split(' ')[0].toUpperCase() : 'CAREER';
+
+        // Update Center Text
+        document.querySelector('.chart-center-value').textContent = topPercent + '%';
+        document.querySelector('.chart-center-label').textContent = topLabel; // Removed ' FOCUS' to save space
+
+        const colors = [
+            '#00695C', // Teal
+            '#041021', // Dark Navy
+            '#B0C4DE', // Light Blue/Grey
+            '#E0E0E0', // Very Light Grey
+            '#475467'  // Grey (fallback)
+        ];
+
+        new Chart(ctxCareer, {
+            type: 'doughnut',
+            data: {
+                labels: careerLabels,
+                datasets: [{
+                    data: careerData,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    borderRadius: careerData.length > 1 ? 20 : 0,
+                    spacing: careerData.length > 1 ? 10 : 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#101828',
+                        padding: 12,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 13 },
+                        cornerRadius: 8,
+                        displayColors: true
+                    }
+                },
+                cutout: '85%'
+            }
+        });
+
+        // Populate Custom Legend
+        const legendContainer = document.getElementById('careerLegend');
+        careerLabels.forEach((label, i) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `
+            <span class="legend-dot" style="background: ${colors[i % colors.length]}"></span>
+            <span class="legend-label">${label}</span>
+        `;
+            legendContainer.appendChild(item);
+        });
+
+        // 3. Database Coverage Horizontal Bar Chart
+        const ctxUniv = document.getElementById('universityChart').getContext('2d');
+
+        // Inject the real data from the backend here
+        const univLabels = {{ university_labels | tojson | safe }};
+        const univData = {{ university_data | tojson | safe }};
+
+        new Chart(ctxUniv, {
+            type: 'bar', // Using a bar chart
+            data: {
+                labels: univLabels,
+                datasets: [{
+                    label: 'Institutions',
+                    data: univData,
+                    backgroundColor: ['#00695C', '#101828'], // Teal for Local, Navy for Global
+                    borderRadius: 6,
+                    barThickness: 30
+                }]
+            },
+            options: {
+                indexAxis: 'y', // THIS makes it horizontal!
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#101828',
+                        padding: 12,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { display: false } // Hide X axis numbers for a cleaner look
+                    },
+                    y: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: {
+                            font: { family: 'inherit', size: 12, weight: '600' },
+                            color: '#475467'
+                        }
+                    }
+                }
+            }
+        });
+        // 4. Prediction Latency (Stacked Bar)
+        const ctxLatency = document.getElementById('latencyChart').getContext('2d');
+        const mlTrend = {{ ml_trend | tojson }};
+        const aiTrend = {{ ai_trend | tojson }};
+
+        new Chart(ctxLatency, {
+            type: 'bar',
+            data: {
+                labels: weekLabels,
+                datasets: [
+                    {
+                        label: 'ML Model',
+                        data: mlTrend,
+                        backgroundColor: '#00695C',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Gemini AI',
+                        data: aiTrend,
+                        backgroundColor: '#101828',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#101828',
+                        padding: 12,
+                        callbacks: {
+                            label: (context) => `${context.dataset.label}: ${context.parsed.y}ms`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { family: 'inherit', size: 11 }, color: '#667085' }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grid: { color: '#F2F4F7', drawBorder: false },
+                        ticks: {
+                            font: { family: 'inherit', size: 11 },
+                            color: '#667085',
+                            callback: (value) => value + 'ms'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endblock %}

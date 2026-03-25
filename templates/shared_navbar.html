@@ -80,7 +80,7 @@
                     <div class="user-pill">
                         <a href="/userProfile" class="user-pill-link">
                             <img class="user-pill-avatar"
-                                src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png"
+                                src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
                                 alt="User">
                             <div class="user-pill-info">
                                 <span class="user-pill-name">{{ user_name|default('User') }}</span>
@@ -114,6 +114,21 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
         }
+    </script>
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                // e.preventDefault(); // Uncomment if these are # links and you don't want the page to jump
+
+                // 1. Remove 'active' class from ALL links
+                navItems.forEach(nav => nav.classList.remove('active'));
+
+                // 2. Add 'active' class to the EXACT link that was clicked
+                this.classList.add('active');
+            });
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

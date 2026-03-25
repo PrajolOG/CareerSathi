@@ -6,8 +6,9 @@
     --brand-light: rgba(79, 70, 229, 0.1);
     --text-primary: #111827;
     --text-secondary: #6b7280;
-    --border-light: rgba(0, 0, 0, 0.08);
-    --bg-glass: rgba(255, 255, 255, 0.75);
+    --border-light: #E5E7EB;
+    --bg-glass: #FFFFFF;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .settings-wrapper {
@@ -22,15 +23,13 @@
 
 .settings-layout {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1200px;
     height: 85vh;
     min-height: 600px;
     background: var(--bg-glass);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 28px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
     display: flex;
     overflow: hidden;
     animation: settingsReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -88,13 +87,15 @@
     padding: 14px 20px;
     background: transparent;
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     color: var(--text-secondary);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    position: relative;
+    overflow: hidden;
 }
 
 .tab-btn i {
@@ -109,9 +110,25 @@
 }
 
 .tab-btn.active {
+    background: linear-gradient(90deg, var(--brand-light), transparent);
+    color: var(--brand-primary);
+    box-shadow: none;
+}
+
+.tab-btn.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 4px;
     background: var(--brand-primary);
-    color: white;
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+    border-radius: 0 4px 4px 0;
+}
+
+.tab-btn.active i {
+    color: var(--brand-primary);
 }
 
 /* --- MAIN CONTENT --- */
@@ -352,8 +369,8 @@
 }
 
 .current-avatar-container {
-    width: 90px;
-    height: 90px;
+    width: 120px;
+    height: 120px;
     flex-shrink: 0;
 }
 
@@ -381,13 +398,13 @@
 
 .avatar-gallery {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
 .gallery-item {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;

@@ -9,29 +9,45 @@
         max-width: 1200px;
         margin: 0 auto;
         width: 100%;
+        padding-bottom: 100px;
     }
 
     .search-header {
-        margin-bottom: 32px;
+        margin-bottom: 40px;
         text-align: center;
     }
 
     .search-header h1 {
-        font-size: 36px;
+        font-size: 38px;
         font-weight: 800;
         color: var(--text-primary);
         margin-bottom: 12px;
+        letter-spacing: -0.5px;
+    }
+
+    .search-header p {
+        font-size: 16px;
+        color: var(--text-secondary);
     }
 
     .search-bar-container {
         display: flex;
         gap: 12px;
-        margin-bottom: 40px;
-        background: white;
-        padding: 8px;
+        margin-bottom: 48px;
+        background: var(--bg-surface);
+        padding: 10px;
         border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
         border: 1px solid var(--border-light);
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        transition: all 0.3s ease;
+    }
+
+    .search-bar-container:focus-within {
+        border-color: var(--brand-primary);
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.1);
     }
 
     .search-input {
@@ -40,32 +56,223 @@
         padding: 12px 20px;
         font-size: 16px;
         outline: none;
+        color: var(--text-primary);
+        background: transparent;
+    }
+    
+    .search-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
     }
 
     .btn-search {
         background: var(--brand-primary);
         color: white;
         border: none;
-        padding: 12px 32px;
+        padding: 14px 36px;
         border-radius: var(--radius-sm);
         font-weight: 700;
+        font-size: 15px;
         cursor: pointer;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .btn-search:hover {
         background: var(--brand-hover);
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
-    .uni-grid {
+    /* --- Recommended Section --- */
+    .recommended-section {
+        margin-bottom: 56px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i.fa-star {
+        color: #F59E0B; /* Golden star */
+    }
+
+    .section-title i.fa-building-columns {
+        color: var(--brand-primary);
+    }
+
+    .recommended-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: 24px;
     }
 
+    .recommendation-card {
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        padding: 32px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1;
+    }
+
+    /* Gradient Border using pseudoelement */
+    .recommendation-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 2px; /* Border thickness */
+        background: linear-gradient(135deg, var(--brand-light) 0%, var(--brand-primary) 100%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+
+    .recommendation-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+    }
+
+    .recommendation-card:hover::before {
+        opacity: 1;
+    }
+
+    .rec-badge {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
+        color: white;
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        z-index: 2;
+    }
+
+    .rec-info-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .rec-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--brand-light);
+        color: var(--brand-primary);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 800;
+        flex-shrink: 0;
+        box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    }
+
+    .rec-details h3 {
+        margin: 0 0 8px 0;
+        font-size: 22px;
+        color: var(--text-primary);
+        line-height: 1.3;
+        padding-right: 110px; /* Make room for badge */
+    }
+
+    .rec-details p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .rec-match-reason {
+        background: var(--bg-body);
+        padding: 16px 20px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        color: var(--text-secondary);
+        border-left: 4px solid var(--brand-primary);
+        line-height: 1.6;
+    }
+    
+    .match-highlight {
+        color: var(--brand-primary);
+        font-weight: 700;
+    }
+
+    .btn-view-uni {
+        background: transparent;
+        color: var(--brand-primary);
+        border: 2px solid var(--brand-primary);
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 15px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: block;
+        margin-top: auto;
+    }
+
+    .btn-view-uni:hover {
+        background: var(--brand-light);
+        box-shadow: none;
+        transform: translateY(-1px);
+    }
+
+    /* --- General Grid --- */
+    .uni-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 12px;
+        padding-bottom: 24px;
+    }
+
+    /* Custom Scrollbar for uni-grid */
+    .uni-grid::-webkit-scrollbar {
+        width: 8px;
+    }
+    .uni-grid::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .uni-grid::-webkit-scrollbar-thumb {
+        background: var(--border-light);
+        border-radius: var(--radius-pill);
+    }
+    .uni-grid::-webkit-scrollbar-thumb:hover {
+        background: var(--text-secondary);
+    }
+
     .uni-card {
-        background: white;
+        background: var(--bg-surface);
         border: 1px solid var(--border-light);
         border-radius: var(--radius-md);
         padding: 24px;
@@ -73,43 +280,74 @@
         align-items: center;
         gap: 20px;
         transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
     }
 
     .uni-card:hover {
         transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--brand-primary);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+        border-color: var(--border-focus);
     }
 
-    .uni-icon {
+    .uni-card-icon {
         width: 60px;
         height: 60px;
-        background: var(--brand-light);
-        color: var(--brand-primary);
+        background: var(--bg-body);
+        color: var(--text-secondary);
         border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
-        font-weight: 800;
+        font-size: 22px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .uni-card:hover .uni-card-icon {
+        background: var(--brand-primary);
+        color: white;
     }
 
     .uni-info h3 {
-        margin: 0 0 4px 0;
-        font-size: 18px;
+        margin: 0 0 6px 0;
+        font-size: 17px;
         color: var(--text-primary);
+        line-height: 1.3;
+        transition: color 0.3s ease;
+    }
+    
+    .uni-card:hover .uni-info h3 {
+        color: var(--brand-primary);
     }
 
     .uni-info p {
         margin: 0;
         font-size: 14px;
         color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .empty-state {
         text-align: center;
-        padding: 60px;
+        padding: 80px 20px;
         color: var(--text-secondary);
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        border: 1px dashed var(--border-light);
+    }
+
+    .empty-state i {
+        color: var(--border-light);
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-primary);
+        font-size: 20px;
+        margin-bottom: 8px;
     }
 </style>
 {% endblock %}
@@ -118,29 +356,64 @@
 <div class="search-section">
     <div class="search-header">
         <h1>Discover Universities</h1>
-        <p>Explore top educational institutions in Nepal and around the world.</p>
+        <p>Explore top educational institutions in Nepal and around the world matching your career goals.</p>
     </div>
 
     <form action="/search/universities" method="GET" class="search-bar-container">
-        <input type="text" name="q" class="search-input" placeholder="Search by name or location..."
+        <input type="text" name="q" class="search-input" placeholder="Search by university name or location..."
             value="{{ query or '' }}">
-        <button type="submit" class="btn-search">Search</button>
+        <button type="submit" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
     </form>
 
+    {% if recommended_universities and not query %}
+    <div class="recommended-section">
+        <h2 class="section-title"><i class="fa-solid fa-star"></i> Recommended for You</h2>
+        <div class="recommended-grid">
+            {% for uni in recommended_universities %}
+            <div class="recommendation-card">
+                <div class="rec-badge">
+                    <i class="fa-solid fa-bolt"></i> Top Match ({{ uni.type }})
+                </div>
+                
+                <div class="rec-info-top">
+                    <div class="rec-icon">
+                        {{ uni.name[:2] | upper }}
+                    </div>
+                    <div class="rec-details">
+                        <h3>{{ uni.name }}</h3>
+                        <p><i class="fa-solid fa-location-dot"></i> {{ uni.location }}</p>
+                    </div>
+                </div>
+                
+                <div class="rec-match-reason">
+                    Based on your latest AI Career Report, this university offers strong programs in <span class="match-highlight">{{ uni.matched_career }}</span>, aligning with your academic DNA and interests.
+                </div>
+                
+                <!-- Here you could link to a specific university details page, if it existed. For now, we'll link to courses filtered by this university -->
+                <a href="/search/courses?q={{ uni.name | urlencode }}" class="btn-view-uni">
+                    <i class="fa-solid fa-magnifying-glass-arrow-right"></i> View Courses
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> All Universities</h2>
     <div class="uni-grid">
         {% for uni in universities %}
-        <div class="uni-card">
-            <div class="uni-icon">
+        <a href="/search/courses?q={{ uni.name | urlencode }}" class="uni-card">
+            <div class="uni-card-icon">
                 {{ uni.name[:2] | upper }}
             </div>
             <div class="uni-info">
                 <h3>{{ uni.name }}</h3>
-                <p><i class="fa-solid fa-location-dot"></i> {{ uni.location }}</p>
+                <p><i class="fa-solid fa-map-pin"></i> {{ uni.location }}</p>
             </div>
-        </div>
+        </a>
         {% else %}
-        <div class="empty-state">
-            <i class="fa-solid fa-building-circle-exclamation fa-3x mb-3"></i>
+        <div class="empty-state" style="grid-column: 1 / -1;">
+            <i class="fa-solid fa-building-circle-exclamation fa-4x"></i>
             <h3>No universities found</h3>
             <p>Try a different search term or browse our recommendations.</p>
         </div>

@@ -186,11 +186,11 @@
                                 <i class="fa-solid fa-chart-pie"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h4 style="margin: 0 0 4px 0; font-size: 15px; color: var(--text-primary); font-weight: 800;">Career Report Saved</h4>
-                                <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">Your AI analysis is available in your dashboard.</p>
+                                <h4 style="margin: 0 0 4px 0; font-size: 15px; color: var(--text-primary); font-weight: 800;">AI Analysis Summary</h4>
+                                <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">Your career matching and roadmap data are available.</p>
                             </div>
                             <a href="/reports" style="background: var(--bg-surface); color: var(--brand-primary); border: 1px solid var(--brand-primary); padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease;">
-                                View Reports
+                                Visit Reports
                             </a>
                         </div>
                     `;
@@ -365,6 +365,15 @@
                                     `;
                                     scrollToBottom();
                                 } else { throw new Error("Report generation failed"); }
+                            } else if (reportRes.status === 403) {
+                                const errData = await reportRes.json();
+                                const preJsonText = fullAiResponse.split("```json")[0].trim();
+                                aiMsgDiv.innerHTML = marked.parse(preJsonText) + `
+                                    <div style="margin-top: 12px; padding: 12px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 4px; color: #991B1B; font-size: 13.5px; font-weight: 500;">
+                                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i> ${errData.detail}
+                                    </div>
+                                `;
+                                scrollToBottom();
                             } else { throw new Error("Report API failed"); }
 
                         } catch (e) {

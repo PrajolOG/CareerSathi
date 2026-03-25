@@ -1,0 +1,129 @@
+{% extends "admin/shared_admin_navbar.html" %}
+
+{% block title %}Manage Users - Career Sathi Admin{% endblock %}
+{% block breadcrumb %}Manage Users{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin/users.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>User management</h1>
+        <p>Manage your team members and their account permissions here.</p>
+    </div>
+
+    <div class="table-controls">
+        <div class="tab-counts">
+            Total users <span class="count">{{ users|length if users else 0 }}</span>
+        </div>
+        <div class="actions-row">
+            <div class="filter-tiles">
+                <button class="filter-tile active" onclick="setRoleFilter('all', this)">All</button>
+                <button class="filter-tile" onclick="setRoleFilter('admin', this)">Admins</button>
+                <button class="filter-tile" onclick="setRoleFilter('user', this)">Users</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search users by name or email..." onkeyup="filterUsers()">
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th>User Name</th>
+                    <th>Access Role</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th>Date Joined</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="user-row" data-name="{{ (user.full_name or '')|lower }}" data-role="{{ user.role or 'user' }}">
+                    <td class="row-index">#{{ loop.index }}</td>
+                    <td>
+                        <div class="user-cell">
+                            {% if user.profile_url %}
+                                <img src="{{ user.profile_url }}" alt="Profile" class="user-avatar-img">
+                            {% else %}
+                                <div class="default-avatar">{{ user.full_name[0] | upper }}</div>
+                            {% endif %}
+                            <div class="user-name-col">
+                                <span class="user-name">{{ user.full_name }}</span>
+                                <span class="user-email">{{ user.email | default(user.id[:8] + '...') }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="badge-group">
+                            {% if user.role == 'admin' %}
+                            <span class="badge-purple">Admin</span>
+                            {% else %}
+                            <span class="badge-blue">Student</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="badge-group">
+                            {% if user.status == 'deactivated' %}
+                            <span class="badge-red">Deactivated</span>
+                            {% else %}
+                            <span class="badge-green">Activated</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td><span class="text-sub"><i class="far fa-clock meta-icon"></i>{{ user.last_active_at|nepal_time }}</span></td>
+                    <td><span class="text-sub"><i class="far fa-calendar-alt meta-icon"></i>{{ user.created_at[:10] if user.created_at else '2024-03-19' }}</span></td>
+                    <td class="action-cell">
+                        <a href="/admin/users/{{ user.id }}" class="btn-edit-row" title="View User Details">
+                            <i class="far fa-eye icon-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row-cell">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentRoleFilter = 'all';
+
+    function setRoleFilter(role, btn) {
+        currentRoleFilter = role;
+        const tiles = document.querySelectorAll('.filter-tile');
+        tiles.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        filterUsers();
+    }
+
+    function filterUsers() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.user-row');
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || "";
+            const email = (row.querySelector('.user-email')?.textContent || "").toLowerCase();
+            const role = row.getAttribute('data-role') || "user";
+            
+            const matchSearch = name.includes(searchText) || email.includes(searchText);
+            const matchRole = (currentRoleFilter === 'all' || role === currentRoleFilter);
+            
+            row.style.display = (matchSearch && matchRole) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}
