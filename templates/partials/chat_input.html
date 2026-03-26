@@ -4,47 +4,46 @@
     <div id="filePreview" class="file-preview-container" style="display: none;">
         <div class="file-info">
             <div class="doc-icon-wrapper-small">
-                <i class="fa-solid fa-file-pdf" id="fileIcon"></i>
+                <i class="fa-solid fa-image" id="fileIcon"></i>
             </div>
-            <span id="fileNameDisplay" class="truncate-text">filename.pdf</span>
+            <span id="fileNameDisplay" class="truncate-text">image.png</span>
         </div>
         <button type="button" class="remove-file-btn" onclick="clearFileSelection()" title="Remove file">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <!-- Main Chat Input Form -->
-    <form class="chat-input-form group" id="chatForm">
-        <!-- Hidden File Inputs -->
-        <input type="file" id="docUpload" style="display: none;" accept=".pdf,.docx">
-        <input type="file" id="imgUpload" style="display: none;" accept="image/*">
+    <div class="chat-input-surface">
+        <!-- Main Chat Input Form -->
+        <form class="chat-input-form group" id="chatForm">
+            <!-- Hidden File Inputs -->
+            <input type="file" id="imgUpload" style="display: none;" accept="image/*">
 
-        <!-- Attachment Menu -->
-        <div id="attachmentMenu" class="attachment-menu">
-            <button type="button" class="attach-option btn-img" onclick="document.getElementById('imgUpload').click(); toggleAttachmentMenu()">
-                <i class="fa-solid fa-image"></i>
-                <span>Image</span>
-            </button>
-            <button type="button" class="attach-option btn-pdf" onclick="document.getElementById('docUpload').click(); toggleAttachmentMenu()">
-                <i class="fa-solid fa-file-pdf"></i>
-                <span>PDF / Doc</span>
-            </button>
-        </div>
+            <!-- Message Input (Multiline) -->
+            <textarea class="chat-input-field" id="userInput" rows="1"
+                placeholder="Ask about colleges, scholarships, or careers..."
+                autocomplete="off"></textarea>
 
-        <!-- Attachment Button -->
-        <button type="button" class="icon-btn attach-btn" onclick="toggleAttachmentMenu()"
-            title="Upload Document">
-            <i class="fa-solid fa-paperclip"></i>
-        </button>
+            <div class="input-actions">
+                <!-- Image Upload Button -->
+                <button type="button" class="icon-btn attach-btn" onclick="document.getElementById('imgUpload').click()" title="Upload Image">
+                    <i class="fa-solid fa-image"></i>
+                </button>
 
-        <!-- Message Input (Multiline) -->
-        <textarea class="chat-input-field" id="userInput" rows="1"
-            placeholder="Ask Career Sathi AI about paths, syllabus, or upload a resume..." 
-            autocomplete="off"></textarea>
+                <!-- Send Button with Glow -->
+                <button type="submit" class="icon-btn send-btn ai-gradient-btn" id="sendBtn" title="Send Message">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
 
-        <!-- Send Button with Glow -->
-        <button type="submit" class="icon-btn send-btn ai-gradient-btn" id="sendBtn" title="Send Message">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </form>
+    <div class="quick-chip-row" aria-hidden="true">
+        <span class="quick-chip">What is Cyber Security?</span>
+        <span class="quick-chip">How to find my passion?</span>
+        <span class="quick-chip">Best jobs for 2026</span>
+        <span class="quick-chip">Scholarship options?</span>
+        <span class="quick-chip">How to prepare for interviews?</span>
+        <span class="quick-chip">Effective time management tips</span>
+    </div>
 </div>

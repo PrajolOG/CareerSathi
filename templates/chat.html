@@ -35,8 +35,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: #EEF2FF !important;
-        border-color: rgba(79, 70, 229, 0.25) !important;
+        background: rgba(255, 255, 255, 0.92) !important;
+        border-color: rgba(148, 163, 184, 0.35) !important;
         padding: 16px 24px;
     }
 
@@ -94,26 +94,27 @@
         <p class="animated-subtitle">Your personal AI counselor for career guidance and document analysis.</p>
     </div>
 
-    <!-- Message History -->
-    <div class="message-history" id="messageHistory">
-        {% if chat_history %}
-        {% for msg in chat_history %}
-        <div class="message {% if msg.sender == 'user' %}user-message{% else %}ai-message{% endif %}"
-            data-markdown="{{ msg.message }}">
-            {{ msg.message }}
+    <div class="chat-surface">
+        <!-- Message History -->
+        <div class="message-history" id="messageHistory">
+            {% if chat_history %}
+            {% for msg in chat_history %}
+            <div class="message {% if msg.sender == 'user' %}user-message{% else %}ai-message{% endif %}"
+                data-markdown="{{ msg.message }}">
+                {{ msg.message }}
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Initial Greetings -->
+            <div class="message ai-message">
+                Namaste! I analyzed your profile context and I am ready to guide you. Ask about careers, colleges, scholarships, or upload your academic documents for personalized support.
+            </div>
+            {% endif %}
         </div>
-        {% endfor %}
-        {% else %}
-        <!-- Initial Greetings -->
-        <div class="message ai-message">
-            Namaste! I am your Career Sathi AI Counselor. How can I help you today? You can ask me about career paths,
-            university syllabus, or upload your academic documents for analysis.
-        </div>
-        {% endif %}
-    </div>
 
-    <!-- Chat Input (Partial) -->
-    {% include 'partials/chat_input.html' %}
+        <!-- Chat Input (Partial) -->
+        {% include 'partials/chat_input.html' %}
+    </div>
 </div>
 {% endblock %}
 
@@ -123,28 +124,13 @@
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
     const messageHistory = document.getElementById('messageHistory');
-    const docUpload = document.getElementById('docUpload');
     const filePreview = document.getElementById('filePreview');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const fileIcon = document.getElementById('fileIcon');
     const sendBtn = document.querySelector('.send-btn');
+    const imgUpload = document.getElementById('imgUpload');
 
     const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
-
-    // --- NEW: Attachment Menu Logic ---
-    function toggleAttachmentMenu() {
-        const menu = document.getElementById('attachmentMenu');
-        menu.classList.toggle('show');
-    }
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('attachmentMenu');
-        const attachBtn = document.querySelector('.attach-btn');
-        if (!menu.contains(e.target) && !attachBtn.contains(e.target)) {
-            menu.classList.remove('show');
-        }
-    });
 
     // --- NEW: Textarea Auto-Resize ---
     userInput.addEventListener('input', function() {
@@ -202,31 +188,22 @@
         scrollToBottom();
     });
 
-    // 2. Handle File Selection Preview
-    const imgUpload = document.getElementById('imgUpload');
-
+    // 2. Handle Image Selection Preview
     function handleFileSelection(input) {
-        if (input.files && input.files[0]) {
+        if (input && input.files && input.files[0]) {
             const file = input.files[0];
             fileNameDisplay.textContent = file.name;
-            
-            // Set icon based on type
-            const name = file.name.toLowerCase();
-            if (name.endsWith('.pdf')) fileIcon.className = 'fa-solid fa-file-pdf';
-            else if (name.endsWith('.docx')) fileIcon.className = 'fa-solid fa-file-word';
-            else if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => name.endsWith(ext))) fileIcon.className = 'fa-solid fa-image';
-            else fileIcon.className = 'fa-solid fa-file';
-
+            fileIcon.className = 'fa-solid fa-image';
             filePreview.style.display = 'flex';
         }
     }
 
-    docUpload.addEventListener('change', () => handleFileSelection(docUpload));
-    imgUpload.addEventListener('change', () => handleFileSelection(imgUpload));
+    if (imgUpload) {
+        imgUpload.addEventListener('change', () => handleFileSelection(imgUpload));
+    }
 
     function clearFileSelection() {
-        docUpload.value = '';
-        imgUpload.value = '';
+        if (imgUpload) imgUpload.value = '';
         filePreview.style.display = 'none';
     }
 
@@ -234,12 +211,10 @@
     chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const message = userInput.value.trim();
-        const hasDoc = docUpload.files.length > 0;
-        const hasImg = imgUpload.files.length > 0;
-        const hasFile = hasDoc || hasImg;
+        const hasImg = imgUpload && imgUpload.files.length > 0;
+        const hasFile = hasImg;
 
         if (message || hasFile) {
-            if (hasDoc) addFileBubble(docUpload.files[0].name, 'doc');
             if (hasImg) addFileBubble(imgUpload.files[0].name, 'img');
 
             if (message) {
@@ -409,15 +384,21 @@
         const fileDiv = document.createElement('div');
         fileDiv.classList.add('document-bubble');
         
-        let iconClass = 'fa-solid fa-file';
-        if (type === 'img') iconClass = 'fa-solid fa-image';
-        else if (fileName.toLowerCase().endsWith('.pdf')) iconClass = 'fa-solid fa-file-pdf';
-        else if (fileName.toLowerCase().endsWith('.docx')) iconClass = 'fa-solid fa-file-word';
+        let iconClass = 'fa-solid fa-image';
 
         fileDiv.innerHTML = `<div class="doc-icon-wrapper"><i class="${iconClass}"></i></div><span class="document-name">${fileName}</span>`;
         messageHistory.appendChild(fileDiv);
         scrollToBottom();
     }
+
+    // 4. Quick chip send
+    document.querySelectorAll('.quick-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            if (!chatForm || !userInput || userInput.disabled) return;
+            userInput.value = chip.textContent.trim();
+            chatForm.dispatchEvent(new Event('submit'));
+        });
+    });
 
     function scrollToBottom() {
         messageHistory.scrollTop = messageHistory.scrollHeight;

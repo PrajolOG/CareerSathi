@@ -7,82 +7,86 @@
 {% endblock %}
 
 {% block content %}
-<section class="reports-frame">
-    <div class="reports-bg-media" aria-hidden="true">
-        <!-- Placeholder image: replace with your own local image path later -->
-        <img src="/static/assets/careerreport.png" alt="">
-    </div>
-    <div class="reports-shell">
-        <header class="reports-heading">
-            <h1>My Career Reports</h1>
-            <p>Your personalized roadmap to success. These curated paths are designed specifically for your unique strengths and the evolving global job market.</p>
-        </header>
+<section class="reports-page">
+    <div class="reports-parent-card">
+        <div class="reports-bg-layer" aria-hidden="true">
+            <img src="/static/assets/careerreport.png" alt="">
+        </div>
 
-        <div class="reports-grid">
-            {% for report in reports %}
-            {% set prediction_text = report.career_prediction if report.career_prediction else '' %}
-            {% set careers = prediction_text.split(',') if prediction_text else [] %}
-            {% set top1 = careers[0].strip() if careers and careers[0].strip() else 'Career Path Pending' %}
-            {% set top2 = careers[1].strip() if careers|length > 1 and careers[1].strip() else 'Skill Foundation Sprint' %}
-            {% set top3 = careers[2].strip() if careers|length > 2 and careers[2].strip() else 'Industry Readiness Track' %}
-            {% set lower = top1.lower() %}
+        <div class="reports-content">
+            <header class="reports-header">
+                <h1>My Career Reports</h1>
+                <p>Your personalized roadmap to success. These curated paths are designed for your unique strengths and the evolving job market.</p>
+            </header>
 
-            <article class="report-card">
-                <div class="report-top">
-                    <span class="role-icon">
+            {% if reports %}
+            <div class="reports-grid">
+                {% for report in reports %}
+                {% set prediction_text = report.career_prediction if report.career_prediction else '' %}
+                {% set careers = prediction_text.split(',') if prediction_text else [] %}
+                {% set top1 = careers[0].strip() if careers and careers[0].strip() else 'Career Path Pending' %}
+                {% set top2 = careers[1].strip() if careers|length > 1 and careers[1].strip() else 'Skill Foundation Sprint' %}
+                {% set top3 = careers[2].strip() if careers|length > 2 and careers[2].strip() else 'Industry Readiness Track' %}
+                {% set lower = top1.lower() %}
+
+                <article class="career-report-card">
+                    <div class="card-top">
+                        <span class="card-icon">
+                            {% if 'software' in lower or 'developer' in lower or 'engineer' in lower %}
+                            <i class="fa-solid fa-code"></i>
+                            {% elif 'cloud' in lower %}
+                            <i class="fa-solid fa-cloud"></i>
+                            {% elif 'strategist' in lower or 'marketing' in lower or 'digital' in lower %}
+                            <i class="fa-solid fa-chart-line"></i>
+                            {% elif 'data' in lower or 'analyst' in lower %}
+                            <i class="fa-solid fa-database"></i>
+                            {% else %}
+                            <i class="fa-solid fa-briefcase"></i>
+                            {% endif %}
+                        </span>
+                        <span class="match-pill">Top 3 Match</span>
+                    </div>
+
+                    <h3>{{ top1 }}</h3>
+
+                    <p class="card-description">
                         {% if 'software' in lower or 'developer' in lower or 'engineer' in lower %}
-                        <i class="fa-solid fa-code"></i>
+                        Build and scale modern products with strong technical foundations and system design.
                         {% elif 'cloud' in lower %}
-                        <i class="fa-solid fa-cloud"></i>
+                        Design secure cloud systems and keep applications reliable at scale.
                         {% elif 'strategist' in lower or 'marketing' in lower or 'digital' in lower %}
-                        <i class="fa-solid fa-chart-line"></i>
+                        Translate market insight into strategy, campaigns, and measurable growth.
+                        {% elif 'data' in lower or 'analyst' in lower %}
+                        Turn data into decisions through analysis, modeling, and practical business impact.
                         {% else %}
-                        <i class="fa-solid fa-briefcase"></i>
+                        Follow a focused roadmap that aligns your strengths with practical career milestones.
                         {% endif %}
-                    </span>
-                    <span class="match-pill">Top 3 Match</span>
-                </div>
+                    </p>
 
-                <h3>{{ top1 }}</h3>
+                    <p class="paths-title">Recommended Paths</p>
+                    <ul class="paths-list">
+                        <li>{{ top1 }}</li>
+                        <li>{{ top2 }}</li>
+                        <li>{{ top3 }}</li>
+                    </ul>
 
-                <p class="report-description">
-                    {% if 'software' in lower or 'developer' in lower or 'engineer' in lower %}
-                    Build modern digital products by combining problem-solving, scalable architecture, and practical engineering execution.
-                    {% elif 'cloud' in lower %}
-                    Design and manage secure cloud infrastructure while enabling high performance for modern web applications.
-                    {% elif 'strategist' in lower or 'marketing' in lower or 'digital' in lower %}
-                    Turn market insights into high-impact campaigns and product direction through structured strategic thinking.
-                    {% elif 'data' in lower or 'analyst' in lower %}
-                    Use data-driven reasoning to uncover patterns, guide decisions, and shape measurable growth outcomes.
-                    {% else %}
-                    Shape your strengths into a structured career pathway with practical milestones and actionable skill development.
-                    {% endif %}
-                </p>
+                    <a href="/reports/{{ report.id }}" class="details-btn">View Full Details</a>
+                </article>
+                {% endfor %}
+            </div>
 
-                <p class="paths-label">Recommended Paths</p>
-                <ul class="paths-list">
-                    <li>{{ top1 }}</li>
-                    <li>{{ top2 }}</li>
-                    <li>{{ top3 }}</li>
-                </ul>
-
-                <a href="/reports/{{ report.id }}" class="details-btn">View Full Details</a>
-            </article>
+            <div class="reports-verification">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Expert Verified Consultation by Career Sathi AI</span>
+            </div>
             {% else %}
             <div class="empty-reports">
                 <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                 <h3>No reports found</h3>
                 <p>You have not generated any career reports yet. Visit AI Counselor to create your first report.</p>
             </div>
-            {% endfor %}
+            {% endif %}
         </div>
-
-        {% if reports %}
-        <div class="reports-verification">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>Expert Verified Consultation by Career Sathi AI</span>
-        </div>
-        {% endif %}
     </div>
 </section>
 {% endblock %}
