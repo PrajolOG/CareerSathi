@@ -29,6 +29,7 @@ CREATE TABLE public.Profiles (
   profile_url text,
   role text DEFAULT 'user'::text,
   last_active_at timestamp with time zone,
+  status text DEFAULT 'active'::text,
   CONSTRAINT Profiles_pkey PRIMARY KEY (id),
   CONSTRAINT Profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
@@ -40,6 +41,9 @@ CREATE TABLE public.Reports (
   pdf_url text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   roadmap jsonb,
+  ml_latency_ms integer DEFAULT 0,
+  ai_latency_ms integer DEFAULT 0,
+  total_latency_ms integer DEFAULT 0,
   CONSTRAINT Reports_pkey PRIMARY KEY (id),
   CONSTRAINT Reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.Profiles(id)
 );

@@ -100,9 +100,7 @@
             {% if chat_history %}
             {% for msg in chat_history %}
             <div class="message {% if msg.sender == 'user' %}user-message{% else %}ai-message{% endif %}"
-                data-markdown="{{ msg.message }}">
-                {{ msg.message }}
-            </div>
+                data-markdown="{{ msg.message | e }}"></div>
             {% endfor %}
             {% else %}
             <!-- Initial Greetings -->
@@ -129,14 +127,50 @@
     const fileIcon = document.getElementById('fileIcon');
     const sendBtn = document.querySelector('.send-btn');
     const imgUpload = document.getElementById('imgUpload');
+    const uploadMetaPrefix = "__CS_UPLOAD_META__:";
 
     const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
+
+    function parseUploadMeta(rawText) {
+        const cleanRaw = (rawText || '').trim();
+
+        if (!cleanRaw.startsWith(uploadMetaPrefix)) {
+            const legacyUploadMatch = cleanRaw.match(/^Uploaded image:\s*(.+)$/i);
+            if (legacyUploadMatch) {
+                return { meta: { file_name: legacyUploadMatch[1].trim() || 'uploaded-image.png' }, text: '' };
+            }
+
+            if (cleanRaw === 'Sent a message with an uploaded academic image.') {
+                return { meta: { file_name: 'uploaded-image.png' }, text: '' };
+            }
+
+            return { meta: null, text: cleanRaw };
+        }
+
+        const lineBreakIndex = cleanRaw.indexOf('\n');
+        const metaText = (lineBreakIndex === -1
+            ? cleanRaw.slice(uploadMetaPrefix.length)
+            : cleanRaw.slice(uploadMetaPrefix.length, lineBreakIndex)).trim();
+
+        let parsedMeta = null;
+        try {
+            const maybeMeta = JSON.parse(metaText);
+            if (maybeMeta && typeof maybeMeta === 'object') {
+                parsedMeta = maybeMeta;
+            }
+        } catch (error) {
+            return { meta: null, text: cleanRaw };
+        }
+
+        const textPart = lineBreakIndex === -1 ? '' : cleanRaw.slice(lineBreakIndex + 1).trim();
+        return { meta: parsedMeta, text: textPart };
+    }
 
     // --- NEW: Textarea Auto-Resize ---
     userInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
-        if (this.scrollHeight > 200) {
+        if (this.scrollHeight > 150) {
             this.style.overflowY = 'auto';
         } else {
             this.style.overflowY = 'hidden';
@@ -151,6 +185,7 @@
         }
     });
 
+
     // 1. Parse Markdown & Hide JSON blocks for existing history messages on load
     document.addEventListener('DOMContentLoaded', () => {
         const messages = document.querySelectorAll('.message');
@@ -158,15 +193,32 @@
         messages.forEach(msg => {
             if (msg.classList.contains('document-bubble')) return; // Skip files
 
-            let content = msg.dataset.markdown || msg.textContent.trim();
+            const rawContent = msg.dataset.markdown || msg.textContent.trim();
+            const isUserMessage = msg.classList.contains('user-message');
+            const parsedUpload = isUserMessage
+                ? parseUploadMeta(rawContent)
+                : { meta: null, text: rawContent };
+            let content = parsedUpload.text;
 
-            if (content) {
-                // If historical message contains a hidden JSON block
-                if (jsonRegex.test(content)) {
-                    jsonRegex.lastIndex = 0; // Reset regex index
-                    let cleanText = content.replace(jsonRegex, '').trim();
+            if (isUserMessage && parsedUpload.meta) {
+                const fileName = parsedUpload.meta.file_name || 'uploaded-image.png';
+                addFileBubble(fileName, 'img', msg, true);
+            }
 
-                    msg.innerHTML = marked.parse(cleanText) + `
+            if (!content) {
+                if (isUserMessage && parsedUpload.meta) {
+                    msg.remove();
+                }
+                return;
+            }
+
+            // If historical message contains a hidden JSON block
+            jsonRegex.lastIndex = 0;
+            if (jsonRegex.test(content)) {
+                jsonRegex.lastIndex = 0; // Reset regex index
+                let cleanText = content.replace(jsonRegex, '').trim();
+
+                msg.innerHTML = marked.parse(cleanText) + `
                         <div style="margin-top: 16px; padding: 16px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--brand-light), #E0E7FF); border: 1px solid rgba(79, 70, 229, 0.2); display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm);">
                             <div style="background: var(--brand-primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
                                 <i class="fa-solid fa-chart-pie"></i>
@@ -180,9 +232,8 @@
                             </a>
                         </div>
                     `;
-                } else {
-                    msg.innerHTML = marked.parse(content);
-                }
+            } else {
+                msg.innerHTML = marked.parse(content);
             }
         });
         scrollToBottom();
@@ -212,166 +263,165 @@
         e.preventDefault();
         const message = userInput.value.trim();
         const hasImg = imgUpload && imgUpload.files.length > 0;
-        const hasFile = hasImg;
 
-        if (message || hasFile) {
-            if (hasImg) addFileBubble(imgUpload.files[0].name, 'img');
+        if (!message && !hasImg) return;
 
-            if (message) {
-                // Disable UI while waiting
-                if (sendBtn) sendBtn.disabled = true;
-                userInput.disabled = true;
+        if (hasImg) addFileBubble(imgUpload.files[0].name, 'img');
+        if (message) addMessage(message, 'user');
 
-                addMessage(message, 'user');
-                userInput.value = '';
+        if (sendBtn) sendBtn.disabled = true;
+        userInput.disabled = true;
+        userInput.value = '';
 
-                // Add Typing Indicator
-                const typingId = 'ai-typing-' + Date.now();
-                const typingDiv = document.createElement('div');
-                typingDiv.id = typingId;
-                typingDiv.classList.add('message', 'ai-message');
-                typingDiv.innerHTML = '<div class="loader-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
-                messageHistory.appendChild(typingDiv);
-                scrollToBottom();
+        const typingId = 'ai-typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.classList.add('message', 'ai-message');
+        typingDiv.innerHTML = '<div class="loader-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+        messageHistory.appendChild(typingDiv);
+        scrollToBottom();
 
-                try {
-                    const response = await fetch('/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: message }),
-                    });
+        try {
+            const isImageFlow = hasImg;
+            let response;
 
-                    if (!response.ok) throw new Error("Stream Error");
+            if (isImageFlow) {
+                const formData = new FormData();
+                formData.append('image', imgUpload.files[0]);
+                formData.append('message', message);
+                response = await fetch('/chat/image', {
+                    method: 'POST',
+                    body: formData,
+                });
+            } else {
+                response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message }),
+                });
+            }
 
-                    // Reuse typingDiv as the AI message bubble — keeps dots visible until first chunk
-                    const aiMsgDiv = typingDiv;
-                    let contentReceived = false;
+            if (!response.ok) throw new Error("Stream Error");
 
-                    let fullAiResponse = "";
-                    let isGeneratingReport = false;
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
+            const aiMsgDiv = typingDiv;
+            let contentReceived = false;
+            let fullAiResponse = "";
+            let isGeneratingReport = false;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
 
-                    // Read Streaming Response
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-                        fullAiResponse += decoder.decode(value, { stream: true });
+                fullAiResponse += decoder.decode(value, { stream: true });
 
-                        // First real chunk — swap out the dots
-                        if (!contentReceived) {
-                            contentReceived = true;
-                            aiMsgDiv.innerHTML = '';
-                        }
-                        if (fullAiResponse.includes("```json") && !isGeneratingReport) {
-                            isGeneratingReport = true;
-                            const preJsonText = fullAiResponse.split("```json")[0].trim();
+                if (!contentReceived) {
+                    contentReceived = true;
+                    aiMsgDiv.innerHTML = '';
+                }
 
-                            // Show a proper 3-dot loading bubble for report generation
-                            aiMsgDiv.innerHTML = marked.parse(preJsonText);
+                if (!isImageFlow && fullAiResponse.includes("```json") && !isGeneratingReport) {
+                    isGeneratingReport = true;
+                    const preJsonText = fullAiResponse.split("```json")[0].trim();
+                    aiMsgDiv.innerHTML = marked.parse(preJsonText);
 
-                            const reportLoadingDiv = document.createElement('div');
-                            reportLoadingDiv.id = 'report-loading-bubble';
-                            reportLoadingDiv.classList.add('message', 'ai-message');
-                            reportLoadingDiv.innerHTML = `
-                                <div class="report-generating-bubble">
-                                    <div class="rg-icon"><i class="fa-solid fa-chart-pie"></i></div>
-                                    <div class="rg-text">
-                                        <span class="rg-label">Generating your career report…</span>
-                                        <div class="rg-dots loader-dots">
-                                            <span class="typing-dot"></span>
-                                            <span class="typing-dot"></span>
-                                            <span class="typing-dot"></span>
-                                        </div>
-                                    </div>
+                    const reportLoadingDiv = document.createElement('div');
+                    reportLoadingDiv.id = 'report-loading-bubble';
+                    reportLoadingDiv.classList.add('message', 'ai-message');
+                    reportLoadingDiv.innerHTML = `
+                        <div class="report-generating-bubble">
+                            <div class="rg-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                            <div class="rg-text">
+                                <span class="rg-label">Generating your career report...</span>
+                                <div class="rg-dots loader-dots">
+                                    <span class="typing-dot"></span>
+                                    <span class="typing-dot"></span>
+                                    <span class="typing-dot"></span>
                                 </div>
-                            `;
-                            messageHistory.appendChild(reportLoadingDiv);
-                            scrollToBottom();
-                        } else if (!isGeneratingReport) {
-                            aiMsgDiv.innerHTML = marked.parse(fullAiResponse);
-                            scrollToBottom();
-                        }
-                    }
+                            </div>
+                        </div>
+                    `;
+                    messageHistory.appendChild(reportLoadingDiv);
+                    scrollToBottom();
+                } else if (!isGeneratingReport) {
+                    aiMsgDiv.innerHTML = marked.parse(fullAiResponse);
+                    scrollToBottom();
+                }
+            }
 
-                    // Process complete response for JSON block extraction
-                    jsonRegex.lastIndex = 0;
-                    let match;
-                    let lastMatch;
-                    while ((match = jsonRegex.exec(fullAiResponse)) !== null) {
-                        lastMatch = match;
-                    }
+            if (!isImageFlow) {
+                jsonRegex.lastIndex = 0;
+                let match;
+                let lastMatch;
+                while ((match = jsonRegex.exec(fullAiResponse)) !== null) {
+                    lastMatch = match;
+                }
 
-                    if (lastMatch && lastMatch[1]) {
-                        try {
-                            const jsonData = JSON.parse(lastMatch[1]);
+                if (lastMatch && lastMatch[1]) {
+                    try {
+                        const jsonData = JSON.parse(lastMatch[1]);
+                        const reportRes = await fetch('/reports/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(jsonData),
+                        });
 
-                            // Generate Report via Backend
-                            const reportRes = await fetch('/reports/generate', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(jsonData),
-                            });
+                        const loadingBubble = document.getElementById('report-loading-bubble');
+                        if (loadingBubble) loadingBubble.remove();
 
-                            // Remove the report loading bubble once we get a response
-                            const loadingBubble = document.getElementById('report-loading-bubble');
-                            if (loadingBubble) loadingBubble.remove();
-
-                            if (reportRes.status === 202 || reportRes.ok) {
-                                const reportData = await reportRes.json();
-                                if (reportData.status === 'success') {
-                                    const preJsonText = fullAiResponse.split("```json")[0].trim();
-
-                                    // Inject "Started" Notification Card
-                                    aiMsgDiv.innerHTML = marked.parse(preJsonText) + `
-                                        <div style="margin-top: 16px; padding: 16px; border-radius: var(--radius-md); background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #93C5FD; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); animation: slideInRight 0.3s ease-out;">
-                                            <div style="background: var(--brand-primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
-                                                <i class="fa-solid fa-wand-magic-sparkles ai-magic"></i>
-                                            </div>
-                                            <div style="flex: 1;">
-                                                <h4 style="margin: 0 0 4px 0; font-size: 15px; color: #1E40AF; font-weight: 800;">Generation Started</h4>
-                                                <p style="margin: 0; font-size: 13px; color: #1E3A8A; font-weight: 500;">AI is building your report. It will appear in your dashboard in a few moments.</p>
-                                            </div>
-                                            <a href="/reports" style="background: var(--brand-primary); color: white; padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
-                                                Go to Dashboard
-                                            </a>
-                                        </div>
-                                    `;
-                                    scrollToBottom();
-                                } else { throw new Error("Report generation failed"); }
-                            } else if (reportRes.status === 403) {
-                                const errData = await reportRes.json();
+                        if (reportRes.status === 202 || reportRes.ok) {
+                            const reportData = await reportRes.json();
+                            if (reportData.status === 'success') {
                                 const preJsonText = fullAiResponse.split("```json")[0].trim();
                                 aiMsgDiv.innerHTML = marked.parse(preJsonText) + `
-                                    <div style="margin-top: 12px; padding: 12px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 4px; color: #991B1B; font-size: 13.5px; font-weight: 500;">
-                                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i> ${errData.detail}
+                                    <div style="margin-top: 16px; padding: 16px; border-radius: var(--radius-md); background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #93C5FD; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); animation: slideInRight 0.3s ease-out;">
+                                        <div style="background: var(--brand-primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                                            <i class="fa-solid fa-wand-magic-sparkles ai-magic"></i>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <h4 style="margin: 0 0 4px 0; font-size: 15px; color: #1E40AF; font-weight: 800;">Generation Started</h4>
+                                            <p style="margin: 0; font-size: 13px; color: #1E3A8A; font-weight: 500;">AI is building your report. It will appear in your dashboard in a few moments.</p>
+                                        </div>
+                                        <a href="/reports" style="background: var(--brand-primary); color: white; padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+                                            Go to Dashboard
+                                        </a>
                                     </div>
                                 `;
                                 scrollToBottom();
-                            } else { throw new Error("Report API failed"); }
-
-                        } catch (e) {
-                            console.error("Error processing JSON:", e);
+                            } else {
+                                throw new Error("Report generation failed");
+                            }
+                        } else if (reportRes.status === 403) {
+                            const errData = await reportRes.json();
                             const preJsonText = fullAiResponse.split("```json")[0].trim();
-                            aiMsgDiv.innerHTML = marked.parse(preJsonText) + '<div style="margin-top: 12px; color: var(--error-text); font-size: 14px;"><i class="fa-solid fa-triangle-exclamation"></i> Error generating the report. Please try again.</div>';
+                            aiMsgDiv.innerHTML = marked.parse(preJsonText) + `
+                                <div style="margin-top: 12px; padding: 12px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 4px; color: #991B1B; font-size: 13.5px; font-weight: 500;">
+                                    <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i> ${errData.detail}
+                                </div>
+                            `;
+                            scrollToBottom();
+                        } else {
+                            throw new Error("Report API failed");
                         }
+                    } catch (e) {
+                        console.error("Error processing JSON:", e);
+                        const preJsonText = fullAiResponse.split("```json")[0].trim();
+                        aiMsgDiv.innerHTML = marked.parse(preJsonText) + '<div style="margin-top: 12px; color: var(--error-text); font-size: 14px;"><i class="fa-solid fa-triangle-exclamation"></i> Error generating the report. Please try again.</div>';
                     }
-                } catch (error) {
-                    if (document.getElementById(typingId)) document.getElementById(typingId).remove();
-                    addMessage("Communication error. Please try again later.", 'ai');
-                } finally {
-                    // Re-enable UI
-                    if (sendBtn) sendBtn.disabled = false;
-                    userInput.disabled = false;
-                    userInput.style.height = 'auto'; // Reset height
-                    userInput.focus();
                 }
             }
+        } catch (error) {
+            if (document.getElementById(typingId)) document.getElementById(typingId).remove();
+            addMessage("Communication error. Please try again later.", 'ai');
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+            userInput.disabled = false;
+            userInput.style.height = 'auto';
+            userInput.focus();
             clearFileSelection();
         }
     });
-
     function addMessage(text, sender) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
@@ -380,15 +430,23 @@
         scrollToBottom();
     }
 
-    function addFileBubble(fileName, type) {
+    function addFileBubble(fileName, type, insertBeforeElement = null, skipScroll = false) {
         const fileDiv = document.createElement('div');
         fileDiv.classList.add('document-bubble');
         
         let iconClass = 'fa-solid fa-image';
 
         fileDiv.innerHTML = `<div class="doc-icon-wrapper"><i class="${iconClass}"></i></div><span class="document-name">${fileName}</span>`;
-        messageHistory.appendChild(fileDiv);
-        scrollToBottom();
+
+        if (insertBeforeElement && insertBeforeElement.parentNode === messageHistory) {
+            messageHistory.insertBefore(fileDiv, insertBeforeElement);
+        } else {
+            messageHistory.appendChild(fileDiv);
+        }
+
+        if (!skipScroll) {
+            scrollToBottom();
+        }
     }
 
     // 4. Quick chip send

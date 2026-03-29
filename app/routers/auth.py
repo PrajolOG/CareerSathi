@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request, Form, Depends
+from fastapi import APIRouter, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from app.database import supabase
-from typing import Optional
 
 router = APIRouter(tags=["Authentication"])
 templates = Jinja2Templates(directory="templates")
@@ -9,7 +8,8 @@ templates = Jinja2Templates(directory="templates")
 def verify_admin_status(request: Request):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         user_res = supabase.auth.get_user(access_token)
         user = user_res.user
@@ -17,11 +17,13 @@ def verify_admin_status(request: Request):
         # Check Profiles table
         profile_res = supabase.table("Profiles").select("role, status").eq("id", user.id).single().execute()
         if not profile_res.data or profile_res.data.get("role") != "admin" or profile_res.data.get("status") == "deactivated":
-            raise HTTPException(status_code=303, detail="Access denied", headers={"Location": "/login"})
+            raise HTTPException(status_code=401, detail="Access denied")
             
         return user
-    except Exception:
-        raise HTTPException(status_code=303, detail="Invalid token", headers={"Location": "/login"})
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
 
 @router.get("/signup")
 def signup_page(request: Request):

@@ -3,6 +3,7 @@ from google.genai import types
 from supabase import create_client, ClientOptions
 from app.database import supabase as global_supabase, url, key
 from app.services.gemini_pool import gemini_pool
+from app.chat_upload_meta import parse_upload_message
 
 class ChatService:
     def __init__(self):
@@ -26,7 +27,13 @@ class ChatService:
             full_text += chunk
         return full_text
 
-    async def stream_career_advice(self, user_message: str, user_token: str):
+    async def stream_career_advice(
+        self,
+        user_message: str,
+        user_token: str,
+        ocr_text: str | None = None,
+        user_message_for_db: str | None = None,
+    ):
         """
         1. Validate Token
         2. Create Authenticated DB Connection (for RLS)
@@ -34,8 +41,22 @@ class ChatService:
         4. Stream AI Response using GeminiPool
         5. Save History after completion
         """
+        clean_user_message = (user_message or "").strip()
+        clean_ocr_text = (ocr_text or "").strip()
+
+        if not clean_user_message and not clean_ocr_text:
+            yield "Please type a message or upload a document image."
+            return
+
         # Live-load the system prompt from disk
         system_prompt = self._load_system_prompt()
+        if clean_ocr_text:
+            system_prompt += (
+                "\n\nOCR MODE (HIGH PRIORITY): "
+                "When OCR_CONTEXT is present, prioritize extracting +2 GPA and subject scores/grades. "
+                "Respond in plain text only and never output JSON or code blocks for that OCR reply. "
+                "If values are missing, list missing fields and ask one short follow-up question."
+            )
         
         # --- Authentication ---
         user_id = None
@@ -66,8 +87,29 @@ class ChatService:
         ai_response_text = ""
         
         try:
+            final_user_prompt = clean_user_message
+
+            if clean_ocr_text:
+                ocr_instruction = (
+                    "OCR_CONTEXT:\n"
+                    f"{clean_ocr_text}\n\n"
+                    "Task: Extract the student's +2 GPA and subject grades/scores if present.\n"
+                    "Subjects to check: English, Nepali, Social, Math, Physics, Chemistry, Biology, "
+                    "Computer, Accounts, Economics, Law.\n"
+                    "For missing values, mark as 'Missing' and ask one concise follow-up question.\n"
+                    "Reply in plain text only."
+                )
+
+                if clean_user_message:
+                    final_user_prompt = f"{clean_user_message}\n\n{ocr_instruction}"
+                else:
+                    final_user_prompt = (
+                        "Please analyze the uploaded academic document and extract GPA and subject scores.\n\n"
+                        f"{ocr_instruction}"
+                    )
+
             # Prepare the prompt contents
-            prompt_with_context = chat_history + [types.Content(role="user", parts=[types.Part(text=user_message)])]
+            prompt_with_context = chat_history + [types.Content(role="user", parts=[types.Part(text=final_user_prompt)])]
             
             # Use gemini_pool for robust rotation and fallback
             response_stream = gemini_pool.generate_content_stream(
@@ -87,7 +129,11 @@ class ChatService:
 
         # --- Save to Database (background) ---
         if ai_response_text:
-            self._save_to_db(db_client, user_id, "user", user_message)
+            db_user_message = user_message_for_db if user_message_for_db is not None else clean_user_message
+            if not db_user_message and clean_ocr_text:
+                db_user_message = "Uploaded an image for OCR analysis."
+
+            self._save_to_db(db_client, user_id, "user", db_user_message)
             self._save_to_db(db_client, user_id, "ai", ai_response_text)
 
     def _build_history(self, client, user_id: str):
@@ -178,7 +224,16 @@ class ChatService:
 
             for msg in past_messages:
                 role = "user" if msg['sender'] == "user" else "model"
-                formatted_history.append(types.Content(role=role, parts=[types.Part(text=msg['message'])]))
+                message_text = msg.get("message", "")
+
+                if role == "user":
+                    upload_meta, clean_text = parse_upload_message(message_text)
+                    if upload_meta is not None:
+                        # Keep OCR/image context in history without leaking metadata marker syntax.
+                        message_text = clean_text or "User uploaded an academic image."
+
+                if message_text:
+                    formatted_history.append(types.Content(role=role, parts=[types.Part(text=message_text)]))
                 
         except Exception as e:
             print(f"History Fetch Error: {e}")

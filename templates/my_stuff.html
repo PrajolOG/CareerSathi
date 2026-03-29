@@ -1,0 +1,68 @@
+{% extends "shared_navbar.html" %}
+
+{% block title %}My Stuff - Career Sathi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/my_stuff.css">
+{% endblock %}
+
+{% block content %}
+<section class="stuff-page">
+    <div class="stuff-parent-card">
+        <div class="stuff-bg-layer" aria-hidden="true">
+            <img src="/static/assets/mystuffs.jpeg" alt="">
+        </div>
+
+        <div class="stuff-content">
+            <header class="stuff-header">
+                <h1>My Stuff</h1>
+                <p>Your uploaded resources are stored safely and listed here.</p>
+                <div class="bucket-pill">
+                    <i class="fa-solid fa-database"></i>
+                    <span>{{ bucket_name }}</span>
+                </div>
+            </header>
+
+            {% if resources %}
+            <div class="stuff-grid">
+                {% for item in resources %}
+                <article class="stuff-card">
+                    <div class="stuff-preview">
+                        {% if item.is_image and item.presigned_url %}
+                        <img src="{{ item.presigned_url }}" alt="{{ item.name }}" loading="lazy">
+                        {% else %}
+                        <div class="stuff-file-icon">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="stuff-body">
+                        <h3 title="{{ item.name }}">{{ item.name }}</h3>
+                        <p>{{ item.size }} | {{ item.last_modified }}</p>
+                    </div>
+
+                    <div class="stuff-actions">
+                        {% if item.presigned_url %}
+                        <a href="{{ item.presigned_url }}" target="_blank" rel="noopener noreferrer" class="stuff-open-btn">
+                            Open
+                        </a>
+                        {% else %}
+                        <span class="disabled-link">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-stuff">
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3>No resources yet</h3>
+                <p>Upload an academic image in AI Counselor and it will appear here.</p>
+                <a href="/chat">Go to AI Counselor</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

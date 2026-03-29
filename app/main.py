@@ -67,6 +67,30 @@ class LastActiveMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LastActiveMiddleware)
 
+# ---------- Global Error Handlers: Never show blank error screens ----------
+from fastapi.responses import RedirectResponse, JSONResponse
+
+@app.exception_handler(401)
+async def unauthorized_handler(request: Request, exc):
+    # API calls get JSON, browser pages get redirected
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+    return RedirectResponse(url="/login")
+
+@app.exception_handler(500)
+async def server_error_handler(request: Request, exc):
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(status_code=500, content={"detail": "Server error"})
+    return RedirectResponse(url="/login")
+
+@app.exception_handler(Exception)
+async def generic_error_handler(request: Request, exc):
+    # Catch-all: any unhandled exception redirects to login for page requests
+    print(f"Unhandled error on {request.url.path}: {exc}")
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(status_code=500, content={"detail": "Something went wrong"})
+    return RedirectResponse(url="/login")
+
 
 @app.get("/", tags=["General"])
 def read_root(request: Request):

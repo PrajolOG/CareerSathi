@@ -64,6 +64,10 @@
                         <i class="fa-solid fa-chart-line"></i>
                         <span>My Reports</span>
                     </a>
+                    <a href="/my-stuff" class="nav-item {% if request.url.path == '/my-stuff' %}active{% endif %}">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>My Stuff</span>
+                    </a>
                     <a href="/search/universities"
                         class="nav-item {% if '/search/universities' in request.url.path %}active{% endif %}">
                         <i class="fa-solid fa-building-columns"></i>

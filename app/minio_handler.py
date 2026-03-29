@@ -93,6 +93,16 @@ class MinioHandler:
             print(f"Error creating bucket {bucket_name}: {e}")
             return False, str(e)
 
+    def ensure_bucket(self, bucket_name: str):
+        """Ensure bucket exists (create if missing)."""
+        try:
+            if not self.client.bucket_exists(bucket_name):
+                self.client.make_bucket(bucket_name)
+            return True, "Bucket ready"
+        except Exception as e:
+            print(f"Error ensuring bucket {bucket_name}: {e}")
+            return False, str(e)
+
     def delete_bucket(self, bucket_name: str):
         """Delete a bucket (must be empty)."""
         try:
@@ -152,12 +162,27 @@ class MinioHandler:
 
             objects = self.client.list_objects(bucket_name, recursive=True)
             results = []
+            from datetime import timedelta
             for obj in objects:
                 size_mb = obj.size / (1024 * 1024) if obj.size else 0
+                object_name_lower = (obj.object_name or "").lower()
+                is_image = object_name_lower.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'))
+
+                try:
+                    presigned_url = self.client.presigned_get_object(
+                        bucket_name,
+                        obj.object_name,
+                        expires=timedelta(days=7)
+                    )
+                except Exception:
+                    presigned_url = ""
+
                 results.append({
                     "name": obj.object_name,
                     "size": f"{size_mb:.2f} MB",
-                    "last_modified": obj.last_modified
+                    "last_modified": obj.last_modified,
+                    "presigned_url": presigned_url,
+                    "is_image": is_image,
                 })
             return results
         except Exception as e:

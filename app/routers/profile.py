@@ -1,17 +1,37 @@
-from fastapi import APIRouter, Request, Form
+import re
+from datetime import timedelta, timezone
+
+from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from app.database import supabase
 from app.minio_handler import minio_client
+from app.chat_upload_meta import parse_upload_message
 
 router = APIRouter(tags=["User Profile"])
 templates = Jinja2Templates(directory="templates")
+
+
+def _safe_bucket_name(full_name: str, user_id: str) -> str:
+    base = re.sub(r"[^a-z0-9-]+", "-", (full_name or "user").lower()).strip("-")
+    base = re.sub(r"-{2,}", "-", base)
+    if not base:
+        base = "user"
+
+    short_id = re.sub(r"[^a-z0-9]", "", (user_id or "").lower())[:8] or "anon0000"
+    max_base_len = max(3, 63 - len(short_id) - 1)
+    base = base[:max_base_len].strip("-") or "user"
+
+    bucket_name = f"{base}-{short_id}"
+    bucket_name = bucket_name[:63].strip("-")
+    if len(bucket_name) < 3:
+        bucket_name = f"user-{short_id}"
+    return bucket_name
 
 @router.get("/userProfile")
 def get_profile_page(request: Request):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
         user_response = supabase.auth.get_user(access_token)
@@ -27,6 +47,12 @@ def get_profile_page(request: Request):
         # Using correct table name: Chat_History
         chats_res = supabase.table("Chat_History").select("*").eq("user_id", user.id).order("created_at", desc=True).limit(12).execute()
         recent_chats = chats_res.data[::-1] if chats_res.data else [] 
+        for chat in recent_chats:
+            if chat.get("sender") == "user":
+                meta, clean_text = parse_upload_message(chat.get("message", ""))
+                if meta is not None:
+                    fallback_name = meta.get("file_name", "image")
+                    chat["message"] = clean_text or f"Uploaded image: {fallback_name}"
 
         # Fetch User_Features safely
         user_features = None
@@ -36,21 +62,99 @@ def get_profile_page(request: Request):
         except Exception as f_err:
             print(f"User features fetch error: {f_err}")
 
+        # Fetch resources from MinIO
+        resources = []
+        user_name = profile.data.get("full_name", "User")
+        try:
+            bucket_name = _safe_bucket_name(user_name, user.id)
+            objects = minio_client.list_bucket_objects(bucket_name)
+            nepal_tz = timezone(timedelta(hours=5, minutes=45))
+            
+            for obj in objects:
+                last_modified = obj.get("last_modified")
+                formatted_last_modified = "Unknown"
+                if last_modified:
+                    try:
+                        formatted_last_modified = last_modified.astimezone(nepal_tz).strftime("%Y-%m-%d %I:%M %p")
+                    except Exception:
+                        formatted_last_modified = str(last_modified)
+
+                resources.append({
+                    "name": obj.get("name", "unnamed-file"),
+                    "size": obj.get("size", "0.00 MB"),
+                    "last_modified": formatted_last_modified,
+                    "presigned_url": obj.get("presigned_url", ""),
+                    "is_image": obj.get("is_image", False),
+                })
+        except Exception as r_err:
+            print(f"Resources fetch error: {r_err}")
+
         return templates.TemplateResponse("userprofile.html", {
             "request": request,
-            "user_name": profile.data.get("full_name", "User"),
+            "user_name": user_name,
             "user_email": user.email,
             "grade_level": profile.data.get("grade_level", "Not set"),
             "gender": profile.data.get("gender", "Not set"),
             "user_profile_pic": profile.data.get("profile_url"),
             "reports_count": reports_count,
             "recent_chats": recent_chats,
-            "user_features": user_features
+            "user_features": user_features,
+            "resources": resources
         })
     except Exception as e:
         print(f"Profile Dashboard Error: {e}")
+        raise HTTPException(status_code=401, detail="Unauthorized") from e
+
+
+@router.get("/my-stuff")
+def get_my_stuff_page(request: Request):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+
+        profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
+        user_name = profile.data.get("full_name", "User")
+        user_profile_pic = profile.data.get("profile_url")
+
+        bucket_name = _safe_bucket_name(user_name, user.id)
+        objects = minio_client.list_bucket_objects(bucket_name)
+
+        nepal_tz = timezone(timedelta(hours=5, minutes=45))
+        resources = []
+
+        for obj in objects:
+            last_modified = obj.get("last_modified")
+            if last_modified:
+                try:
+                    formatted_last_modified = last_modified.astimezone(nepal_tz).strftime("%Y-%m-%d %I:%M %p")
+                except Exception:
+                    formatted_last_modified = str(last_modified)
+            else:
+                formatted_last_modified = "Unknown"
+
+            resources.append({
+                "name": obj.get("name", "unnamed-file"),
+                "size": obj.get("size", "0.00 MB"),
+                "last_modified": formatted_last_modified,
+                "presigned_url": obj.get("presigned_url", ""),
+                "is_image": obj.get("is_image", False),
+            })
+
+        return templates.TemplateResponse("my_stuff.html", {
+            "request": request,
+            "user_name": user_name,
+            "user_profile_pic": user_profile_pic,
+            "bucket_name": bucket_name,
+            "resources": resources,
+        })
+    except Exception as e:
+        print(f"My Stuff Page Error: {e}")
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        return RedirectResponse(url="/userProfile")
 
 
 
@@ -60,8 +164,7 @@ def get_profile_page(request: Request):
 async def get_settings_page(request: Request):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
         user_response = supabase.auth.get_user(access_token)
@@ -96,9 +199,8 @@ async def get_settings_page(request: Request):
                 {"label": "Other", "value": "Other", "icon": "fa-genderless"}
             ]
         })
-    except Exception:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Unauthorized") from e
 
 
 
@@ -113,8 +215,7 @@ async def update_profile_settings(
 ):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
         user_response = supabase.auth.get_user(access_token)

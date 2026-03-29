@@ -1,7 +1,6 @@
-# reports.py
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from app.database import supabase, url, key
 from supabase import create_client, ClientOptions
 from datetime import datetime
@@ -9,6 +8,7 @@ from app.schemas import ReportGenerationRequest
 import json
 from app.services.ml_service import predict_career
 from app.services.gemini_pool import gemini_pool
+import time
 
 router = APIRouter(tags=["Student Reports"])
 templates = Jinja2Templates(directory="templates")
@@ -20,7 +20,23 @@ def format_iso_date(iso_str):
     except:
         return "Unknown Date"
 
-import time
+def parse_json_maybe(raw_value, default):
+    if raw_value is None:
+        return default
+    if isinstance(raw_value, (list, dict)):
+        return raw_value
+    if isinstance(raw_value, str):
+        txt = raw_value.strip()
+        if not txt:
+            return default
+        try:
+            parsed = json.loads(txt)
+            if isinstance(parsed, str):
+                parsed = json.loads(parsed)
+            return parsed
+        except Exception:
+            return default
+    return default
 
 async def process_report_background(report_data: ReportGenerationRequest, user_id: str, access_token: str):
     """Heavy lifting logic moved to background to prevent UI blocking."""
@@ -106,7 +122,7 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             TASK:
             For each of these 3 careers, provide:
             1. matching_factors (list of strings): Provide 3 specific bullet points (sentences) explaining WHY this career fits this student based on their grades, stream, and interests.
-            2. A roadmap (object): 4 phases (Foundation, Core Skills, Specialization, Career Entry) with 3 specific steps each. Use icons from FontAwesome (e.g., fa-code, fa-seedling).
+            2. A roadmap (object): 4 phases (Foundation, Core Skills, Specialization, Career Entry) with 3 specific steps each (format as "Title: Description"). Use icons from FontAwesome (e.g., fa-code, fa-seedling). For each phase, also provide a relevant 'course_recommendation' object with a 'name' and 'link' that would help the student achieve that phase.
 
             OUTPUT FORMAT (Strict JSON):
             {{
@@ -119,7 +135,16 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
                     {{
                         "career": "Name",
                         "phases": [
-                            {{ "title": "Foundation", "icon": "fa-seedling", "color": "#10B981", "steps": ["step1", "step2", "step3"] }},
+                            {{ 
+                                "title": "Foundation", 
+                                "icon": "fa-seedling", 
+                                "color": "#10B981", 
+                                "steps": ["step1", "step2", "step3"],
+                                "course_recommendation": {{
+                                    "name": "Introduction to Economics",
+                                    "link": "https://coursera.org/..."
+                                }}
+                            }},
                             ...3 more phases
                         ]
                     }},
@@ -153,7 +178,6 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             "career_prediction": career_prediction_text,
             "matching_factor": json.dumps(matching_factors), # Store reasons as JSON array
             "roadmap": roadmaps, # Store ONLY roadmaps list
-            "pdf_url": "",
             "ml_latency_ms": ml_latency,
             "ai_latency_ms": ai_latency,
             "total_latency_ms": total_latency
@@ -204,16 +228,14 @@ async def generate_report(request: Request, report_data: ReportGenerationRequest
 async def get_reports_list(request: Request):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
         user_response = supabase.auth.get_user(access_token)
         user = user_response.user
     except Exception as e:
         print(f"Auth failed in reports list: {e}")
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized") from e
 
     try:
         # Fetch profile
@@ -244,16 +266,14 @@ async def get_reports_list(request: Request):
 async def get_report_details(request: Request, report_id: str):
     access_token = request.cookies.get("access_token")
     if not access_token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
         user_response = supabase.auth.get_user(access_token)
         user = user_response.user
     except Exception as e:
         print(f"Auth failed in report details: {e}")
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
+        raise HTTPException(status_code=401, detail="Unauthorized") from e
 
     try:
         # Fetch profile
@@ -271,9 +291,18 @@ async def get_report_details(request: Request, report_id: str):
         report_res = query.maybe_single().execute()
         
         if not report_res.data:
-            raise HTTPException(status_code=404, detail="Report not found")
+            return RedirectResponse(url="/reports")
             
         report = report_res.data
+        
+        # Fetch user features for the radar chart
+        user_features = {}
+        try:
+            feat_res = supabase.table("User_Features").select("*").eq("user_id", report.get("user_id")).maybe_single().execute()
+            user_features = feat_res.data or {}
+        except Exception as e:
+            print(f"Error fetching user features for radar: {e}")
+
         formatted_date = format_iso_date(report.get("created_at", ""))
         prediction = report.get("career_prediction", "Software Engineering")
         top_recommendations = [career.strip() for career in prediction.split(",") if career.strip()][:3]
@@ -289,14 +318,12 @@ async def get_report_details(request: Request, report_id: str):
 
             if courses_res.data:
                 for c in courses_res.data:
-                    loc = c.get("location", "").lower()
-                    if any(x in loc for x in ["nepal", "kathmandu", "lalitpur", "pokhara", "dhulikhel"]):
+                    # Use college_type column for strict categorization
+                    ctype = str(c.get("college_type", "local")).lower()
+                    if ctype == "local":
                         nepal_courses.append(c)
                     else:
                         global_courses.append(c)
-            else:
-                nepal_courses = []
-                global_courses = []
 
             career_options.append({
                 "rank": idx + 1,
@@ -319,15 +346,175 @@ async def get_report_details(request: Request, report_id: str):
             "primary_prediction": primary_prediction,
             "formatted_date": formatted_date,
             "nepal_courses": nepal_courses,
-            "global_courses": global_courses
+            "global_courses": global_courses,
+            "user_features": user_features
         })
         
     except HTTPException as he:
-        # Pass through expected HTTP errors (like 404)
-        if he.status_code == 404:
-            from fastapi.responses import RedirectResponse
-            return RedirectResponse(url="/reports")
         raise he
     except Exception as e:
         print(f"Error loading report details data: {e}")
         raise HTTPException(status_code=500, detail="Failed to load report details.")
+
+@router.get("/reports/{report_id}/pdf-preview")
+async def get_report_pdf_preview(request: Request, report_id: str):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception as e:
+        print(f"Auth failed in report pdf preview: {e}")
+        raise HTTPException(status_code=401, detail="Unauthorized") from e
+
+    try:
+        profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
+        user_name = profile.data.get("full_name", "User")
+        user_profile_pic = profile.data.get("profile_url")
+
+        query = supabase.table("Reports").select("*").eq("id", report_id)
+        if profile.data.get("role") != "admin":
+            query = query.eq("user_id", user.id)
+
+        report_res = query.maybe_single().execute()
+        if not report_res.data:
+            return RedirectResponse(url="/reports")
+
+        report = report_res.data
+        formatted_date = format_iso_date(report.get("created_at", ""))
+
+        prediction = report.get("career_prediction", "Software Engineering")
+        top_recommendations = [career.strip() for career in prediction.split(",") if career.strip()][:3]
+        if not top_recommendations:
+            top_recommendations = ["Software Engineering"]
+
+        primary_prediction = top_recommendations[0]
+
+        # Parse matching factors and choose the first-career points for concise one-page preview
+        matching_factor_raw = parse_json_maybe(report.get("matching_factor"), [])
+        if isinstance(matching_factor_raw, list) and matching_factor_raw and isinstance(matching_factor_raw[0], list):
+            matching_points = [str(x) for x in matching_factor_raw[0] if x]
+        elif isinstance(matching_factor_raw, list):
+            matching_points = [str(x) for x in matching_factor_raw if x]
+        else:
+            matching_points = []
+
+        # Parse roadmap and choose phases for primary/top recommendation
+        roadmap_raw = parse_json_maybe(report.get("roadmap"), [])
+        roadmap_phases = []
+        if isinstance(roadmap_raw, list):
+            for rm in roadmap_raw:
+                if not isinstance(rm, dict):
+                    continue
+                career_name = str(rm.get("career", "")).strip().lower()
+                if career_name == primary_prediction.strip().lower():
+                    phases = rm.get("phases", [])
+                    roadmap_phases = phases if isinstance(phases, list) else []
+                    break
+            if not roadmap_phases and roadmap_raw and isinstance(roadmap_raw[0], dict):
+                phases = roadmap_raw[0].get("phases", [])
+                roadmap_phases = phases if isinstance(phases, list) else []
+
+        # Fetch courses for primary recommendation only
+        nepal_courses = []
+        global_courses = []
+        courses_res = supabase.table("Courses_DB").select("*").ilike("career_category", f"%{primary_prediction}%").execute()
+        if courses_res.data:
+            for c in courses_res.data:
+                ctype = str(c.get("college_type", "local")).lower()
+                if ctype == "local":
+                    nepal_courses.append(c)
+                else:
+                    global_courses.append(c)
+
+        return templates.TemplateResponse("report_pdf_preview.html", {
+            "request": request,
+            "report": report,
+            "user_name": user_name,
+            "user_profile_pic": user_profile_pic,
+            "formatted_date": formatted_date,
+            "primary_prediction": primary_prediction,
+            "top_recommendations": top_recommendations,
+            "matching_points": matching_points,
+            "roadmap_phases": roadmap_phases,
+            "nepal_courses": nepal_courses,
+            "global_courses": global_courses
+        })
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error loading report pdf preview data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load report pdf preview.")
+
+@router.delete("/reports/{report_id}")
+async def delete_report(request: Request, report_id: str):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        report_id_val = int(report_id)
+        # Use authenticated client for RLS
+        auth_client = create_client(
+            url, key,
+            options=ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
+        )
+        res = auth_client.table("Reports").delete().eq("id", report_id_val).eq("user_id", user.id).execute()
+
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Report not found or permission denied")
+
+        return {"status": "success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Delete report error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete report")
+
+
+
+
+@router.post("/reports/{report_id}/roadmap-progress")
+async def update_roadmap_progress(request: Request, report_id: str):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        body = await request.json()
+        new_roadmap = body.get("roadmap")
+        if not new_roadmap:
+            raise HTTPException(status_code=400, detail="Missing roadmap data")
+
+        report_id_val = int(report_id)
+
+        # Use authenticated client so RLS allows the UPDATE
+        auth_client = create_client(
+            url, key,
+            options=ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
+        )
+        res = auth_client.table("Reports").update({"roadmap": new_roadmap}).eq("id", report_id_val).eq("user_id", user.id).execute()
+
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Report not found")
+
+        return {"status": "success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Roadmap update error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update progress")
