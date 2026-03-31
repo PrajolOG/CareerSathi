@@ -1,8 +1,7 @@
 import os
-import time
 import asyncio
 import itertools
-from typing import Optional, List
+from typing import Optional
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -53,12 +52,15 @@ class GeminiPool:
                 # --- Step 1: Primary Attempt (Primary Model) ---
                 try:
                     print(f"[GeminiPool] Attempting Primary Model with Key: {current_key[:8]}...")
+
+                    config_params = {}
+                    if system_instruction:
+                        config_params["system_instruction"] = system_instruction
+
                     response = await client.aio.models.generate_content(
                         model=self.primary_model,
                         contents=prompt,
-                        config=types.GenerateContentConfig(
-                            system_instruction=system_instruction
-                        ) if system_instruction else None
+                        config=types.GenerateContentConfig(**config_params) if config_params else None
                     )
                     return response
                 except Exception as e:
@@ -71,9 +73,7 @@ class GeminiPool:
                             response = await client.aio.models.generate_content(
                                 model=self.backup_model,
                                 contents=prompt,
-                                config=types.GenerateContentConfig(
-                                    system_instruction=system_instruction
-                                ) if system_instruction else None
+                                config=types.GenerateContentConfig(**config_params) if config_params else None
                             )
                             return response
                         except Exception as e2:
@@ -108,13 +108,16 @@ class GeminiPool:
                 # --- Step 1: Primary Attempt ---
                 try:
                     print(f"[GeminiPool] Streaming Primary Model with Key: {current_key[:8]}...")
+
+                    config_params = {}
+                    if system_instruction:
+                        config_params["system_instruction"] = system_instruction
+
                     # Note: We need to consume the first chunk to see if it hits a 429 immediately
                     stream = await client.aio.models.generate_content_stream(
                         model=self.primary_model,
                         contents=prompt,
-                        config=types.GenerateContentConfig(
-                            system_instruction=system_instruction
-                        ) if system_instruction else None
+                        config=types.GenerateContentConfig(**config_params) if config_params else None
                     )
                     # We'll try to yield from it
                     async for chunk in stream:
@@ -130,9 +133,7 @@ class GeminiPool:
                             stream = await client.aio.models.generate_content_stream(
                                 model=self.backup_model,
                                 contents=prompt,
-                                config=types.GenerateContentConfig(
-                                    system_instruction=system_instruction
-                                ) if system_instruction else None
+                                config=types.GenerateContentConfig(**config_params) if config_params else None
                             )
                             async for chunk in stream:
                                 yield chunk

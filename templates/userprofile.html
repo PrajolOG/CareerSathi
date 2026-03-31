@@ -12,6 +12,12 @@
 <div class="profile-wrapper">
     <div class="profile-content-grid">
 
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">Student Dashboard</h1>
+            <p class="dashboard-subtitle">Welcome back, {{ user_name.split(' ')[0] }}! Here's your career progress and AI insights.</p>
+        </header>
+
         <!-- Dashboard Column 1: Info & Stats (Phase 1) -->
         <div class="profile-sidebar-column identity-column">
             <div class="identity-card">
@@ -64,7 +70,7 @@
 
                 <div class="resource-grid">
                     {% if resources %}
-                    {% for item in resources[:4] %}
+                    {% for item in resources[:3] %}
                     <a href="{{ item.presigned_url }}" target="_blank" class="resource-card">
                         <div class="resource-icon">
                             {% if item.is_image %}
@@ -88,7 +94,7 @@
                     </a>
                     {% endfor %}
 
-                    {% if resources|length > 4 %}
+                    {% if resources|length > 3 %}
                     <a href="/my-stuff" class="btn-view-all">
                         View All Items ({{ resources|length }}) <i class="fa-solid fa-arrow-right"></i>
                     </a>

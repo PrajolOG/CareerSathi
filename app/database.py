@@ -12,3 +12,7 @@ if not url or not key:
 
 # Create the Supabase client
 supabase: Client = create_client(url, key)
+
+# Admin role client (uses service role key, bypasses RLS)
+service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+supabase_admin: Client = create_client(url, service_key) if service_key else None

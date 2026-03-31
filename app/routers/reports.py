@@ -8,6 +8,8 @@ from app.schemas import ReportGenerationRequest
 import json
 from app.services.ml_service import predict_career
 from app.services.gemini_pool import gemini_pool
+from app.services.tavily_service import tavily_roadmap_service
+from app.services.email_service import email_service
 import time
 
 router = APIRouter(tags=["Student Reports"])
@@ -38,7 +40,7 @@ def parse_json_maybe(raw_value, default):
             return default
     return default
 
-async def process_report_background(report_data: ReportGenerationRequest, user_id: str, access_token: str):
+async def process_report_background(report_data: ReportGenerationRequest, user_id: str, access_token: str, user_email: str = None):
     """Heavy lifting logic moved to background to prevent UI blocking."""
     try:
         # Create scoped client for the background session
@@ -106,7 +108,7 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
         except Exception as embed_e:
              print(f"Error saving user features background: {embed_e}")
              
-        # 3. AI Enrichment (Gemini)
+        # 3. AI Enrichment (Gemini + Tavily grounding)
         start_ai = time.perf_counter_ns()
         enriched_data = {"matching_factors": [], "roadmaps": []}
         try:
@@ -122,7 +124,16 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             TASK:
             For each of these 3 careers, provide:
             1. matching_factors (list of strings): Provide 3 specific bullet points (sentences) explaining WHY this career fits this student based on their grades, stream, and interests.
-            2. A roadmap (object): 4 phases (Foundation, Core Skills, Specialization, Career Entry) with 3 specific steps each (format as "Title: Description"). Use icons from FontAwesome (e.g., fa-code, fa-seedling). For each phase, also provide a relevant 'course_recommendation' object with a 'name' and 'link' that would help the student achieve that phase.
+            2. A roadmap (object): 4 phases (Foundation, Core Skills, Specialization, Career Entry) with 3 specific steps each (format as "Title: Description"). Use icons from FontAwesome (e.g., fa-code, fa-seedling).
+            3. For each phase, also provide a relevant 'course_recommendation' object with:
+               - 'name': a short realistic course or learning path title
+               - 'search_query': a focused web-search query that an external search tool can use to find the best course across the web
+
+            CRITICAL RULES FOR WEB SEARCH:
+            - The backend will search across the full web, so do NOT limit the query to one website.
+            - Do NOT mention specific websites or domains such as Coursera, YouTube, Udemy, edX, or any URL.
+            - Do NOT include a final link in the JSON output. The backend will fill the link after web search.
+            - Make each search_query specific to that phase's actual skills, tools, and learning goals.
 
             OUTPUT FORMAT (Strict JSON):
             {{
@@ -141,8 +152,8 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
                                 "color": "#10B981", 
                                 "steps": ["step1", "step2", "step3"],
                                 "course_recommendation": {{
-                                    "name": "Introduction to Economics",
-                                    "link": "https://coursera.org/..."
+                                    "name": "Python and Statistics for Data Science",
+                                    "search_query": "beginner online course for python statistics and data analysis for aspiring data scientists"
                                 }}
                             }},
                             ...3 more phases
@@ -161,6 +172,12 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
             if "```json" in raw_text:
                 raw_text = raw_text.split("```json")[1].split("```")[0].strip()
             enriched_data = json.loads(raw_text)
+            try:
+                enriched_data["roadmaps"] = await tavily_roadmap_service.enrich_roadmaps(
+                    enriched_data.get("roadmaps", [])
+                )
+            except Exception as tavily_e:
+                print(f"Tavily roadmap grounding failed: {tavily_e}")
         except Exception as ai_e:
             print(f"AI Enrichment background failed: {ai_e}")
         
@@ -184,6 +201,14 @@ async def process_report_background(report_data: ReportGenerationRequest, user_i
         }
         auth_client.table("Reports").insert(new_report).execute()
         print(f"Successfully generated background report for user {user_id}")
+        
+        try:
+            profile_res = auth_client.table("Profiles").select("full_name").eq("id", user_id).single().execute()
+            full_name = profile_res.data.get("full_name", "Student") if profile_res.data else "Student"
+            if user_email:
+                email_service.send_report_ready_email(user_email, full_name)
+        except Exception as email_e:
+            print(f"Failed to send report ready email: {email_e}")
 
     except Exception as e:
         print(f"BACKGROUND TASK ERROR: {e}")
@@ -209,7 +234,7 @@ async def generate_report(request: Request, report_data: ReportGenerationRequest
             )
 
         # Start the background task
-        background_tasks.add_task(process_report_background, report_data, user.id, access_token)
+        background_tasks.add_task(process_report_background, report_data, user.id, access_token, user.email)
         
         # Return immediately
         return JSONResponse(status_code=202, content={

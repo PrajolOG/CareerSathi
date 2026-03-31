@@ -20,4 +20,8 @@ dependencies = [
     "minio>=7.2.7",
     "opencv-python-headless>=4.10.0.84",
     "paddleocr>=2.7,<3",
+    "decorator>=5.2.1",
+    "paddlepaddle-gpu>=2.6.2",
+    "astor>=0.8.1",
+    "tavily-python>=0.7.23",
 ]

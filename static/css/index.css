@@ -34,6 +34,12 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 body.landing-body {
@@ -502,6 +508,7 @@ body.landing-body {
 .gradient-text {
     background: var(--brand-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
 }
@@ -1546,6 +1553,7 @@ body.landing-body {
 .cta-accent {
     background: linear-gradient(135deg, #003893, #2563eb 55%, #38bdf8 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 

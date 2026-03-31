@@ -6,53 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Career Sathi</title>
 
-    <!-- Link to the separated CSS -->
     <link rel="stylesheet" href="/static/css/newuserwelcome.css">
-
-    <!-- FontAwesome & Google Fonts (Inter) -->
+    <link rel="icon" href="/static/assets/cc_ico.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-    <div class="onboarding-wrapper">
+    <!-- Parent Card Container -->
+    <div class="onboarding-card">
 
-        <!-- LEFT PANEL: Dynamic Background Images -->
+        <!-- Left Side Image Section -->
         <div class="image-section">
-            <div class="brand-logo-overlay">
-                <!-- Using a generic icon if the image fails to load -->
-                <img src="/static/assets/careersathi.png" alt="Logo">
-            </div>
-
-            <div class="image-overlay"></div>
-
-            <!-- Preloaded Placeholder Images from Unsplash -->
-            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
-                class="bg-image active" id="bg-1" alt="Student Counseling">
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
-                class="bg-image" id="bg-2" alt="Data Dashboard">
-            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
-                class="bg-image" id="bg-3" alt="Machine Learning Match">
-            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
-                class="bg-image" id="bg-4" alt="Success Roadmap">
-
-            <!-- Optional Quote Overlay for a premium feel -->
-            <div class="quote-box">
-                <p>"The future depends on what you do today. Let AI guide you to the perfect academic path seamlessly."
-                </p>
-                <div class="quote-author">Career Sathi Vision</div>
-            </div>
+            <img src="/static/assets/newuserwelcome.jpeg" alt="Welcome to Career Sathi" class="welcome-bg-image">
+            <div class="card-overlay"></div>
         </div>
 
-        <!-- RIGHT PANEL: Onboarding Content -->
+        <!-- Logo top left -->
+        <div class="brand-logo-absolute">
+            <img src="/static/assets/careersathi.png" alt="Career Sathi Logo">
+        </div>
+
+        <!-- Right Side Content Area (Empty sky area of your image) -->
         <div class="content-section">
 
             <div class="content-body">
                 <!-- Slide 1 -->
                 <div class="slide-content active" id="content-1">
-                    <span class="step-badge"><i class="fa-solid fa-robot" style="margin-right:6px;"></i> Step 1 of
-                        4</span>
+                    <span class="step-badge"><i class="fa-solid fa-robot" style="margin-right:6px;"></i> Welcome</span>
                     <h1>Discover yourself through natural chat.</h1>
                     <p>No more lengthy, boring forms. Have a natural conversation with our intelligent AI counselor. It
                         dynamically understands your academic background, strengths, and genuine interests.</p>
@@ -64,8 +45,8 @@
 
                 <!-- Slide 2 -->
                 <div class="slide-content" id="content-2">
-                    <span class="step-badge"><i class="fa-solid fa-brain" style="margin-right:6px;"></i> Step 2 of
-                        4</span>
+                    <span class="step-badge"><i class="fa-solid fa-brain" style="margin-right:6px;"></i>
+                        Contextual</span>
                     <h1>Context saved automatically.</h1>
                     <p>After your session, Career Sathi safely extracts your unique profile from your +2 streams to your
                         psychometric traits. Next time you log in, the AI remembers exactly who you are.</p>
@@ -77,35 +58,58 @@
 
                 <!-- Slide 3 -->
                 <div class="slide-content" id="content-3">
-                    <span class="step-badge"><i class="fa-solid fa-chart-pie" style="margin-right:6px;"></i> Step 3 of
-                        4</span>
+                    <span class="step-badge"><i class="fa-solid fa-chart-pie" style="margin-right:6px;"></i>
+                        Precision</span>
                     <h1>Data-driven matchmaking.</h1>
-                    <p>Your profile is securely processed by our custom-trained models. We compare your
-                        metrics against successful alumni to output highly accurate career match percentages.</p>
+                    <p>Your profile is securely processed by our custom-trained models. We compare your metrics against
+                        successful alumni to output highly accurate career match percentages.</p>
                     <ul class="feature-list">
                         <li><i class="fa-solid fa-check"></i> AI/ML Algorithms</li>
                         <li><i class="fa-solid fa-check"></i> High Accuracy Predictions</li>
                     </ul>
                 </div>
 
-                <!-- Slide 4 -->
+                <!-- Slide 4: AVATAR SELECTION -->
                 <div class="slide-content" id="content-4">
-                    <span class="step-badge"><i class="fa-solid fa-map-location-dot" style="margin-right:6px;"></i> Step
-                        4 of 4</span>
-                    <h1>Your personalized roadmap.</h1>
-                    <p>Knowing your perfect career is just the beginning. We dynamically build semester-by-semester
-                        roadmaps and recommend local universities tailored specifically to your goals.</p>
-                    <ul class="feature-list">
-                        <li><i class="fa-solid fa-check"></i> Local University Referrals</li>
-                        <li><i class="fa-solid fa-check"></i> Step-by-Step Action Plans</li>
-                    </ul>
+                    <span class="step-badge"><i class="fa-solid fa-user-astronaut" style="margin-right:6px;"></i> Final
+                        Step</span>
+                    <h1>Personalize your profile.</h1>
+                    <p>You're almost ready to go! Choose an avatar that best represents you. You can always change this
+                        later in your settings.</p>
+
+                    <div class="avatar-selection-area">
+                        <p>Select your avatar:</p>
+                        <div class="avatar-grid">
+                            <div class="avatar-option selected" onclick="selectAvatar(this, 'avatar1.png')">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4"
+                                    alt="Avatar 1">
+                            </div>
+                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar2.png')">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=ffdfbf"
+                                    alt="Avatar 2">
+                            </div>
+                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar3.png')">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Jude&backgroundColor=c0aede"
+                                    alt="Avatar 3">
+                            </div>
+                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar4.png')">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Nala&backgroundColor=ffd5dc"
+                                    alt="Avatar 4">
+                            </div>
+                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar5.png')">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Destiny&backgroundColor=d1d4f9"
+                                    alt="Avatar 5">
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedAvatar" value="avatar1.png">
+                    </div>
                 </div>
             </div>
 
             <!-- Bottom Controls -->
             <div class="controls-wrapper">
                 <div class="controls-header">
-                    <!-- Progress Indicators (Lines instead of dots for modern look) -->
+                    <!-- Progress Indicators -->
                     <div class="indicators">
                         <div class="dot active" onclick="goToSlide(1)"></div>
                         <div class="dot" onclick="goToSlide(2)"></div>
@@ -116,7 +120,7 @@
                     <!-- Buttons -->
                     <div class="btn-group">
                         <button class="btn-skip" onclick="skipToApp()">Skip</button>
-                        <button class="btn-primary" id="nextBtn" onclick="nextSlide()">
+                        <button class="btn-primary" id="nextBtn" onclick="nextAction()">
                             Continue <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
@@ -132,42 +136,47 @@
         const totalSlides = 4;
 
         function goToSlide(n) {
-            // Update Text Content
             document.getElementById(`content-${currentSlide}`).classList.remove('active');
             document.getElementById(`content-${n}`).classList.add('active');
 
-            // Update Background Image
-            document.getElementById(`bg-${currentSlide}`).classList.remove('active');
-            document.getElementById(`bg-${n}`).classList.add('active');
-
-            // Update Line Indicators
             document.querySelectorAll('.dot').forEach((dot, index) => {
                 dot.classList.toggle('active', index === n - 1);
             });
 
             currentSlide = n;
 
-            // Update Main Button Status
             const btn = document.getElementById('nextBtn');
+            const skipBtn = document.querySelector('.btn-skip');
+
             if (currentSlide === totalSlides) {
                 btn.innerHTML = 'Get Started <i class="fa-solid fa-paper-plane"></i>';
-                // Trigger action for the final step (e.g., go to dashboard)
-                btn.onclick = () => window.location.href = '/chat';
+                skipBtn.style.visibility = 'hidden';
             } else {
                 btn.innerHTML = 'Continue <i class="fa-solid fa-arrow-right"></i>';
-                btn.onclick = () => nextSlide();
+                skipBtn.style.visibility = 'visible';
             }
         }
 
-        function nextSlide() {
+        function nextAction() {
             if (currentSlide < totalSlides) {
                 goToSlide(currentSlide + 1);
+            } else {
+                const chosenAvatar = document.getElementById('selectedAvatar').value;
+                console.log("Saving user profile with avatar:", chosenAvatar);
+                window.location.href = '/chat';
             }
         }
 
         function skipToApp() {
-            // Bypass the onboarding and jump straight to the app
             window.location.href = '/chat';
+        }
+
+        function selectAvatar(element, avatarName) {
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            document.getElementById('selectedAvatar').value = avatarName;
         }
     </script>
 </body>

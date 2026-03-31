@@ -214,6 +214,11 @@ body.login-body {
     font-size: 0.76rem;
     font-weight: 700;
     color: #2563eb;
+    text-decoration: none;
+}
+
+.forgot-text:hover {
+    text-decoration: underline;
 }
 
 .input-wrap {

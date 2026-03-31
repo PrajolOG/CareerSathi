@@ -16,12 +16,34 @@
 .profile-content-grid {
     display: grid;
     grid-template-columns: 350px 1fr 0.8fr;
-    grid-template-rows: 1fr;
+    grid-template-rows: auto 1fr;
     gap: 24px;
     width: 100%;
     max-width: 1800px;
-    height: 100%;
+    height: auto;
     align-items: stretch;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+.dashboard-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 500;
 }
 
 .profile-sidebar-column {

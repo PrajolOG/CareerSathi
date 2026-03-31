@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from app.routers.auth import verify_admin_status
-from app.database import supabase
+from app.database import supabase, supabase_admin
 from datetime import datetime, timedelta, timezone
 
 # Adding Depends(verify_admin_status) here protects EVERY route in this file automatically!
@@ -38,6 +38,7 @@ def admin_dashboard(request: Request):
     new_reports = reports_res.count if reports_res.count is not None else 0
 
     # 4. Total Storage
+    from app.minio_handler import minio_client
     storage_bytes = minio_client.get_total_storage_bytes()
     total_storage = f"{(storage_bytes / (1024 * 1024 * 1024)):.2f} GB" if storage_bytes > (1024 * 1024 * 1024) else f"{(storage_bytes / (1024 * 1024)):.2f} MB"
 
@@ -292,22 +293,21 @@ async def update_user_profile(request: Request, user_id: str):
 
 @router.delete("/api/users/{user_id}")
 async def delete_user(request: Request, user_id: str):
-    # Delete related data first
+    """
+    Deletes direct from auth.users using the admin client. 
+    The database triggers ON DELETE CASCADE for Profiles, Reports, Chat etc.
+    """
+    if not supabase_admin:
+        return {"success": False, "message": "Admin client not configured"}
+
     try:
-        supabase.table("Chat_History").delete().eq("user_id", user_id).execute()
-    except Exception:
-        pass
-    try:
-        supabase.table("Reports").delete().eq("user_id", user_id).execute()
-    except Exception:
-        pass
-    try:
-        supabase.table("User_Features").delete().eq("user_id", user_id).execute()
-    except Exception:
-        pass
-    # Delete profile
-    supabase.table("Profiles").delete().eq("id", user_id).execute()
-    return {"success": True}
+        # This deletes the user from Supabase Auth
+        # It triggers the cascading delete we set up in SQL
+        supabase_admin.auth.admin.delete_user(user_id)
+        return {"success": True}
+    except Exception as e:
+        print(f"Error deleting user {user_id}: {e}")
+        return {"success": False, "message": str(e)}
 
 # ---------- MinIO Database Management ----------
 

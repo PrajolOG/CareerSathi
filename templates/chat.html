@@ -22,12 +22,26 @@
         animation: blink 1.2s infinite both;
     }
 
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
 
     @keyframes blink {
-        0%, 100% { opacity: 0.25; transform: translateY(0); }
-        50%       { opacity: 1;    transform: translateY(-5px); }
+
+        0%,
+        100% {
+            opacity: 0.25;
+            transform: translateY(0);
+        }
+
+        50% {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
     }
 
     .ai-message:has(.loader-dots) {
@@ -105,7 +119,8 @@
             {% else %}
             <!-- Initial Greetings -->
             <div class="message ai-message">
-                Namaste! I analyzed your profile context and I am ready to guide you. Ask about careers, colleges, scholarships, or upload your academic documents for personalized support.
+                Namaste! I analyzed your profile context and I am ready to guide you. Ask about careers, colleges,
+                scholarships, or upload your academic documents for personalized support.
             </div>
             {% endif %}
         </div>
@@ -167,7 +182,7 @@
     }
 
     // --- NEW: Textarea Auto-Resize ---
-    userInput.addEventListener('input', function() {
+    userInput.addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
         if (this.scrollHeight > 150) {
@@ -178,7 +193,7 @@
     });
 
     // Handle Enter to Submit, Shift+Enter for Newline
-    userInput.addEventListener('keydown', function(e) {
+    userInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             chatForm.dispatchEvent(new Event('submit'));
@@ -384,7 +399,7 @@
                                             <p style="margin: 0; font-size: 13px; color: #1E3A8A; font-weight: 500;">AI is building your report. It will appear in your dashboard in a few moments.</p>
                                         </div>
                                         <a href="/reports" style="background: var(--brand-primary); color: white; padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
-                                            Go to Dashboard
+                                            Go to Reports
                                         </a>
                                     </div>
                                 `;
@@ -433,7 +448,7 @@
     function addFileBubble(fileName, type, insertBeforeElement = null, skipScroll = false) {
         const fileDiv = document.createElement('div');
         fileDiv.classList.add('document-bubble');
-        
+
         let iconClass = 'fa-solid fa-image';
 
         fileDiv.innerHTML = `<div class="doc-icon-wrapper"><i class="${iconClass}"></i></div><span class="document-name">${fileName}</span>`;
