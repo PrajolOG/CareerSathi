@@ -9,10 +9,12 @@ def build_upload_message(
     file_name: str,
     object_name: str,
     bucket_name: str,
+    file_type: str = "image",
 ) -> str:
+    normalized_type = (file_type or "image").strip().lower() or "image"
     meta = {
-        "type": "image",
-        "file_name": (file_name or "image").strip() or "image",
+        "type": normalized_type,
+        "file_name": (file_name or "document").strip() or "document",
         "object_name": (object_name or "").strip(),
         "bucket_name": (bucket_name or "").strip(),
     }

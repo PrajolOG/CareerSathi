@@ -33,19 +33,19 @@ body {
 .onboarding-card {
     position: relative;
     width: 100%;
-    max-width: 1150px;
-    height: 85vh;
-    max-height: 700px;
+    max-width: 1600px;
+    height: 92vh;
+    max-height: 950px;
     border-radius: 32px;
     overflow: hidden;
     box-shadow: 0 40px 100px rgba(15, 23, 42, 0.15);
     display: flex;
-    background-color: var(--white);
+    background: transparent;
 }
 
 .image-section {
     position: relative;
-    width: 48%; /* Slightly less than 50% for a nicer look */
+    width: 52%;
     height: 100%;
     overflow: hidden;
 }
@@ -61,8 +61,7 @@ body {
 .card-overlay {
     position: absolute;
     inset: 0;
-    /* Overlay that fades image towards the content section */
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.8) 85%, rgba(255, 255, 255, 1) 100%);
+    background: transparent;
     z-index: 1;
     pointer-events: none;
 }
@@ -76,7 +75,7 @@ body {
 }
 
 .brand-logo-absolute img {
-    height: 48px;
+    height: 64px;
     width: auto;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
@@ -86,11 +85,13 @@ body {
 .content-section {
     position: relative;
     z-index: 10;
-    width: 52%; /* Balance the image section */
-    padding: 3rem 4rem 3rem 2rem;
+    width: 48%;
+    padding: 4rem 4.5rem 4rem 3rem;
     display: flex;
     flex-direction: column;
-    background: var(--white);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.85) 15%, rgba(255, 255, 255, 0.98) 30%, rgba(255, 255, 255, 1) 45%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .content-body {

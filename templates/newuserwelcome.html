@@ -73,35 +73,24 @@
                 <div class="slide-content" id="content-4">
                     <span class="step-badge"><i class="fa-solid fa-user-astronaut" style="margin-right:6px;"></i> Final
                         Step</span>
-                    <h1>Personalize your profile.</h1>
+                    <h1>Welcome, {{ user_name or 'User' }}!</h1>
                     <p>You're almost ready to go! Choose an avatar that best represents you. You can always change this
                         later in your settings.</p>
 
                     <div class="avatar-selection-area">
                         <p>Select your avatar:</p>
                         <div class="avatar-grid">
-                            <div class="avatar-option selected" onclick="selectAvatar(this, 'avatar1.png')">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4"
-                                    alt="Avatar 1">
+                            {% if minio_avatars %}
+                            {% for avatar_url in minio_avatars %}
+                            <div class="avatar-option {% if loop.first %}selected{% endif %}" data-url="{{ avatar_url }}">
+                                <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
                             </div>
-                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar2.png')">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=ffdfbf"
-                                    alt="Avatar 2">
-                            </div>
-                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar3.png')">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Jude&backgroundColor=c0aede"
-                                    alt="Avatar 3">
-                            </div>
-                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar4.png')">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Nala&backgroundColor=ffd5dc"
-                                    alt="Avatar 4">
-                            </div>
-                            <div class="avatar-option" onclick="selectAvatar(this, 'avatar5.png')">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Destiny&backgroundColor=d1d4f9"
-                                    alt="Avatar 5">
-                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="empty-avatar-msg">No avatars available. You can skip this step.</p>
+                            {% endif %}
                         </div>
-                        <input type="hidden" id="selectedAvatar" value="avatar1.png">
+                        <input type="hidden" id="selectedAvatar" value="{{ minio_avatars[0] if minio_avatars else '' }}">
                     </div>
                 </div>
             </div>
@@ -162,7 +151,13 @@
                 goToSlide(currentSlide + 1);
             } else {
                 const chosenAvatar = document.getElementById('selectedAvatar').value;
-                console.log("Saving user profile with avatar:", chosenAvatar);
+                if (chosenAvatar) {
+                    fetch('/welcome/set-avatar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profile_url: chosenAvatar })
+                    }).catch(err => console.error('Avatar save error:', err));
+                }
                 window.location.href = '/chat';
             }
         }
@@ -171,13 +166,13 @@
             window.location.href = '/chat';
         }
 
-        function selectAvatar(element, avatarName) {
-            document.querySelectorAll('.avatar-option').forEach(opt => {
-                opt.classList.remove('selected');
+        document.querySelectorAll('.avatar-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('selectedAvatar').value = this.getAttribute('data-url');
             });
-            element.classList.add('selected');
-            document.getElementById('selectedAvatar').value = avatarName;
-        }
+        });
     </script>
 </body>
 

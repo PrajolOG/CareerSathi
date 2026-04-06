@@ -129,6 +129,7 @@
         {% include 'partials/chat_input.html' %}
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -141,10 +142,61 @@
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const fileIcon = document.getElementById('fileIcon');
     const sendBtn = document.querySelector('.send-btn');
+    const imageUpload = document.getElementById('imageUpload');
+    const pdfUpload = document.getElementById('pdfUpload');
     const imgUpload = document.getElementById('imgUpload');
+    const attachMenu = document.getElementById('attachMenu');
     const uploadMetaPrefix = "__CS_UPLOAD_META__:";
 
     const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
+
+    function getFileType(file) {
+        if (!file) return 'image';
+
+        const type = (file.type || '').toLowerCase();
+        const name = (file.name || '').toLowerCase();
+        return type === 'application/pdf' || name.endsWith('.pdf') ? 'pdf' : 'image';
+    }
+
+    function getFileIcon(type) {
+        return type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-image';
+    }
+
+    // --- NEW: Toggle Attachment Menu ---
+    function toggleAttachMenu(event) {
+        event.stopPropagation();
+        attachMenu.classList.toggle('active');
+        const icon = document.getElementById('attachBtn').querySelector('i');
+        icon.classList.toggle('fa-plus');
+        icon.classList.toggle('fa-xmark');
+    }
+
+    // --- NEW: Trigger Uploads ---
+    function triggerUpload(type) {
+        if (type === 'image') {
+            imageUpload.click();
+        } else if (type === 'pdf') {
+            pdfUpload.click();
+        }
+        attachMenu.classList.remove('active');
+        resetAttachBtn();
+    }
+
+    function resetAttachBtn() {
+        const icon = document.getElementById('attachBtn').querySelector('i');
+        if (icon) {
+            icon.classList.add('fa-plus');
+            icon.classList.remove('fa-xmark');
+        }
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (attachMenu && !attachMenu.contains(e.target) && !document.getElementById('attachBtn').contains(e.target)) {
+            attachMenu.classList.remove('active');
+            resetAttachBtn();
+        }
+    });
 
     function parseUploadMeta(rawText) {
         const cleanRaw = (rawText || '').trim();
@@ -152,11 +204,11 @@
         if (!cleanRaw.startsWith(uploadMetaPrefix)) {
             const legacyUploadMatch = cleanRaw.match(/^Uploaded image:\s*(.+)$/i);
             if (legacyUploadMatch) {
-                return { meta: { file_name: legacyUploadMatch[1].trim() || 'uploaded-image.png' }, text: '' };
+                return { meta: { file_name: legacyUploadMatch[1].trim() || 'uploaded-image.png', type: 'image' }, text: '' };
             }
 
             if (cleanRaw === 'Sent a message with an uploaded academic image.') {
-                return { meta: { file_name: 'uploaded-image.png' }, text: '' };
+                return { meta: { file_name: 'uploaded-image.png', type: 'image' }, text: '' };
             }
 
             return { meta: null, text: cleanRaw };
@@ -216,8 +268,9 @@
             let content = parsedUpload.text;
 
             if (isUserMessage && parsedUpload.meta) {
-                const fileName = parsedUpload.meta.file_name || 'uploaded-image.png';
-                addFileBubble(fileName, 'img', msg, true);
+                const fileName = parsedUpload.meta.file_name || 'uploaded-document';
+                const fileType = parsedUpload.meta.type || 'image';
+                addFileBubble(fileName, fileType, msg, true);
             }
 
             if (!content) {
@@ -254,21 +307,30 @@
         scrollToBottom();
     });
 
-    // 2. Handle Image Selection Preview
+    // 2. Handle File Selection Preview
     function handleFileSelection(input) {
         if (input && input.files && input.files[0]) {
             const file = input.files[0];
+            const fileType = getFileType(file);
             fileNameDisplay.textContent = file.name;
-            fileIcon.className = 'fa-solid fa-image';
+            fileIcon.className = getFileIcon(fileType);
             filePreview.style.display = 'flex';
         }
     }
 
+    if (imageUpload) {
+        imageUpload.addEventListener('change', () => handleFileSelection(imageUpload));
+    }
+    if (pdfUpload) {
+        pdfUpload.addEventListener('change', () => handleFileSelection(pdfUpload));
+    }
     if (imgUpload) {
         imgUpload.addEventListener('change', () => handleFileSelection(imgUpload));
     }
 
     function clearFileSelection() {
+        if (imageUpload) imageUpload.value = '';
+        if (pdfUpload) pdfUpload.value = '';
         if (imgUpload) imgUpload.value = '';
         filePreview.style.display = 'none';
     }
@@ -277,11 +339,18 @@
     chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const message = userInput.value.trim();
-        const hasImg = imgUpload && imgUpload.files.length > 0;
+        
+        let selectedFile = null;
+        if (imageUpload && imageUpload.files.length > 0) selectedFile = imageUpload.files[0];
+        else if (pdfUpload && pdfUpload.files.length > 0) selectedFile = pdfUpload.files[0];
+        else if (imgUpload && imgUpload.files.length > 0) selectedFile = imgUpload.files[0];
 
-        if (!message && !hasImg) return;
+        const hasUpload = !!selectedFile;
+        const selectedFileType = getFileType(selectedFile);
 
-        if (hasImg) addFileBubble(imgUpload.files[0].name, 'img');
+        if (!message && !hasUpload) return;
+
+        if (hasUpload) addFileBubble(selectedFile.name, selectedFileType);
         if (message) addMessage(message, 'user');
 
         if (sendBtn) sendBtn.disabled = true;
@@ -297,12 +366,12 @@
         scrollToBottom();
 
         try {
-            const isImageFlow = hasImg;
+            const isUploadFlow = hasUpload;
             let response;
 
-            if (isImageFlow) {
+            if (isUploadFlow) {
                 const formData = new FormData();
-                formData.append('image', imgUpload.files[0]);
+                formData.append('image', selectedFile);
                 formData.append('message', message);
                 response = await fetch('/chat/image', {
                     method: 'POST',
@@ -336,7 +405,7 @@
                     aiMsgDiv.innerHTML = '';
                 }
 
-                if (!isImageFlow && fullAiResponse.includes("```json") && !isGeneratingReport) {
+                if (!isUploadFlow && fullAiResponse.includes("```json") && !isGeneratingReport) {
                     isGeneratingReport = true;
                     const preJsonText = fullAiResponse.split("```json")[0].trim();
                     aiMsgDiv.innerHTML = marked.parse(preJsonText);
@@ -365,7 +434,7 @@
                 }
             }
 
-            if (!isImageFlow) {
+            if (!isUploadFlow) {
                 jsonRegex.lastIndex = 0;
                 let match;
                 let lastMatch;
@@ -449,7 +518,7 @@
         const fileDiv = document.createElement('div');
         fileDiv.classList.add('document-bubble');
 
-        let iconClass = 'fa-solid fa-image';
+        const iconClass = getFileIcon(type);
 
         fileDiv.innerHTML = `<div class="doc-icon-wrapper"><i class="${iconClass}"></i></div><span class="document-name">${fileName}</span>`;
 

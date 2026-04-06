@@ -173,14 +173,11 @@ async def get_settings_page(request: Request):
         # Fetch profile data to pass to the settings page
         profile = supabase.table("Profiles").select("*").eq("id", user.id).single().execute()
         
-        # Fetch avatars from both buckets to ensure all options are available
-        avatars_1 = minio_client.get_all_images("user-icons")
-        avatars_2 = minio_client.get_all_images("careersathi")
-        minio_images = list(set(avatars_1 + avatars_2)) # deduplicate just in case
+        minio_avatars = minio_client.get_all_images("user-icons")
         
         return templates.TemplateResponse("settings.html", {
             "request": request,
-            "minio_avatars": minio_images,
+            "minio_avatars": minio_avatars,
             "user_name": profile.data.get("full_name", "User"),
             "user_email": user.email,
             "grade_level": profile.data.get("grade_level", ""),

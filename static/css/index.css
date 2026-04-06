@@ -843,6 +843,93 @@ body.landing-body {
     gap: 10px;
 }
 
+/* University Finder Card */
+.sc-uni {
+    border: none;
+    box-shadow: var(--shadow-sm);
+    background: var(--surface);
+}
+
+.sc-uni-body {
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+}
+
+.sc-uni-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #eef1f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #1e293b;
+    margin-bottom: 24px;
+}
+
+.sc-uni-title {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+}
+
+.sc-uni-desc {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.sc-uni-footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: auto;
+}
+
+.sc-uni-avatars {
+    display: flex;
+    align-items: center;
+}
+
+.sc-uni-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border: 2.5px solid #fff;
+    color: #475569;
+    background: #e8ecf1;
+    letter-spacing: 0.02em;
+}
+
+.sc-uni-avatar + .sc-uni-avatar {
+    margin-left: -10px;
+}
+
+.sc-uni-avatar--dark {
+    background: #1e293b;
+    color: #fff;
+}
+
+.sc-uni-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+    letter-spacing: 0.01em;
+}
+
 
 /* =========================================
    COMMON SECTION STYLES

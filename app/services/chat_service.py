@@ -45,7 +45,7 @@ class ChatService:
         clean_ocr_text = (ocr_text or "").strip()
 
         if not clean_user_message and not clean_ocr_text:
-            yield "Please type a message or upload a document image."
+            yield "Please type a message or upload a document."
             return
 
         # Live-load the system prompt from disk
@@ -131,7 +131,7 @@ class ChatService:
         if ai_response_text:
             db_user_message = user_message_for_db if user_message_for_db is not None else clean_user_message
             if not db_user_message and clean_ocr_text:
-                db_user_message = "Uploaded an image for OCR analysis."
+                db_user_message = "Uploaded a document for OCR analysis."
 
             self._save_to_db(db_client, user_id, "user", db_user_message)
             self._save_to_db(db_client, user_id, "ai", ai_response_text)
@@ -229,8 +229,8 @@ class ChatService:
                 if role == "user":
                     upload_meta, clean_text = parse_upload_message(message_text)
                     if upload_meta is not None:
-                        # Keep OCR/image context in history without leaking metadata marker syntax.
-                        message_text = clean_text or "User uploaded an academic image."
+                        # Keep OCR/upload context in history without leaking metadata marker syntax.
+                        message_text = clean_text or "User uploaded an academic document."
 
                 if message_text:
                     formatted_history.append(types.Content(role=role, parts=[types.Part(text=message_text)]))

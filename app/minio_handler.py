@@ -1,10 +1,14 @@
 import os
+from datetime import timedelta
+
 from minio import Minio
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class MinioHandler:
+    _IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')
+
     def __init__(self):
         self.endpoint = os.getenv("MINIO_ENDPOINT", "127.0.0.1:9000")
         self.access_key = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
@@ -19,31 +23,64 @@ class MinioHandler:
             secure=self.secure
         )
 
+    def _get_bucket_object_details(
+        self,
+        bucket_name: str = None,
+        *,
+        images_only: bool = False,
+        log_missing_bucket: bool = False,
+        ignore_presign_errors: bool = True,
+    ):
+        """Return normalized metadata for objects in a bucket."""
+        target_bucket = bucket_name or self.bucket_name
+
+        if not self.client.bucket_exists(target_bucket):
+            if log_missing_bucket:
+                print(f"Bucket {target_bucket} does not exist.")
+            return []
+
+        objects = self.client.list_objects(target_bucket, recursive=True)
+        results = []
+
+        for obj in objects:
+            object_name = obj.object_name or ""
+            is_image = object_name.lower().endswith(self._IMAGE_EXTENSIONS)
+
+            if images_only and not is_image:
+                continue
+
+            presigned_url = ""
+            try:
+                presigned_url = self.client.presigned_get_object(
+                    target_bucket,
+                    object_name,
+                    expires=timedelta(days=7)
+                )
+            except Exception:
+                if not ignore_presign_errors:
+                    raise
+
+            size_mb = obj.size / (1024 * 1024) if obj.size else 0
+            results.append({
+                "name": object_name,
+                "size": f"{size_mb:.2f} MB",
+                "last_modified": obj.last_modified,
+                "presigned_url": presigned_url,
+                "is_image": is_image,
+            })
+
+        return results
+
     def get_all_images(self, bucket_name: str = None):
         """Fetch all image URLs from the bucket."""
-        target_bucket = bucket_name or self.bucket_name
         try:
-            # Check if bucket exists    
-            if not self.client.bucket_exists(target_bucket):
-                print(f"Bucket {target_bucket} does not exist.")
-                return []
-
-            # List objects in bucket
-            objects = self.client.list_objects(target_bucket, recursive=True)
-            image_urls = []
-            
-            for obj in objects:
-                # Basic check for image extensions
-                if obj.object_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')):
-                    from datetime import timedelta
-                    url = self.client.presigned_get_object(
-                        target_bucket, 
-                        obj.object_name,
-                        expires=timedelta(days=7)
-                    )
-                    image_urls.append(url)
-            
-            return image_urls
+            image_objects = self._get_bucket_object_details(
+                bucket_name,
+                images_only=True,
+                log_missing_bucket=True,
+                ignore_presign_errors=False,
+            )
+            return [obj["presigned_url"] for obj in image_objects]
         except Exception as e:
             print(f"Error fetching images from MinIO: {e}")
             return []
@@ -157,34 +194,7 @@ class MinioHandler:
     def list_bucket_objects(self, bucket_name: str):
         """Fetch all objects inside a specific bucket."""
         try:
-            if not self.client.bucket_exists(bucket_name):
-                return []
-
-            objects = self.client.list_objects(bucket_name, recursive=True)
-            results = []
-            from datetime import timedelta
-            for obj in objects:
-                size_mb = obj.size / (1024 * 1024) if obj.size else 0
-                object_name_lower = (obj.object_name or "").lower()
-                is_image = object_name_lower.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'))
-
-                try:
-                    presigned_url = self.client.presigned_get_object(
-                        bucket_name,
-                        obj.object_name,
-                        expires=timedelta(days=7)
-                    )
-                except Exception:
-                    presigned_url = ""
-
-                results.append({
-                    "name": obj.object_name,
-                    "size": f"{size_mb:.2f} MB",
-                    "last_modified": obj.last_modified,
-                    "presigned_url": presigned_url,
-                    "is_image": is_image,
-                })
-            return results
+            return self._get_bucket_object_details(bucket_name)
         except Exception as e:
             print(f"Error listing objects in bucket {bucket_name}: {e}")
             return []

@@ -53,15 +53,15 @@
                 <nav class="sidebar-nav">
                     <a href="/userProfile"
                         class="nav-item {% if request.url.path == '/userProfile' %}active{% endif %}">
-                        <i class="fa-solid fa-gauge-high"></i>
+                        <i class="fa-solid fa-grip"></i>
                         <span>Dashboard</span>
                     </a>
                     <a href="/chat" class="nav-item {% if request.url.path == '/chat' %}active{% endif %}">
-                        <i class="fa-solid fa-comment-dots"></i>
+                        <i class="fa-solid fa-comments"></i>
                         <span>AI Counselor</span>
                     </a>
                     <a href="/reports" class="nav-item {% if '/reports' in request.url.path %}active{% endif %}">
-                        <i class="fa-solid fa-chart-line"></i>
+                        <i class="fa-solid fa-chart-pie"></i>
                         <span>My Reports</span>
                     </a>
                     <a href="/my-stuff" class="nav-item {% if request.url.path == '/my-stuff' %}active{% endif %}">

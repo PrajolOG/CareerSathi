@@ -22,16 +22,6 @@
                     <i class="fa-solid fa-user-gear"></i>
                     <span>Account</span>
                 </button>
-                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="preferences"
-                    data-target="preferences">
-                    <i class="fa-solid fa-bell"></i>
-                    <span>Preferences</span>
-                </button>
-                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="security"
-                    data-target="security">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>Security</span>
-                </button>
                 <button class="tab-btn" role="tab" aria-selected="false" aria-controls="privacy" data-target="privacy">
                     <i class="fa-solid fa-gavel" aria-hidden="true"></i>
                     <span>Legal & Privacy</span>
@@ -45,7 +35,6 @@
             <section id="account" class="settings-tab-pane active" role="tabpanel">
                 <div class="pane-header">
                     <div class="pane-title-wrapper">
-                        <i class="fa-solid fa-circle-user gradient-icon"></i>
                         <div>
                             <h2>Account Settings</h2>
                             <p>Update your profile information and personal details.</p>
@@ -156,44 +145,11 @@
                         <button type="submit" class="btn-save">Save changes</button>
                     </div>
                 </form>
-            </section>
 
-            <!-- Preferences Tab -->
-            <section id="preferences" class="settings-tab-pane" role="tabpanel">
-                <div class="pane-header">
-                    <div class="pane-title-wrapper">
-                        <i class="fa-solid fa-bell gradient-icon"></i>
-                        <div>
-                            <h2>Preferences</h2>
-                            <p>Manage your notification settings.</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="section-divider"></div>
 
-                <div class="settings-list">
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h4>Email Notifications</h4>
-                            <p>Stay updated with career reports and reminders.</p>
-                        </div>
-                        <label class="toggle-switch" aria-label="Toggle Email Notifications">
-                            <input type="checkbox" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Security Tab -->
-            <section id="security" class="settings-tab-pane" role="tabpanel">
-                <div class="pane-header">
-                    <div class="pane-title-wrapper">
-                        <i class="fa-solid fa-user-shield gradient-icon"></i>
-                        <div>
-                            <h2>Security & Account</h2>
-                            <p>Manage your account security and data history.</p>
-                        </div>
-                    </div>
+                <div class="section-header">
+                    <h2>Security & Data</h2>
                 </div>
 
                 <div class="settings-list">
@@ -225,7 +181,7 @@
                             <h4>Account Session</h4>
                             <p>Sign out of your account on this device.</p>
                         </div>
-                        <button type="button" class="btn-black-outline btn-trigger-modal"
+                        <button type="button" class="btn-danger-outline btn-trigger-modal"
                             data-modal="logoutConfirmModal">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
@@ -312,7 +268,7 @@
         <p>Are you sure you want to end your session? You will need to log back in to access Career Sathi.</p>
         <div class="modal-actions">
             <button class="btn-cancel btn-close-modal">Cancel</button>
-            <button class="btn-black-fill btn-confirm-action" data-action="logout">
+            <button class="btn-danger btn-confirm-action" data-action="logout">
                 <i class="fa-solid fa-right-from-bracket"></i> Yes, Sign Out
             </button>
         </div>

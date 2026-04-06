@@ -119,7 +119,7 @@ async def chat_with_bot(request: Request, chat_data: ChatMessage):
 
 
 @router.post("/chat/image")
-async def chat_with_image(
+async def chat_with_document(
     request: Request,
     image: UploadFile = File(...),
     message: str = Form(""),
@@ -128,12 +128,19 @@ async def chat_with_image(
     if not access_token:
         return {"bot_response": "Authentication failed. Please log in again."}
 
-    if not image.content_type or not image.content_type.startswith("image/"):
-        return {"bot_response": "Please upload a valid image file."}
+    content_type = (image.content_type or "").lower()
+    file_name = image.filename or "upload"
+    is_pdf = content_type == "application/pdf" or file_name.lower().endswith(".pdf")
+    is_image = content_type.startswith("image/")
+
+    if not is_image and not is_pdf:
+        return {"bot_response": "Please upload a valid image or PDF file."}
+
+    default_file_name = "upload.pdf" if is_pdf else "upload.png"
 
     file_bytes = await image.read()
     if not file_bytes:
-        return {"bot_response": "Uploaded image is empty. Please try again."}
+        return {"bot_response": "Uploaded file is empty. Please try again."}
 
     try:
         user_response = supabase.auth.get_user(access_token)
@@ -147,11 +154,11 @@ async def chat_with_image(
         profile_res = scoped_client.table("Profiles").select("full_name").eq("id", user.id).single().execute()
         full_name = profile_res.data.get("full_name", "User") if profile_res and profile_res.data else "User"
     except Exception as auth_error:
-        print(f"Auth/Profile fetch failed for image chat: {auth_error}")
+        print(f"Auth/Profile fetch failed for document chat: {auth_error}")
         return {"bot_response": "Authentication failed. Please log in again."}
 
     bucket_name = _safe_bucket_name(full_name, user.id)
-    object_name = _safe_object_name(image.filename or "upload.png")
+    object_name = _safe_object_name(image.filename or default_file_name)
 
     bucket_ok, bucket_msg = minio_client.ensure_bucket(bucket_name)
     if not bucket_ok:
@@ -166,21 +173,26 @@ async def chat_with_image(
     )
     if not upload_ok:
         print(f"MinIO upload failed: {upload_msg}")
-        return {"bot_response": "Could not upload your image. Please try again."}
+        return {"bot_response": "Could not upload your file. Please try again."}
 
-    ocr_text = await run_in_threadpool(ocr_service.extract_text_from_image_bytes, file_bytes)
+    if is_pdf:
+        ocr_text = await run_in_threadpool(ocr_service.extract_text_from_pdf_bytes, file_bytes)
+    else:
+        ocr_text = await run_in_threadpool(ocr_service.extract_text_from_image_bytes, file_bytes)
+
     if not ocr_text:
         ocr_text = (
-            "OCR could not confidently read text from this image. "
-            "Please ask for missing values and request a clearer image if needed."
+            "OCR could not confidently read text from this file. "
+            "Please ask for missing values and request a clearer image or PDF if needed."
         )
 
     clean_message = (message or "").strip()
     user_message_for_db = build_upload_message(
         user_text=clean_message,
-        file_name=image.filename or "image",
+        file_name=image.filename or default_file_name,
         object_name=object_name,
         bucket_name=bucket_name,
+        file_type="pdf" if is_pdf else "image",
     )
 
     async def event_generator():
@@ -193,8 +205,8 @@ async def chat_with_image(
             ):
                 yield chunk
         except Exception as e:
-            print(f"Image Streaming Error: {e}")
-            yield "Sorry, a system error occurred while processing your image."
+            print(f"Document Streaming Error: {e}")
+            yield "Sorry, a system error occurred while processing your file."
 
     from fastapi.responses import StreamingResponse
     return StreamingResponse(event_generator(), media_type="text/plain")

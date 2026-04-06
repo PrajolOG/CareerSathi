@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 app = FastAPI(
     title="Career Sathi API",
     description="Backend for FYP Career Counselor System",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -18,7 +18,7 @@ templates = Jinja2Templates(directory="templates")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,19 +33,22 @@ app.include_router(profile.router)
 app.include_router(search.router)
 
 # ---------- Last-Active Tracker Middleware ----------
-_last_active_cache: dict[str, float] = {}   # user_id -> last stamp time
+_last_active_cache: dict[str, float] = {}  # user_id -> last stamp time
 COOLDOWN_SECONDS = 300  # only hit DB once per 5 minutes per user
+
 
 def _stamp_last_active(user_id: str):
     """Synchronous DB call – runs in a thread so it never blocks requests."""
     from app.database import supabase
     from datetime import datetime, timezone
+
     try:
         supabase.table("Profiles").update(
             {"last_active_at": datetime.now(timezone.utc).isoformat()}
         ).eq("id", user_id).execute()
     except Exception:
         pass  # silent – never break the user's request
+
 
 class LastActiveMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -55,20 +58,25 @@ class LastActiveMiddleware(BaseHTTPMiddleware):
         if token:
             try:
                 from app.database import supabase
+
                 user_res = supabase.auth.get_user(token)
                 uid = user_res.user.id
                 now = time.time()
                 if now - _last_active_cache.get(uid, 0) > COOLDOWN_SECONDS:
                     _last_active_cache[uid] = now
-                    asyncio.get_event_loop().run_in_executor(None, _stamp_last_active, uid)
+                    asyncio.get_event_loop().run_in_executor(
+                        None, _stamp_last_active, uid
+                    )
             except Exception:
                 pass
         return response
+
 
 app.add_middleware(LastActiveMiddleware)
 
 # ---------- Global Error Handlers: Never show blank error screens ----------
 from fastapi.responses import RedirectResponse, JSONResponse
+
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc):
@@ -77,11 +85,13 @@ async def unauthorized_handler(request: Request, exc):
         return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
     return RedirectResponse(url="/login")
 
+
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
     if "application/json" in request.headers.get("accept", ""):
         return JSONResponse(status_code=500, content={"detail": "Server error"})
     return RedirectResponse(url="/login")
+
 
 @app.exception_handler(Exception)
 async def generic_error_handler(request: Request, exc):
@@ -97,26 +107,65 @@ def read_root(request: Request):
     access_token = request.cookies.get("access_token")
     user_name = None
     user_profile_pic = None
-    
+
     if access_token:
         try:
             # Import supabase inside the function to avoid potential circular imports if models are moved
             from app.database import supabase
+
             user_response = supabase.auth.get_user(access_token)
             if user_response and user_response.user:
                 user = user_response.user
-                profile_res = supabase.table("Profiles").select("full_name, profile_url").eq("id", user.id).single().execute()
+                profile_res = (
+                    supabase.table("Profiles")
+                    .select("full_name, profile_url")
+                    .eq("id", user.id)
+                    .single()
+                    .execute()
+                )
                 if profile_res.data:
                     user_name = profile_res.data.get("full_name")
                     user_profile_pic = profile_res.data.get("profile_url")
         except Exception as e:
             print(f"Error fetching user for index: {e}")
-            
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "user_name": user_name,
-        "user_profile_pic": user_profile_pic
-    })
+
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "user_name": user_name,
+            "user_profile_pic": user_profile_pic,
+        },
+    )
+
+
+@app.post("/welcome/set-avatar", tags=["General"])
+async def set_welcome_avatar(request: Request):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    try:
+        from app.database import supabase
+
+        body = await request.json()
+        profile_url = body.get("profile_url", "")
+
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+
+        supabase.table("Profiles").update({"profile_url": profile_url}).eq(
+            "id", user.id
+        ).execute()
+
+        return {"success": True}
+    except Exception as e:
+        print(f"Error setting avatar: {e}")
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": "Failed to save avatar"}, status_code=500)
 
 
 @app.get("/terms", tags=["General"])
@@ -133,5 +182,48 @@ def read_privacy(request: Request):
 def read_welcome(request: Request):
     if not request.cookies.get("signup_success"):
         from fastapi.responses import RedirectResponse
+
         return RedirectResponse(url="/signup")
-    return templates.TemplateResponse("newuserwelcome.html", {"request": request})
+
+    access_token = request.cookies.get("access_token")
+    user_name = None
+    user_email = None
+    user_profile_pic = None
+
+    if access_token:
+        try:
+            from app.database import supabase
+            from app.minio_handler import minio_client
+
+            user_response = supabase.auth.get_user(access_token)
+            if user_response and user_response.user:
+                user = user_response.user
+                profile_res = (
+                    supabase.table("Profiles")
+                    .select("full_name, profile_url")
+                    .eq("id", user.id)
+                    .single()
+                    .execute()
+                )
+                if profile_res.data:
+                    user_name = profile_res.data.get("full_name")
+                    user_profile_pic = profile_res.data.get("profile_url")
+                    user_email = user.email
+
+            minio_avatars = minio_client.get_all_images("user-icons")
+        except Exception as e:
+            print(f"Error fetching user for welcome: {e}")
+            minio_avatars = []
+    else:
+        minio_avatars = []
+
+    return templates.TemplateResponse(
+        "newuserwelcome.html",
+        {
+            "request": request,
+            "user_name": user_name,
+            "user_email": user_email,
+            "user_profile_pic": user_profile_pic,
+            "minio_avatars": minio_avatars,
+        },
+    )

@@ -4,9 +4,9 @@
     <div id="filePreview" class="file-preview-container" style="display: none;">
         <div class="file-info">
             <div class="doc-icon-wrapper-small">
-                <i class="fa-solid fa-image" id="fileIcon"></i>
+                <i class="fa-solid fa-file-lines" id="fileIcon"></i>
             </div>
-            <span id="fileNameDisplay" class="truncate-text">image.png</span>
+            <span id="fileNameDisplay" class="truncate-text">document.pdf</span>
         </div>
         <button type="button" class="remove-file-btn" onclick="clearFileSelection()" title="Remove file">
             <i class="fa-solid fa-xmark"></i>
@@ -17,17 +17,31 @@
         <!-- Main Chat Input Form -->
         <form class="chat-input-form group" id="chatForm">
             <!-- Hidden File Inputs -->
-            <input type="file" id="imgUpload" style="display: none;" accept="image/*">
+            <input type="file" id="imageUpload" style="display: none;" accept="image/*">
+            <input type="file" id="pdfUpload" style="display: none;" accept="application/pdf">
+            <input type="file" id="imgUpload" style="display: none;" accept="image/*,.pdf,application/pdf"> <!-- Legacy for compatibility if needed -->
 
             <!-- Message Input (Multiline) -->
             <textarea class="chat-input-field" id="userInput" rows="1"
                 placeholder="Ask about colleges, scholarships, or careers..."
                 autocomplete="off"></textarea>
 
-            <div class="input-actions">
-                <!-- Image Upload Button -->
-                <button type="button" class="icon-btn attach-btn" onclick="document.getElementById('imgUpload').click()" title="Upload Image">
-                    <i class="fa-solid fa-image"></i>
+            <div class="input-actions" style="position: relative;">
+                <!-- Attachment Menu Popover -->
+                <div id="attachMenu" class="attach-menu">
+                    <button type="button" class="menu-item" onclick="triggerUpload('image')">
+                        <i class="fa-solid fa-image"></i>
+                        <span>Upload an Image</span>
+                    </button>
+                    <button type="button" class="menu-item" onclick="triggerUpload('pdf')">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Upload a PDF</span>
+                    </button>
+                </div>
+
+                <!-- Plus Toggle Button -->
+                <button type="button" class="icon-btn attach-btn" onclick="toggleAttachMenu(event)" title="Add attachment" id="attachBtn">
+                    <i class="fa-solid fa-plus"></i>
                 </button>
 
                 <!-- Send Button with Glow -->

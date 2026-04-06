@@ -9,6 +9,36 @@
     --border-light: #E5E7EB;
     --bg-glass: #FFFFFF;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --scrollbar-track: #f3f4f6;
+    --scrollbar-thumb: #c7c9d4;
+    --scrollbar-thumb-hover: #a1a3b0;
+}
+
+/* Custom Scrollbar */
+.settings-main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.settings-main-content::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.settings-main-content::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.settings-main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox Scrollbar */
+.settings-main-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 .settings-wrapper {
@@ -432,6 +462,23 @@
     font-weight: 500;
 }
 
+.section-divider {
+    margin: 40px 0;
+    border: none;
+    border-top: 1px solid var(--border-light);
+}
+
+.section-header {
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
 /* --- SETTINGS LIST & TOGGLES --- */
 .settings-list {
     display: flex;
@@ -550,11 +597,13 @@ input:checked+.toggle-slider::before {
 .btn-danger-outline {
     border: 1.5px solid #fca5a5;
     color: #dc2626;
+    background: #fef2f2;
 }
 
 .btn-danger-outline:hover {
-    background: #fef2f2;
+    background: #fee2e2;
     border-color: #ef4444;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
 }
 
 .btn-black-outline {

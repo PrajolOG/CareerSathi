@@ -24,4 +24,5 @@ dependencies = [
     "paddlepaddle-gpu>=2.6.2",
     "astor>=0.8.1",
     "tavily-python>=0.7.23",
+    "pymupdf>=1.27.2.2",
 ]
