@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from app.database import supabase
 from app.services.password_reset_service import password_reset_service
 from app.services.email_service import email_service
+from app.rate_limiter import check_login_rate_limit
 
 router = APIRouter(tags=["Authentication"])
 templates = Jinja2Templates(directory="templates")
@@ -53,6 +54,15 @@ def signup(
     grade_level: str = Form(...),
     gender: str = Form(...)
 ):
+    # Rate limit: 5 signups per minute per IP
+    client_ip = request.client.host if request.client else "unknown"
+    allowed, retry_after = check_login_rate_limit(client_ip)
+    if not allowed:
+        return templates.TemplateResponse("signup.html", {
+            "request": request,
+            "error": f"Too many attempts. Please try again in {retry_after} seconds."
+        })
+
     try:
         # 1. Sign up
         auth_response = supabase.auth.sign_up({
@@ -165,6 +175,15 @@ def forgot_password_reset(
 
 @router.post("/login")
 def login(request: Request, email: str = Form(...), password: str = Form(...)):
+    # Rate limit: 5 login attempts per minute per IP
+    client_ip = request.client.host if request.client else "unknown"
+    allowed, retry_after = check_login_rate_limit(client_ip)
+    if not allowed:
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": f"Too many login attempts. Please try again in {retry_after} seconds."
+        })
+
     try:
         auth_response = supabase.auth.sign_in_with_password({
             "email": email,

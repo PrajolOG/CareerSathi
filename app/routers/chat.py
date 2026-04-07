@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Request, HTTPException, UploadFile, File, Form
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.concurrency import run_in_threadpool
 from app.schemas import ChatMessage
@@ -12,6 +13,7 @@ from supabase import create_client, ClientOptions
 from app.minio_handler import minio_client
 from app.services.ocr_service import ocr_service
 from app.chat_upload_meta import build_upload_message
+from app.rate_limiter import check_chat_rate_limit, get_chat_rate_status
 
 router = APIRouter(tags=["Chat System"])
 templates = Jinja2Templates(directory="templates")
@@ -79,13 +81,18 @@ def get_chat_page(request: Request):
             .execute()
             
         chat_history = history_response.data if history_response.data else []
-        
+
+        # Check if user is currently rate-limited
+        rate_info = get_chat_rate_status(user.id)
+
         return templates.TemplateResponse("chat.html", {
             "request": request,
             "user_name": profile.data.get("full_name", "User"),
             "user_email": user.email,
             "user_profile_pic": profile.data.get("profile_url"),
-            "chat_history": chat_history
+            "chat_history": chat_history,
+            "chat_rate_limited": rate_info["is_limited"],
+            "chat_rate_remaining": rate_info["remaining"],
         })
 
     except Exception as e:
@@ -100,11 +107,38 @@ def get_chat_page(request: Request):
         })
 
 
+@router.get("/chat/rate-status")
+async def chat_rate_status(request: Request):
+    """Returns current chat rate limit status for the authenticated user."""
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    status = get_chat_rate_status(user.id)
+    return JSONResponse(status)
+
+
 @router.post("/chat")
 async def chat_with_bot(request: Request, chat_data: ChatMessage):
     access_token = request.cookies.get("access_token")
     if not access_token:
         return {"bot_response": "Authentication failed. Please log in again."}
+
+    # Rate limit check
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user_id = user_response.user.id
+    except Exception:
+        return {"bot_response": "Authentication failed. Please log in again."}
+
+    allowed, retry_after = check_chat_rate_limit(user_id)
+    if not allowed:
+        return JSONResponse({"bot_response": "__RATE_LIMITED__", "retry_after": retry_after})
 
     async def event_generator():
         try:
@@ -127,6 +161,17 @@ async def chat_with_document(
     access_token = request.cookies.get("access_token")
     if not access_token:
         return {"bot_response": "Authentication failed. Please log in again."}
+
+    # Rate limit check
+    try:
+        user_check = supabase.auth.get_user(access_token)
+        uid = user_check.user.id
+    except Exception:
+        return {"bot_response": "Authentication failed. Please log in again."}
+
+    allowed, retry_after = check_chat_rate_limit(uid)
+    if not allowed:
+        return JSONResponse({"bot_response": "__RATE_LIMITED__", "retry_after": retry_after})
 
     content_type = (image.content_type or "").lower()
     file_name = image.filename or "upload"

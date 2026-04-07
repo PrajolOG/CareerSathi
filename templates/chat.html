@@ -92,6 +92,60 @@
         display: flex;
         gap: 6px;
     }
+
+    /* Rate limit banner */
+    .rate-limit-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        margin: -4px auto 8px auto;
+        max-width: 600px;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 10px;
+        font-size: 13px;
+        color: #92400e;
+        animation: fadeSlideIn 0.3s ease-out;
+    }
+
+    .rate-limit-banner i {
+        font-size: 15px;
+        color: #d97706;
+        flex-shrink: 0;
+    }
+
+    .rate-limit-banner .rl-text {
+        flex: 1;
+    }
+
+    .rate-limit-banner .rl-link {
+        font-size: 12px;
+        color: #d97706;
+        text-decoration: none;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: 5px 12px;
+        border: 1px solid rgba(217, 119, 6, 0.3);
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .rate-limit-banner .rl-link:hover {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: #d97706;
+    }
+
+    @keyframes fadeSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -106,6 +160,13 @@
     <div class="chat-header">
         <h1 class="animated-title">Career Sathi <span class="ai-glow">AI</span></h1>
         <p class="animated-subtitle">Your personal AI counselor for career guidance and document analysis.</p>
+    </div>
+
+    <!-- Rate Limit Banner -->
+    <div id="rateLimitBanner" class="rate-limit-banner" style="display: {% if chat_rate_limited %}flex{% else %}none{% endif %};">
+        <i class="fa-solid fa-clock"></i>
+        <span class="rl-text">Chat limit exceeded. Please try again later.</span>
+        <a href="/settings#limits" class="rl-link">Learn more in Settings</a>
     </div>
 
     <div class="chat-surface">
@@ -335,9 +396,60 @@
         filePreview.style.display = 'none';
     }
 
+    // --- Rate Limit State ---
+    const rateLimitBanner = document.getElementById('rateLimitBanner');
+    let isRateLimited = {{ 'true' if chat_rate_limited else 'false' }};
+
+    function showRateLimitBanner() {
+        isRateLimited = true;
+        if (rateLimitBanner) rateLimitBanner.style.display = 'flex';
+        if (sendBtn) sendBtn.disabled = true;
+    }
+
+    function hideRateLimitBanner() {
+        isRateLimited = false;
+        if (rateLimitBanner) rateLimitBanner.style.display = 'none';
+        if (sendBtn) sendBtn.disabled = false;
+    }
+
+    // Check rate limit status on page load (survives reload)
+    async function checkRateStatus() {
+        try {
+            const res = await fetch('/chat/rate-status', {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.is_limited) {
+                    showRateLimitBanner();
+                    // Re-check after retry_after seconds
+                    setTimeout(async () => {
+                        await checkRateStatus();
+                    }, (data.retry_after || 10) * 1000);
+                } else {
+                    hideRateLimitBanner();
+                }
+            }
+        } catch (e) {
+            // Silently fail
+        }
+    }
+
+    // Check on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        checkRateStatus();
+    });
+
     // 3. Handle Live Chat Submission & Stream Parsing
     chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
+
+        // Block if rate limited
+        if (isRateLimited) {
+            showRateLimitBanner();
+            return;
+        }
+
         const message = userInput.value.trim();
         
         let selectedFile = null;
@@ -386,6 +498,23 @@
             }
 
             if (!response.ok) throw new Error("Stream Error");
+
+            // Check for rate limit JSON response
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const jsonData = await response.json();
+                if (jsonData.bot_response === '__RATE_LIMITED__') {
+                    if (document.getElementById(typingId)) document.getElementById(typingId).remove();
+                    if (message) {
+                        // Remove the user message we just added
+                        const lastUserMsg = messageHistory.querySelector('.user-message:last-of-type');
+                    }
+                    showRateLimitBanner();
+                    // Re-check after retry period
+                    setTimeout(() => checkRateStatus(), (jsonData.retry_after || 10) * 1000);
+                    return;
+                }
+            }
 
             const aiMsgDiv = typingDiv;
             let contentReceived = false;
