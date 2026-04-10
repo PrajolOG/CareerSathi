@@ -191,21 +191,57 @@
     </div>
 </div>
 
+<!-- My Stuffs Modal Overlay -->
+<div id="stuffsModal" class="stuffs-modal-overlay">
+    <div class="stuffs-modal-container">
+        <div class="stuffs-modal-header">
+            <h2 class="stuffs-modal-title">
+                <i class="fa-solid fa-box-archive"></i> My Stuffs
+            </h2>
+            <button type="button" class="close-modal-btn" onclick="closeStuffsModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="stuffs-modal-search">
+            <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="stuffsSearchInput" class="stuffs-search-input" 
+                    placeholder="Search your documents..." oninput="filterStuffs()">
+            </div>
+        </div>
+
+        <div class="stuffs-modal-body" id="stuffsModalBody">
+            <!-- Stuffs Grid will be rendered here -->
+            <div class="modal-loading">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Fetching your storage items...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
+
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
     const messageHistory = document.getElementById('messageHistory');
-    const filePreview = document.getElementById('filePreview');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const fileIcon = document.getElementById('fileIcon');
-    const sendBtn = document.querySelector('.send-btn');
     const imageUpload = document.getElementById('imageUpload');
     const pdfUpload = document.getElementById('pdfUpload');
     const imgUpload = document.getElementById('imgUpload');
+    const filePreview = document.getElementById('filePreview');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileIcon = document.getElementById('fileIcon');
+
+    let activeStoredStuff = null;
+
+    let allStuffs = [];
+
     const attachMenu = document.getElementById('attachMenu');
     const uploadMetaPrefix = "__CS_UPLOAD_META__:";
 
@@ -393,8 +429,10 @@
         if (imageUpload) imageUpload.value = '';
         if (pdfUpload) pdfUpload.value = '';
         if (imgUpload) imgUpload.value = '';
+        activeStoredStuff = null;
         filePreview.style.display = 'none';
     }
+
 
     // --- Rate Limit State ---
     const rateLimitBanner = document.getElementById('rateLimitBanner');
@@ -458,11 +496,14 @@
         else if (imgUpload && imgUpload.files.length > 0) selectedFile = imgUpload.files[0];
 
         const hasUpload = !!selectedFile;
-        const selectedFileType = getFileType(selectedFile);
+        const hasStoredStuff = !!activeStoredStuff;
+        const selectedFileType = hasUpload ? getFileType(selectedFile) : (hasStoredStuff ? (activeStoredStuff.is_image ? 'image' : 'pdf') : null);
 
-        if (!message && !hasUpload) return;
+        if (!message && !hasUpload && !hasStoredStuff) return;
 
         if (hasUpload) addFileBubble(selectedFile.name, selectedFileType);
+        else if (hasStoredStuff) addFileBubble(activeStoredStuff.name, selectedFileType);
+
         if (message) addMessage(message, 'user');
 
         if (sendBtn) sendBtn.disabled = true;
@@ -481,11 +522,20 @@
             const isUploadFlow = hasUpload;
             let response;
 
-            if (isUploadFlow) {
+            if (hasUpload) {
                 const formData = new FormData();
                 formData.append('image', selectedFile);
                 formData.append('message', message);
                 response = await fetch('/chat/image', {
+                    method: 'POST',
+                    body: formData,
+                });
+            } else if (hasStoredStuff) {
+                const formData = new FormData();
+                formData.append('object_name', activeStoredStuff.name);
+                formData.append('bucket_name', activeStoredStuff.bucket_name);
+                formData.append('message', message);
+                response = await fetch('/chat/stored-stuff', {
                     method: 'POST',
                     body: formData,
                 });
@@ -496,6 +546,7 @@
                     body: JSON.stringify({ message: message }),
                 });
             }
+
 
             if (!response.ok) throw new Error("Stream Error");
 
@@ -674,5 +725,111 @@
     function scrollToBottom() {
         messageHistory.scrollTop = messageHistory.scrollHeight;
     }
+
+    // --- My Stuffs Modal Logic ---
+    const stuffsModal = document.getElementById('stuffsModal');
+    const stuffsModalBody = document.getElementById('stuffsModalBody');
+    const stuffsSearchInput = document.getElementById('stuffsSearchInput');
+
+    window.openStuffsModal = async function() {
+        if (!stuffsModal) return;
+        stuffsModal.style.display = 'flex';
+        if (stuffsSearchInput) stuffsSearchInput.value = '';
+        if (stuffsModalBody) {
+            stuffsModalBody.innerHTML = `
+                <div class="modal-loading">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <p>Fetching your storage items...</p>
+                </div>
+            `;
+        }
+
+
+        try {
+            const res = await fetch('/profile/my-stuff/json');
+            const data = await res.json();
+            if (data.resources) {
+                // Add bucket_name to each resource for selection context
+                allStuffs = data.resources.map(r => ({...r, bucket_name: data.bucket_name}));
+                renderStuffs(allStuffs);
+            } else {
+                stuffsModalBody.innerHTML = '<div class="modal-empty"><i class="fa-solid fa-box-open"></i><p>No documents found.</p></div>';
+            }
+        } catch (e) {
+            console.error(e);
+            stuffsModalBody.innerHTML = '<div class="modal-empty"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load stuffs.</p></div>';
+        }
+    };
+
+    window.closeStuffsModal = function() {
+        stuffsModal.style.display = 'none';
+    };
+
+    function renderStuffs(stuffs) {
+        if (!stuffs || stuffs.length === 0) {
+            stuffsModalBody.innerHTML = '<div class="modal-empty"><i class="fa-solid fa-box-open"></i><p>No storage items match your search.</p></div>';
+            return;
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'stuffs-grid';
+
+        stuffs.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'stuff-item-card';
+            const iconClass = item.is_image ? 'fa-regular fa-image' : 'fa-regular fa-file-pdf';
+            
+            card.innerHTML = `
+                <div class="stuff-item-icon"><i class="${iconClass}"></i></div>
+                <div class="stuff-item-info">
+                    <span class="stuff-item-name" title="${item.name}">${item.name}</span>
+                    <span class="stuff-item-meta">${item.size} • ${item.last_modified}</span>
+                </div>
+            `;
+            card.onclick = () => selectStuff(item);
+            grid.appendChild(card);
+        });
+
+        stuffsModalBody.innerHTML = '';
+        stuffsModalBody.appendChild(grid);
+    }
+
+    window.filterStuffs = function() {
+        const query = stuffsSearchInput.value.toLowerCase().trim();
+        const filtered = allStuffs.filter(s => s.name.toLowerCase().includes(query));
+        renderStuffs(filtered);
+    };
+
+    function selectStuff(item) {
+        activeStoredStuff = item;
+        
+        // Clear real file inputs
+        if (imageUpload) imageUpload.value = '';
+        if (pdfUpload) pdfUpload.value = '';
+        if (imgUpload) imgUpload.value = '';
+
+        // Show preview
+        if (fileNameDisplay) fileNameDisplay.textContent = item.name;
+        if (fileIcon) {
+            fileIcon.className = item.is_image ? 'fa-solid fa-image' : 'fa-solid fa-file-pdf';
+        }
+        if (filePreview) filePreview.style.display = 'flex';
+        
+        closeStuffsModal();
+
+        if (typeof toggleAttachMenu === 'function') {
+            // Close attach menu if open
+            const menu = document.getElementById('attachMenu');
+            if(menu && menu.style.display === 'flex') {
+                menu.style.display = 'none';
+            }
+        }
+    }
+
+    // Close modal on outside click
+    stuffsModal.addEventListener('click', (e) => {
+        if (e.target === stuffsModal) closeStuffsModal();
+    });
 </script>
 {% endblock %}
+

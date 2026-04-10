@@ -257,6 +257,92 @@ async def chat_with_document(
     return StreamingResponse(event_generator(), media_type="text/plain")
 
 
+@router.post("/chat/stored-stuff")
+async def chat_with_stored_document(
+    request: Request,
+    object_name: str = Form(...),
+    bucket_name: str = Form(...),
+    message: str = Form(""),
+):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        return {"bot_response": "Authentication failed. Please log in again."}
+
+    # Rate limit check
+    try:
+        user_check = supabase.auth.get_user(access_token)
+        uid = user_check.user.id
+    except Exception:
+        return {"bot_response": "Authentication failed. Please log in again."}
+
+    allowed, retry_after = check_chat_rate_limit(uid)
+    if not allowed:
+        return JSONResponse(
+            {"bot_response": "__RATE_LIMITED__", "retry_after": retry_after}
+        )
+
+    try:
+        # Fetch the file from MinIO
+        response = minio_client.client.get_object(bucket_name, object_name)
+        file_bytes = response.read()
+        response.close()
+        response.release_conn()
+
+        if not file_bytes:
+            return {"bot_response": "Stored file could not be read. Please try again."}
+
+        is_pdf = object_name.lower().endswith(".pdf")
+
+        if is_pdf:
+            ocr_text = await run_in_threadpool(
+                ocr_service.extract_text_from_pdf_bytes, file_bytes
+            )
+        else:
+            ocr_text = await run_in_threadpool(
+                ocr_service.extract_text_from_image_bytes, file_bytes
+            )
+
+        if not ocr_text:
+            ocr_text = "OCR could not confidently read text from this stored file."
+
+        clean_message = (message or "").strip()
+
+        # Simplify file name for display (remove timestamp prefix if possible)
+        display_name = (
+            object_name.split("-", 1)[-1] if "-" in object_name else object_name
+        )
+
+        user_message_for_db = build_upload_message(
+            user_text=clean_message,
+            file_name=display_name,
+            object_name=object_name,
+            bucket_name=bucket_name,
+            file_type="pdf" if is_pdf else "image",
+        )
+
+        async def event_generator():
+            try:
+                async for chunk in chat_service.stream_career_advice(
+                    user_message=clean_message,
+                    user_token=access_token,
+                    ocr_text=ocr_text,
+                    user_message_for_db=user_message_for_db,
+                ):
+                    yield chunk
+            except Exception as e:
+                print(f"Stored Document Streaming Error: {e}")
+                yield "Sorry, a system error occurred while processing your stored file."
+
+        from fastapi.responses import StreamingResponse
+
+        return StreamingResponse(event_generator(), media_type="text/plain")
+
+    except Exception as e:
+        print(f"Error processing stored stuff: {e}")
+        return {"bot_response": "Failed to process the stored document. Please try again."}
+
+
+
 @router.delete("/chat/history")
 async def reset_chat_history(request: Request):
     access_token = request.cookies.get("access_token")

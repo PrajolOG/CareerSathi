@@ -157,6 +157,63 @@ def get_my_stuff_page(request: Request):
         return RedirectResponse(url="/userProfile")
 
 
+@router.get("/profile/my-stuff/json")
+def get_my_stuff_json(request: Request):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    try:
+        user_response = supabase.auth.get_user(access_token)
+        user = user_response.user
+
+        profile = (
+            supabase.table("Profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single()
+            .execute()
+        )
+        user_name = profile.data.get("full_name", "User")
+
+        bucket_name = _safe_bucket_name(user_name, user.id)
+        objects = minio_client.list_bucket_objects(bucket_name)
+
+        nepal_tz = timezone(timedelta(hours=5, minutes=45))
+        resources = []
+
+        for obj in objects:
+            last_modified = obj.get("last_modified")
+            formatted_last_modified = "Unknown"
+            if last_modified:
+                try:
+                    formatted_last_modified = last_modified.astimezone(nepal_tz).strftime(
+                        "%Y-%m-%d %I:%M %p"
+                    )
+                except Exception:
+                    formatted_last_modified = str(last_modified)
+
+            resources.append(
+                {
+                    "name": obj.get("name", "unnamed-file"),
+                    "size": obj.get("size", "0.00 MB"),
+                    "last_modified": formatted_last_modified,
+                    "presigned_url": obj.get("presigned_url", ""),
+                    "is_image": obj.get("is_image", False),
+                }
+            )
+
+        return {"resources": resources, "bucket_name": bucket_name}
+    except Exception as e:
+        print(f"My Stuff JSON Error: {e}")
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+
 
 
         

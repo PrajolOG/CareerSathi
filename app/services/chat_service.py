@@ -141,7 +141,7 @@ class ChatService:
         formatted_history = []
 
         try:
-            # 1. Fetch Profile (Respects RLS: Users can only see their own)
+            # 1. Fetch Profile (RLS: Users can only see their own)
             profile = client.table("Profiles").select("*").eq("id", user_id).single().execute()
             data = profile.data
             
@@ -150,6 +150,7 @@ class ChatService:
                 f"Grade: {data.get('grade_level')}. "
                 f"Gender: {data.get('gender')}."
             )
+            print(f"DEBUG CONTEXT: {context_msg}")
             
             # Fetch User Features if they exist
             try:
