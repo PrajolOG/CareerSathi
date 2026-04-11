@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,34 +9,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/report_pdf_preview.css">
 </head>
+
 <body data-user-name="{{ user_name|default('user') }}" data-top-career="{{ primary_prediction|default('career') }}">
     <header class="preview-header">
         <a class="preview-btn back-btn" href="/reports/{{ report.id }}">
             <i class="fa-solid fa-arrow-left"></i> Back
         </a>
-        <h1 class="preview-title">PDF Preview</h1>
+        <h1 class="preview-title">Report Preview</h1>
         <button id="downloadPdfBtn" class="preview-btn download-btn" type="button">
-            <i class="fa-solid fa-file-arrow-down"></i> Download
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
         </button>
     </header>
 
     <main class="preview-main">
         <article id="pdfPage" class="pdf-page">
             <div id="pdfContent" class="pdf-content">
+
                 <section class="report-head">
-                    <div>
+                    <div class="head-left">
                         <h2>Career Sathi Report</h2>
-                        <p class="meta-line">Prepared for <strong>{{ user_name|default('User') }}</strong></p>
+                        <p class="meta-line">Prepared exclusively for <strong>{{ user_name|default('User') }}</strong>
+                        </p>
                     </div>
                     <div class="report-meta">
-                        <span>{{ formatted_date }}</span>
+                        <span class="meta-date">{{ formatted_date }}</span>
                         <span class="chip">{{ primary_prediction }}</span>
                     </div>
                 </section>
 
-                <section class="grid two-col compact">
+                <section class="grid two-col">
                     <div class="card recommendations-card">
-                        <h3>Top Career Recommendations</h3>
+                        <h3><i class="fa-solid fa-trophy"></i> Top Career Matches</h3>
                         <ol class="recommendation-list">
                             {% for item in top_recommendations[:3] %}
                             <li class="recommendation-item">
@@ -49,8 +53,9 @@
                             {% endfor %}
                         </ol>
                     </div>
+
                     <div class="card">
-                        <h3>Why This Career</h3>
+                        <h3><i class="fa-solid fa-microscope"></i> Profile Alignment</h3>
                         <ul class="clean-list">
                             {% for point in matching_points[:3] %}
                             <li>{{ point }}</li>
@@ -61,43 +66,45 @@
                     </div>
                 </section>
 
-                <section class="card">
-                    <h3>University Recommendations</h3>
-                    <div class="grid two-col">
-                        <div>
-                            <h4>Local (Nepal)</h4>
-                            <ul class="clean-list small">
+                <section class="card full-width">
+                    <h3><i class="fa-solid fa-building-columns"></i> Recommended Institutions</h3>
+                    <div class="grid two-col padding-top">
+                        <div class="uni-column">
+                            <h4>Domestic (Nepal)</h4>
+                            <ul class="clean-list uni-list">
                                 {% for course in nepal_courses[:4] %}
                                 <li>
-                                    <strong>
-                                        {{ course.university_name }}
+                                    <div class="uni-header">
+                                        <strong>{{ course.university_name }}</strong>
                                         {% if course.website_link or course.website or course.website_url %}
-                                        <a href="{{ course.website_link or course.website or course.website_url }}" target="_blank" rel="noopener" class="uni-link-icon" title="Visit university website">
-                                            <i class="fa-solid fa-up-right-from-square"></i>
+                                        <a href="{{ course.website_link or course.website or course.website_url }}"
+                                            target="_blank" rel="noopener" class="uni-link-icon">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                         {% endif %}
-                                    </strong><br>
-                                    <span>{{ course.course_name }}</span>
+                                    </div>
+                                    <span class="uni-course">{{ course.course_name }}</span>
                                 </li>
                                 {% else %}
-                                <li>No local recommendations found.</li>
+                                <li>No domestic recommendations found.</li>
                                 {% endfor %}
                             </ul>
                         </div>
-                        <div>
-                            <h4>Global</h4>
-                            <ul class="clean-list small">
+                        <div class="uni-column">
+                            <h4>Global Opportunities</h4>
+                            <ul class="clean-list uni-list">
                                 {% for course in global_courses[:4] %}
                                 <li>
-                                    <strong>
-                                        {{ course.university_name }}
+                                    <div class="uni-header">
+                                        <strong>{{ course.university_name }}</strong>
                                         {% if course.website_link or course.website or course.website_url %}
-                                        <a href="{{ course.website_link or course.website or course.website_url }}" target="_blank" rel="noopener" class="uni-link-icon" title="Visit university website">
-                                            <i class="fa-solid fa-up-right-from-square"></i>
+                                        <a href="{{ course.website_link or course.website or course.website_url }}"
+                                            target="_blank" rel="noopener" class="uni-link-icon">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                         {% endif %}
-                                    </strong><br>
-                                    <span>{{ course.course_name }}</span>
+                                    </div>
+                                    <span class="uni-course">{{ course.course_name }}</span>
                                 </li>
                                 {% else %}
                                 <li>No global recommendations found.</li>
@@ -107,28 +114,30 @@
                     </div>
                 </section>
 
-                <section class="card">
-                    <h3>Strategic Roadmap</h3>
+                <section class="card full-width page-break-safe">
+                    <h3><i class="fa-solid fa-map-location-dot"></i> Strategic Action Plan</h3>
                     <div class="roadmap-grid">
                         {% for phase in roadmap_phases[:4] %}
                         <div class="phase-card">
                             <div class="phase-top">
                                 <div class="phase-icon-wrap">
-                                    <i class="fa-solid {{ phase.icon if phase.icon is defined and phase.icon else 'fa-seedling' }}"></i>
+                                    <i
+                                        class="fa-solid {{ phase.icon if phase.icon is defined and phase.icon else 'fa-seedling' }}"></i>
                                 </div>
                                 <div class="phase-meta">
                                     <span class="phase-badge">Phase {{ "%02d"|format(loop.index) }}</span>
                                     <h4>{{ phase.title if phase.title is defined else 'Phase' }}</h4>
                                 </div>
                             </div>
+
                             {% set steps = phase.steps if phase.steps is defined else [] %}
                             <ul class="phase-steps">
                                 {% for step in steps[:3] %}
                                 <li class="phase-step">
                                     {% if step is mapping %}
-                                        {{ step.get('text', '') }}
+                                    {{ step.get('text', '') }}
                                     {% else %}
-                                        {{ step }}
+                                    {{ step }}
                                     {% endif %}
                                 </li>
                                 {% else %}
@@ -136,26 +145,27 @@
                                 {% endfor %}
                             </ul>
 
-                            {% set rec = phase.course_recommendation if phase.course_recommendation is defined else None %}
+                            {% set rec = phase.course_recommendation if phase.course_recommendation is defined else None
+                            %}
                             {% if rec and rec is mapping %}
-                                {% set rec_name = rec.get('name') %}
-                                {% set rec_link = rec.get('link') %}
+                            {% set rec_name = rec.get('name') %}
+                            {% set rec_link = rec.get('link') %}
                             {% else %}
-                                {% set rec_name = None %}
-                                {% set rec_link = None %}
+                            {% set rec_name = None %}
+                            {% set rec_link = None %}
                             {% endif %}
 
                             <div class="phase-course">
-                                <span class="course-pill">Recommended Course</span>
+                                <span class="course-pill">Suggested Material</span>
                                 {% if rec_name %}
                                 <p class="course-name">{{ rec_name }}</p>
                                 {% if rec_link %}
                                 <a href="{{ rec_link }}" target="_blank" rel="noopener" class="phase-course-link">
-                                    Open Course <i class="fa-solid fa-up-right-from-square"></i>
+                                    Access Resource <i class="fa-solid fa-arrow-right"></i>
                                 </a>
                                 {% endif %}
                                 {% else %}
-                                <p class="course-name muted">Course suggestion not available.</p>
+                                <p class="course-name muted">Resource pending alignment.</p>
                                 {% endif %}
                             </div>
                         </div>
@@ -166,8 +176,8 @@
                 </section>
 
                 <footer class="report-footer">
-                    <span>Generated by Career Sathi</span>
-                    <span>Confidential Student Report</span>
+                    <span>Generated securely by <strong>Career Sathi AI</strong></span>
+                    <span>Confidential Student Document</span>
                 </footer>
             </div>
         </article>
@@ -176,4 +186,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="/static/js/report_pdf_preview.js"></script>
 </body>
+
 </html>

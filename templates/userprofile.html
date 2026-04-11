@@ -1,5 +1,3 @@
-<!-- user_profile.html -->
-
 {% extends "shared_navbar.html" %}
 
 {% block title %}Profile - Career Sathi{% endblock %}
@@ -10,28 +8,37 @@
 
 {% block content %}
 <div class="profile-wrapper">
+
+    <header class="dashboard-header">
+        <div class="header-info">
+            <h1 class="dashboard-title">Student Space</h1>
+            <p class="dashboard-subtitle">Welcome back, {{ user_name.split(' ')[0] }}! Manage your context and career
+                DNA here.</p>
+        </div>
+        <div class="header-actions">
+            <a href="/reports" class="btn-header-action">
+                <i class="fa-solid fa-chart-pie"></i> View Reports
+            </a>
+            <a href="/settings" class="btn-header-action">
+                <i class="fa-solid fa-gear"></i> Settings
+            </a>
+        </div>
+    </header>
+
     <div class="profile-content-grid">
 
-        <!-- Dashboard Header -->
-        <header class="dashboard-header">
-            <h1 class="dashboard-title">Student Dashboard</h1>
-            <p class="dashboard-subtitle">Welcome back, {{ user_name.split(' ')[0] }}! Here's your career progress and AI insights.</p>
-        </header>
-
-        <!-- Dashboard Column 1: Info & Stats (Phase 1) -->
-        <div class="profile-sidebar-column identity-column">
+        <div class="identity-column">
             <div class="identity-card">
-                <div class="identity-banner"></div>
-                <div class="identity-content">
+                <div class="identity-glass-panel">
                     <img class="identity-avatar" id="mainAvatarDisplay"
                         src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
                         alt="Profile">
                     <h1 class="identity-name">{{ user_name }}</h1>
-                    <p class="identity-role">Student Account</p>
+                    <span class="identity-role">Student Account</span>
 
                     <div class="identity-progress">
                         <div class="progress-header">
-                            <span class="progress-label">Reports Generated</span>
+                            <span>Reports Capacity</span>
                             <span class="progress-value">{{ reports_count }}/3</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -42,272 +49,214 @@
 
                     <div class="identity-info-list">
                         <div class="info-row">
-                            <span class="info-label">Email</span>
+                            <span class="info-label"><i class="fa-regular fa-envelope"></i> Email</span>
                             <span class="info-value">{{ user_email }}</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Education</span>
+                            <span class="info-label"><i class="fa-solid fa-graduation-cap"></i> Level</span>
                             <span class="info-value">{{ grade_level }}</span>
                         </div>
                     </div>
 
                     <a href="/settings" class="btn-edit-profile">
-                        <i class="fa-solid fa-user-gear"></i> Edit Profile
+                        <i class="fa-solid fa-sliders"></i> Edit Profile
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Column 2: Shared Resources & Context (Phase 2) -->
-        <div class="profile-sidebar-column dna-column">
-
-            <div class="resources-card-sidebar">
+        <!-- Column 2: Career DNA Matrix (Non-scrollable Single Frame) -->
+        <div class="matrix-column dna-column">
+            <div class="soft-card matrix-card">
                 <div class="sidebar-card-header">
-                    <h2 class="sidebar-title"><i class="fa-solid fa-box-archive"
-                            style="color: var(--brand-primary);"></i> MY Stuffs</h2>
-                    <p class="sidebar-subtitle">Your uploaded resources and items.</p>
-                </div>
-
-                <div class="resource-grid">
-                    {% if resources %}
-                    {% for item in resources[:3] %}
-                    <a href="{{ item.presigned_url }}" target="_blank" class="resource-card">
-                        <div class="resource-icon">
-                            {% if item.is_image %}
-                            <i class="fa-solid fa-image"></i>
-                            {% elif '.pdf' in item.name.lower() %}
-                            <i class="fa-solid fa-file-pdf"></i>
-                            {% elif '.doc' in item.name.lower() %}
-                            <i class="fa-solid fa-file-word"></i>
-                            {% elif '.ppt' in item.name.lower() %}
-                            <i class="fa-solid fa-file-powerpoint"></i>
-                            {% else %}
-                            <i class="fa-solid fa-file-lines"></i>
-                            {% endif %}
-                        </div>
-                        <div class="resource-info">
-                            <h4 title="{{ item.name }}">{{ item.name }}</h4>
-                            <p>{{ item.size }} • {{ item.last_modified }}</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-up-right-from-square resource-download"
-                            style="color: var(--text-secondary); margin-left: auto; font-size: 12px;"></i>
-                    </a>
-                    {% endfor %}
-
-                    {% if resources|length > 3 %}
-                    <a href="/my-stuff" class="btn-view-all">
-                        View All Items ({{ resources|length }}) <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                    {% endif %}
-                    {% else %}
-                    <div class="empty-context"
-                        style="padding: 24px 0; border: 1px dashed var(--border-light); border-radius: var(--radius-md);">
-                        <i class="fa-solid fa-folder-open"
-                            style="font-size: 24px; color: var(--border-light); margin-bottom: 12px; display: block;"></i>
-                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">No items uploaded
-                            yet.</p>
-                        <a href="/chat" class="btn-edit-profile"
-                            style="padding: 8px 16px; font-size: 12px; width: auto;">
-                            Start Chat
-                        </a>
+                    <div class="header-text">
+                        <h2><i class="fa-solid fa-dna" style="color: var(--brand-primary);"></i> Career DNA Matrix</h2>
+                        <p>AI-mapped traits guiding your roadmap.</p>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- User Features (AI Context) Card -->
-            {% if user_features %}
-            <div class="dna-card">
-                <div class="sidebar-card-header">
-                    <h2 class="sidebar-title">
-                        <i class="fa-solid fa-dna" style="color: var(--brand-primary);"></i> Personal Career DNA
-                    </h2>
-                    <p class="sidebar-subtitle">Your unique profile traits mapped by AI.</p>
                 </div>
 
+                {% if user_features %}
                 <div class="dna-section">
-                    <div class="dna-section-header">
-                        <i class="fa-solid fa-graduation-cap"></i> Academics & General
-                    </div>
+                    <div class="dna-section-header"><i class="fa-solid fa-layer-group"></i> Academic Base</div>
                     <div class="dna-badges">
                         {% if user_features.plus2_stream and user_features.plus2_stream != 'string' %}
-                        <span class="dna-badge">
-                            <i class="fa-solid fa-layer-group"></i> Stream: {{ user_features.plus2_stream }}
-                        </span>
+                        <span class="dna-badge">{{ user_features.plus2_stream }}</span>
                         {% endif %}
                         {% if user_features.plus2_gpa %}
-                        <span class="dna-badge">
-                            <i class="fa-solid fa-star-half-stroke"></i> GPA: {{ user_features.plus2_gpa }}
-                        </span>
+                        <span class="dna-badge">GPA: {{ user_features.plus2_gpa }}</span>
                         {% endif %}
                         {% if user_features.city_type and user_features.city_type != 'string' %}
-                        <span class="dna-badge">
-                            <i class="fa-solid fa-city"></i> {{ user_features.city_type }}
-                        </span>
+                        <span class="dna-badge">{{ user_features.city_type }}</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Grades -->
                 {% set has_grades = (user_features.grade_math or user_features.grade_physics or
                 user_features.grade_chemistry or user_features.grade_biology or user_features.grade_computer or
                 user_features.grade_accounts or user_features.grade_economics or user_features.grade_english or
                 user_features.grade_nepali or user_features.grade_social or user_features.grade_law) %}
                 {% if has_grades %}
                 <div class="dna-section">
-                    <div class="dna-section-header">
-                        <i class="fa-solid fa-book-open"></i> Core Grades
-                    </div>
+                    <div class="dna-section-header"><i class="fa-solid fa-star"></i> Strengths</div>
                     <div class="dna-badges">
                         {% for k, v in user_features.items() %}
                         {% if k.startswith('grade_') and v %}
-                        <span class="dna-badge">
-                            {% if 'biology' in k %}<i class="fa-solid fa-dna"></i>
-                            {% elif 'computer' in k %}<i class="fa-solid fa-laptop-code"></i>
-                            {% elif 'math' in k %}<i class="fa-solid fa-calculator"></i>
-                            {% elif 'physics' in k %}<i class="fa-solid fa-atom"></i>
-                            {% elif 'chemistry' in k %}<i class="fa-solid fa-flask"></i>
-                            {% elif 'accounts' in k or 'economics' in k %}<i class="fa-solid fa-chart-line"></i>
-                            {% elif 'english' in k or 'nepali' in k %}<i class="fa-solid fa-language"></i>
-                            {% else %}<i class="fa-solid fa-check-circle"></i>{% endif %}
-                            {{ k.replace('grade_', '') | title }}: {{ v }}
-                        </span>
+                        <span class="dna-badge">{{ k.replace('grade_', '') | title }}: {{ v }}</span>
                         {% endif %}
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- Scores -->
-                {% set has_scores = (user_features.score_ioe or user_features.score_cee or user_features.score_cmat) %}
-                {% if has_scores %}
-                <div class="dna-section">
-                    <div class="dna-section-header">
-                        <i class="fa-solid fa-ranking-star"></i> Entrance Scores
-                    </div>
-                    <div class="dna-badges">
-                        {% for k, v in user_features.items() %}
-                        {% if k.startswith('score_') and v > 0 %}
-                        <span class="dna-badge">
-                            <i class="fa-solid fa-award"></i> {{ k.replace('score_', '') | upper }}: {{ v }}
-                        </span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Interests -->
-                {% set has_interests = (user_features.interest_technology or user_features.interest_math_stats or
-                user_features.interest_art_design or user_features.interest_business_money or
+                {% set has_interests = (user_features.interest_technology or user_features.interest_business_money or
                 user_features.interest_social_people or user_features.interest_bio_health or
-                user_features.interest_nature_agri or user_features.interest_construction or
-                user_features.interest_law_politics or user_features.interest_hospitality_food or
-                user_features.interest_gaming_entertainment or user_features.interest_history_culture) %}
+                user_features.interest_art_design) %}
                 {% if has_interests %}
                 <div class="dna-section">
-                    <div class="dna-section-header">
-                        <i class="fa-solid fa-heart"></i> Top Interests
-                    </div>
+                    <div class="dna-section-header"><i class="fa-solid fa-heart"></i> Passions</div>
                     <div class="dna-badges">
                         {% for k, v in user_features.items() %}
                         {% if k.startswith('interest_') and v > 0 %}
-                        <span class="dna-badge">
-                            <i class="fa-solid fa-lightbulb"></i>
-                            {{ k.replace('interest_', '').replace('_', ' ') | title }}: {{ v }}/10
-                        </span>
+                        <div class="interest-badge">
+                            <div class="interest-header">
+                                <i class="fa-solid fa-bolt" style="color:#f59e0b; font-size:12px;"></i>
+                                {{ k.replace('interest_', '').replace('_', ' ') | title }}
+                            </div>
+                            <div class="interest-bar-container">
+                                <div class="interest-meter">
+                                    <div class="interest-fill" style="width: {{ (v / 10) * 100 }}%;"></div>
+                                </div>
+                                <span class="interest-score">{{ v }}/10</span>
+                            </div>
+                        </div>
                         {% endif %}
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
-            </div>
-            {% else %}
-            <!-- Missing Context Fallback -->
-            <div class="dna-card empty-context">
-                <div class="empty-context-icon">
-                    <i class="fa-solid fa-dna"></i>
+
+                {% else %}
+                <div style="text-align: center; padding: 40px 10px;">
+                    <i class="fa-solid fa-microchip"
+                        style="font-size: 36px; color: var(--border-light); margin-bottom: 16px;"></i>
+                    <h4 style="margin:0 0 8px 0; font-size: 16px; color: var(--text-primary);">No DNA Configured</h4>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">Take the AI
+                        assessment to map your academic matrix.</p>
+                    <a href="/chat" class="btn-link-action" style="padding: 12px 28px;">Start Assessment</a>
                 </div>
-                <h3>No Career DNA Found</h3>
-                <p>
-                    The Career Sathi AI doesn't know about your academic background or interests yet. Build your profile
-                    context by taking the AI assessment!
-                </p>
-                <a href="/chat" class="btn-edit-profile">
-                    <i class="fa-solid fa-message"></i> Chat with AI Now
-                </a>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
 
-        <!-- Dashboard Column 3: Chat Assistant Preview (Phase 3) -->
-        <div class="chat-preview-card">
-            <div class="chat-preview-header">
-                <div>
-                    <h3 class="chat-header-title">Career Sathi AI</h3>
-                    <p class="chat-header-subtitle">Last active recently</p>
-                </div>
-                <div class="ai-status">
-                    <span class="status-dot"></span>
-                    Online
-                </div>
-            </div>
+        <!-- Column 3: Vault (Top) & Chat Preview (Bottom) -->
+        <div class="right-column">
 
-            <div class="chat-preview-body">
-                {% for msg in recent_chats %}
-                <div class="preview-msg {% if msg.sender == 'user' %}msg-user{% else %}msg-ai{% endif %}"
-                    data-markdown="{{ msg.message }}">
-                    {{ msg.message }}
+            <!-- Vault Card -->
+            <div class="soft-card vault-card">
+                <div class="sidebar-card-header" style="margin-bottom: 16px;">
+                    <div class="header-text">
+                        <h2 style="font-size: 16px;"><i class="fa-solid fa-box-archive"
+                                style="color: var(--brand-primary);"></i> MY STuffs</h2>
+                        <p style="font-size: 12px;">Your uploaded context documents.</p>
+                    </div>
                 </div>
-                {% else %}
-                <div style="text-align: center; margin-top: 60px; color: var(--text-secondary);">
-                    <i class="fa-solid fa-comment-dots fa-3x"
-                        style="opacity: 0.2; margin-bottom: 16px; display: block;"></i>
-                    <p>No recent messages. Start a conversation with Career Sathi AI!</p>
-                </div>
-                {% endfor %}
-            </div>
 
-            <div class="chat-preview-footer">
-                <a href="/chat" class="btn-fullscreen">
-                    <i class="fa-solid fa-expand"></i> Go to Full Chat
+                {% if resources %}
+                {% for item in resources[:2] %} <!-- Reduced to 2 items to save space for chat -->
+                <a href="{{ item.presigned_url }}" target="_blank" class="resource-card"
+                    style="padding: 12px; margin-bottom: 8px;">
+                    <div class="resource-icon" style="width: 36px; height: 36px; font-size: 16px;">
+                        {% if item.is_image %} <i class="fa-regular fa-image"></i>
+                        {% elif '.pdf' in item.name.lower() %} <i class="fa-regular fa-file-pdf"></i>
+                        {% else %} <i class="fa-regular fa-file-lines"></i> {% endif %}
+                    </div>
+                    <div class="resource-info">
+                        <h4 title="{{ item.name }}" style="font-size: 13px; max-width: 200px;">{{ item.name }}</h4>
+                        <p style="font-size: 11px;">{{ item.size }}</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right"
+                        style="color: var(--border-light); margin-left: auto; font-size: 12px;"></i>
                 </a>
+                {% endfor %}
+
+                {% if resources|length > 2 %}
+                <a href="/my-stuff" class="btn-link-action" style="width: 100%; margin-top: 8px; padding: 8px;">
+                    View All ({{ resources|length }})
+                </a>
+                {% endif %}
+                {% else %}
+                <div
+                    style="padding: 20px; text-align: center; border: 2px dashed var(--border-light); border-radius: 12px;">
+                    <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; margin: 0;">Vault is
+                        empty.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Chat Preview Card -->
+            <div class="chat-preview-card">
+                <div class="chat-preview-header">
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-primary);">Career
+                            Sathi AI</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">
+                            Your personal mentor</p>
+                    </div>
+                    <div class="ai-status">
+                        <span class="status-dot"></span> Online
+                    </div>
+                </div>
+
+                <div class="chat-preview-body scrollable-column">
+                    {% for msg in recent_chats %}
+                    <div class="preview-msg {% if msg.sender == 'user' %}msg-user{% else %}msg-ai{% endif %}"
+                        data-markdown="{{ msg.message }}">
+                        {{ msg.message }}
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; margin: auto; color: var(--text-secondary);">
+                        <div
+                            style="width: 64px; height: 64px; background: var(--brand-light); color: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <i class="fa-solid fa-robot fa-xl"></i>
+                        </div>
+                        <p style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                            Silence in the room.</p>
+                        <p style="font-size: 13px;">Start a chat to map your career.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="chat-preview-footer">
+                    <a href="/chat" class="btn-fullscreen">
+                        <i class="fa-solid fa-paper-plane"></i> Continue Chat
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const previewMessages = document.querySelectorAll('.preview-msg');
+            const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
 
-<script>
-    // Initialize Markdown parsing for chat preview
-    document.addEventListener('DOMContentLoaded', () => {
-        const previewMessages = document.querySelectorAll('.preview-msg');
-        const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/g;
-
-        previewMessages.forEach(msg => {
-            let rawContent = (msg.dataset.markdown || msg.textContent).trim();
-
-            // If the message contains the report generation JSON
-            if (jsonRegex.test(rawContent)) {
-                jsonRegex.lastIndex = 0; // Reset regex
-
-                // Remove the raw JSON code from the text
-                let cleanText = rawContent.replace(jsonRegex, '').trim();
-
-                // Render the clean text and add an Actionable Premium Button
-                msg.innerHTML = marked.parse(cleanText) + `
-                    <a href="/reports" class="report-chip-btn">
-                        <i class="fa-solid fa-chart-pie"></i> View Generated Report
+            previewMessages.forEach(msg => {
+                let rawContent = (msg.dataset.markdown || msg.textContent).trim();
+                if (jsonRegex.test(rawContent)) {
+                    jsonRegex.lastIndex = 0;
+                    let cleanText = rawContent.replace(jsonRegex, '').trim();
+                    msg.innerHTML = marked.parse(cleanText) + `
+                    <a href="/reports" class="btn-link-action" style="margin-top: 14px; background: var(--brand-primary); color: white; display: inline-flex;">
+                        <i class="fa-solid fa-chart-pie"></i> View Report
                     </a>
                 `;
-            } else {
-                // Normal message processing
-                msg.innerHTML = marked.parse(rawContent);
-            }
+                } else {
+                    msg.innerHTML = marked.parse(rawContent);
+                }
+            });
         });
-    });
-</script>
-{% endblock %}
+    </script>
+    {% endblock %}
