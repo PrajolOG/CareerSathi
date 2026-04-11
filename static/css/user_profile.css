@@ -79,7 +79,9 @@
 
 .identity-banner {
     height: 100px;
-    background: linear-gradient(135deg, var(--brand-light) 0%, var(--brand-primary) 100%);
+    background-image: url('/static/assets/careersathi.png');
+    background-size: cover;
+    background-position: center;
     position: relative;
 }
 

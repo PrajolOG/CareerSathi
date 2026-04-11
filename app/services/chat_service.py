@@ -155,8 +155,9 @@ class ChatService:
             # Fetch User Features if they exist
             try:
                 features_res = client.table("User_Features").select("*").eq("user_id", user_id).maybe_single().execute()
-                if features_res.data:
+                if features_res and features_res.data:
                     f_data = features_res.data
+                    print(f"DEBUG UT-12 (RAW FEATURES): {f_data}")
                     
                     # Helper blocks for formatting arrays of strings
                     grades_str = ", ".join([f"{k.replace('grade_', '')}: {v}" for k, v in f_data.items() if k.startswith('grade_') and v])
@@ -172,6 +173,7 @@ class ChatService:
                         f"Entrance Scores: [{scores_str}]. "
                         "DO NOT ask the user for this information again unless they want to update it."
                     )
+                    print(f"DEBUG UT-12 (FORMATTED CONTEXT): {features_context}")
                     context_msg += features_context
             except Exception as f_e:
                 print(f"Features Fetch Error: {f_e}")
@@ -198,8 +200,9 @@ class ChatService:
                         except:
                             factors_text = str(raw_factors)
                             
-                        reports_context += f"\n- Recommended: {pred}. Logic: {factors_text}"
+                    reports_context += f"\n- Recommended: {pred}. Logic: {factors_text}"
                     
+                    print(f"DEBUG UT-13 (REPORTS CONTEXT): {reports_context}")
                     context_msg += reports_context + "\nUse this context to provide consistent advice. If the user asks 'What should I do?', reference these recommendations."
             except Exception as r_e:
                 print(f"Reports Context Fetch Error: {r_e}")

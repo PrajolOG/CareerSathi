@@ -124,7 +124,7 @@ def predict_career(user_json_data):
     data['Family_Income'] = [income_map.get(gen_info.get('family_income', 'Medium'), 2)]
     data['Plus2_Stream'] = [stream]
     data['Plus2_GPA'] = [float(gen_info.get('plus2_gpa', 0.0))]
-    
+
     # Entrance scores
     data['Entrance_Score_IOE'] = [float(scores.get('ioe', 0.0))]
     data['Entrance_Score_CEE'] = [float(scores.get('cee', 0.0))]
@@ -169,7 +169,7 @@ def predict_career(user_json_data):
     
     # Build DataFrame matching exact column order
     input_df = pd.DataFrame(data, columns=feature_columns)
-    
+                            
     # 2. Apply the exact same encoders
     input_df['City_Type'] = city_encoder.transform(input_df['City_Type'])
     input_df['Plus2_Stream'] = stream_encoder.transform(input_df['Plus2_Stream'])
