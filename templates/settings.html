@@ -9,63 +9,69 @@
 
 {% block content %}
 <div class="settings-wrapper">
+    <!-- CSS-Only Tabs Logic -->
+    <input type="radio" name="tab-group" id="tab-account" class="tab-radio" checked>
+    <input type="radio" name="tab-group" id="tab-security" class="tab-radio">
+    <input type="radio" name="tab-group" id="tab-privacy" class="tab-radio">
+
     <div class="settings-layout">
-        <!-- Settings Sidebar -->
+
+        <!-- Sidebar -->
         <aside class="settings-sidebar">
             <div class="sidebar-header">
                 <h1>Settings</h1>
                 <p>Manage your account</p>
             </div>
-            <nav class="settings-tabs" role="tablist">
-                <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="account"
-                    data-target="account">
+            <nav class="settings-tabs">
+                <label for="tab-account" class="tab-label">
                     <i class="fa-solid fa-user-gear"></i>
-                    <span>Account</span>
-                </button>
-                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="privacy" data-target="privacy">
-                    <i class="fa-solid fa-gavel" aria-hidden="true"></i>
+                    <span>Account Settings</span>
+                </label>
+                <label for="tab-security" class="tab-label">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Security & Limits</span>
+                </label>
+                <label for="tab-privacy" class="tab-label">
+                    <i class="fa-solid fa-scale-balanced"></i>
                     <span>Legal & Privacy</span>
-                </button>
+                </label>
             </nav>
         </aside>
 
-        <!-- Settings Main Content -->
+        <!-- Main Content -->
         <main class="settings-main-content">
-            <!-- Account Tab -->
-            <section id="account" class="settings-tab-pane active" role="tabpanel">
+
+            <!-- 1. ACCOUNT TAB -->
+            <section id="pane-account" class="settings-tab-pane">
                 <div class="pane-header">
-                    <div class="pane-title-wrapper">
-                        <div>
-                            <h2>Account Settings</h2>
-                            <p>Update your profile information and personal details.</p>
-                        </div>
-                    </div>
+                    <h2>Account Preferences</h2>
+                    <p>Update your profile information and personal details.</p>
                 </div>
 
                 <form action="/settings/update" method="POST" enctype="multipart/form-data" class="settings-form">
-                    <div class="form-section-header">
-                        <h3>Profile Information</h3>
-                    </div>
+                    <div class="form-section-header">Profile Information</div>
 
                     <div class="profile-pic-section">
                         <div class="current-avatar-container">
-                            <img id="settingsAvatarPreview"
+                            <img id="mainAvatarPreview"
                                 src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
-                                alt="Avatar Preview">
+                                alt="Current Avatar">
                         </div>
                         <div class="avatar-gallery-wrapper">
-                            <label>Choose a Profile Picture</label>
-                            <div class="avatar-gallery" id="avatarGallery">
+                            <label class="title">Choose your Avatar</label>
+                            <div class="avatar-gallery">
                                 {% if minio_avatars %}
                                 {% for avatar_url in minio_avatars %}
-                                <img src="{{ avatar_url }}" class="gallery-item" data-url="{{ avatar_url }}"
-                                    alt="Avatar {{ loop.index }}">
+                                <label class="avatar-radio-label" title="Select Avatar">
+                                    <input type="radio" name="selected_avatar" value="{{ avatar_url }}" {% if
+                                        user_profile_pic==avatar_url %}checked{% endif %}>
+                                    <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
+                                </label>
                                 {% endfor %}
                                 {% else %}
-                                <p class="empty-avatar-msg">No custom avatars found in MinIO.</p>
+                                <p class="empty-avatar-msg">No custom avatars available.</p>
                                 {% endif %}
                             </div>
-                            <input type="hidden" name="selected_avatar" id="selectedAvatarInput">
                         </div>
                     </div>
 
@@ -73,24 +79,23 @@
                         <div class="form-group">
                             <label for="userName">Full Name</label>
                             <input type="text" id="userName" name="full_name" value="{{ user_name }}" required
-                                placeholder="Your full name">
+                                class="modern-input" placeholder="Your full name">
                         </div>
                         <div class="form-group">
                             <label for="userEmail">Email Address</label>
                             <input type="email" id="userEmail" name="user_email" value="{{ user_email }}" readonly
-                                class="input-readonly" placeholder="Your email">
+                                class="modern-input input-readonly" placeholder="Your email">
                         </div>
+
+                        <!-- Dropdown: Education Level -->
                         <div class="form-group">
                             <label id="eduLabel">Education Level</label>
-                            <div class="premium-dropdown" id="educationDropdown" aria-labelledby="eduLabel">
-                                <div class="dropdown-trigger" role="button" aria-haspopup="listbox"
-                                    aria-expanded="false">
+                            <div class="premium-dropdown" id="educationDropdown">
+                                <div class="dropdown-trigger">
                                     <div class="selected-value">
                                         {% set edu_icon = 'fa-graduation-cap' %}
                                         {% for level in education_levels %}
-                                        {% if grade_level == level.value %}
-                                        {% set edu_icon = level.icon %}
-                                        {% endif %}
+                                        {% if grade_level == level.value %}{% set edu_icon = level.icon %}{% endif %}
                                         {% endfor %}
                                         <i class="fa-solid {{ edu_icon }} selected-icon"></i>
                                         <span class="selected-text">{{ grade_level if grade_level else 'Select Level'
@@ -98,9 +103,9 @@
                                     </div>
                                     <i class="fa-solid fa-chevron-down arrow"></i>
                                 </div>
-                                <div class="dropdown-menu" role="listbox">
+                                <div class="dropdown-menu">
                                     {% for level in education_levels %}
-                                    <div class="dropdown-option" role="option" data-value="{{ level.value }}"
+                                    <div class="dropdown-option" data-value="{{ level.value }}"
                                         data-icon="{{ level.icon }}">
                                         <i class="fa-solid {{ level.icon }}"></i>
                                         <span>{{ level.label }}</span>
@@ -110,27 +115,25 @@
                                 <input type="hidden" name="grade_level" value="{{ grade_level }}">
                             </div>
                         </div>
+
+                        <!-- Dropdown: Gender -->
                         <div class="form-group">
                             <label id="genderLabel">Gender</label>
-                            <div class="premium-dropdown" id="genderDropdown" aria-labelledby="genderLabel">
-                                <div class="dropdown-trigger" role="button" aria-haspopup="listbox"
-                                    aria-expanded="false">
+                            <div class="premium-dropdown" id="genderDropdown">
+                                <div class="dropdown-trigger">
                                     <div class="selected-value">
                                         {% set gen_icon = 'fa-user' %}
                                         {% for g in genders %}
-                                        {% if gender == g.value %}
-                                        {% set gen_icon = g.icon %}
-                                        {% endif %}
+                                        {% if gender == g.value %}{% set gen_icon = g.icon %}{% endif %}
                                         {% endfor %}
                                         <i class="fa-solid {{ gen_icon }} selected-icon"></i>
                                         <span class="selected-text">{{ gender if gender else 'Select Gender' }}</span>
                                     </div>
                                     <i class="fa-solid fa-chevron-down arrow"></i>
                                 </div>
-                                <div class="dropdown-menu" role="listbox">
+                                <div class="dropdown-menu">
                                     {% for g in genders %}
-                                    <div class="dropdown-option" role="option" data-value="{{ g.value }}"
-                                        data-icon="{{ g.icon }}">
+                                    <div class="dropdown-option" data-value="{{ g.value }}" data-icon="{{ g.icon }}">
                                         <i class="fa-solid {{ g.icon }}"></i>
                                         <span>{{ g.label }}</span>
                                     </div>
@@ -141,48 +144,51 @@
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">Save changes</button>
+                    <div class="form-actions" style="margin-top: 30px; text-align: right;">
+                        <button type="submit" class="btn-save">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                        </button>
                     </div>
                 </form>
+            </section>
 
-                <div class="section-divider"></div>
-
-                <div class="section-header">
-                    <h2>Security & Data</h2>
+            <!-- 2. SECURITY & LIMITS TAB -->
+            <section id="pane-security" class="settings-tab-pane">
+                <div class="pane-header">
+                    <h2>Danger Zone</h2>
+                    <p>Irreversible actions for your account data.</p>
                 </div>
 
                 <div class="settings-list">
                     <div class="setting-item danger">
                         <div class="setting-info">
                             <h4>Reset Chat History</h4>
-                            <p>Permanently delete all past AI conversations. This cannot be undone.</p>
+                            <p>Permanently delete all past AI conversations. Cannot be undone.</p>
                         </div>
-                        <button type="button" class="btn-danger-outline btn-trigger-modal"
-                            data-modal="deleteConfirmModal">
+                        <button type="button" class="btn-danger-outline"
+                            onclick="document.getElementById('deleteModal').showModal()">
                             <i class="fa-solid fa-trash-can"></i> Reset History
                         </button>
                     </div>
 
                     <div class="setting-item danger">
                         <div class="setting-info">
-                            <h4>Reset Model Context</h4>
-                            <p>Erase your career profile data used by the AI model. You will need to take the assessment
-                                again.</p>
+                            <h4>Reset AI Context</h4>
+                            <p>Erase your career profile data. You will need to retake the assessment.</p>
                         </div>
-                        <button type="button" class="btn-danger-outline btn-trigger-modal"
-                            data-modal="contextConfirmModal">
+                        <button type="button" class="btn-danger-outline"
+                            onclick="document.getElementById('contextModal').showModal()">
                             <i class="fa-solid fa-database"></i> Reset Context
                         </button>
                     </div>
 
                     <div class="setting-item danger">
                         <div class="setting-info">
-                            <h4>Account Session</h4>
-                            <p>Sign out of your account on this device.</p>
+                            <h4>Sign Out Device</h4>
+                            <p>Securely log out of your current session.</p>
                         </div>
-                        <button type="button" class="btn-danger-outline btn-trigger-modal"
-                            data-modal="logoutConfirmModal">
+                        <button type="button" class="btn-danger-outline"
+                            onclick="document.getElementById('logoutModal').showModal()">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
                     </div>
@@ -190,148 +196,124 @@
 
                 <div class="section-divider"></div>
 
-                <div class="section-header" id="limits">
+                <div class="pane-header">
                     <h2>Usage Limits</h2>
+                    <p>Information about your account limitations.</p>
                 </div>
-
                 <div class="settings-list">
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Login Attempts</h4>
-                            <p>Maximum 5 attempts per minute per device to prevent brute-force attacks.</p>
+                            <p>To prevent unauthorized access to your account.</p>
                         </div>
-                        <span class="btn-ghost" style="pointer-events:none; font-weight:700; font-size:13px; color: var(--brand-primary);">5 / min</span>
+                        <span class="btn-ghost" style="pointer-events:none; color: var(--brand-primary);">5 / min</span>
                     </div>
-
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Chat Messages</h4>
-                            <p>Maximum 10 messages per minute to ensure fair usage of AI resources.</p>
+                            <p>Fair usage limit for AI resources.</p>
                         </div>
-                        <span class="btn-ghost" style="pointer-events:none; font-weight:700; font-size:13px; color: var(--brand-primary);">10 / min</span>
+                        <span class="btn-ghost" style="pointer-events:none; color: var(--brand-primary);">10 /
+                            min</span>
                     </div>
-
+                    <!-- Added Missing Report Limit -->
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Career Reports</h4>
                             <p>Maximum 3 career reports per account. Delete an old report to generate a new one.</p>
                         </div>
-                        <span class="btn-ghost" style="pointer-events:none; font-weight:700; font-size:13px; color: var(--brand-primary);">3 total</span>
+                        <span class="btn-ghost" style="pointer-events:none; color: var(--brand-primary);">3 total</span>
                     </div>
                 </div>
             </section>
 
-            <!-- Privacy Tab -->
-            <section id="privacy" class="settings-tab-pane" role="tabpanel">
+            <!-- 3. PRIVACY TAB -->
+            <section id="pane-privacy" class="settings-tab-pane">
                 <div class="pane-header">
-                    <div class="pane-title-wrapper">
-                        <i class="fa-solid fa-shield-halved gradient-icon"></i>
-                        <div>
-                            <h2>Legal & Privacy</h2>
-                            <p>Review our policies and manage your data privacy.</p>
-                        </div>
-                    </div>
+                    <h2>Legal & Privacy</h2>
+                    <p>Review our platform policies and your data rights.</p>
                 </div>
-
                 <div class="settings-list">
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Terms of Service</h4>
                             <p>Read our full terms and conditions for using the platform.</p>
                         </div>
-                        <a href="/terms" class="btn-ghost">View Terms</a>
+                        <a href="/terms" class="btn-ghost"><i class="fa-solid fa-file-contract"></i> View Terms</a>
                     </div>
-
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Privacy Policy</h4>
-                            <p>Learn how we protect and handle your personal data.</p>
+                            <p>Learn how we protect and handle your personal data safely.</p>
                         </div>
-                        <a href="/privacy" class="btn-ghost">View Policy</a>
+                        <a href="/privacy" class="btn-ghost"><i class="fa-solid fa-shield-check"></i> View Policy</a>
                     </div>
-
-
                 </div>
             </section>
+
         </main>
     </div>
 </div>
 
-<!-- Modals -->
-<div class="custom-modal-backdrop" id="deleteConfirmModal" role="dialog" aria-modal="true">
-    <div class="custom-modal">
-        <div class="modal-icon warning">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
+<!-- NATIVE HTML5 DIALOG MODALS -->
+<dialog id="deleteModal" class="custom-modal">
+    <div class="modal-content">
+        <div class="modal-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
         <h3>Delete Chat History?</h3>
-        <p>This will permanently erase all your career counseling conversations. This action cannot be undone.</p>
+        <p>This will permanently erase all your career counseling conversations. This cannot be undone.</p>
         <div class="modal-actions">
-            <button class="btn-cancel btn-close-modal">Cancel</button>
-            <button class="btn-danger btn-confirm-action" data-action="deleteHistory">
-                <i class="fa-solid fa-trash-can"></i> Yes, Delete
+            <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+            <button class="btn-danger" onclick="handleApiAction(this, '/chat/history', 'deleteModal')">
+                <i class="fa-solid fa-trash-can"></i> Delete
             </button>
         </div>
     </div>
-</div>
+</dialog>
 
-<div class="custom-modal-backdrop" id="contextConfirmModal" role="dialog" aria-modal="true">
-    <div class="custom-modal">
-        <div class="modal-icon warning">
-            <i class="fa-solid fa-database"></i>
-        </div>
+<dialog id="contextModal" class="custom-modal">
+    <div class="modal-content">
+        <div class="modal-icon warning"><i class="fa-solid fa-database"></i></div>
         <h3>Reset Model Context?</h3>
-        <p>This will permanently erase the profile saved for you. The AI won't remember your profile and you will need
-            to re-take the assessment.</p>
+        <p>The AI won't remember your profile and you will need to re-take the assessment.</p>
         <div class="modal-actions">
-            <button class="btn-cancel btn-close-modal">Cancel</button>
-            <button class="btn-danger btn-confirm-action" data-action="resetContext">
-                <i class="fa-solid fa-trash"></i> Yes, Reset
+            <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+            <button class="btn-danger" onclick="handleApiAction(this, '/profile/context', 'contextModal')">
+                <i class="fa-solid fa-trash"></i> Reset
             </button>
         </div>
     </div>
-</div>
+</dialog>
 
-<div class="custom-modal-backdrop" id="logoutConfirmModal" role="dialog" aria-modal="true">
-    <div class="custom-modal">
-        <div class="modal-icon warning blue-icon">
-            <i class="fa-solid fa-right-from-bracket"></i>
-        </div>
+<dialog id="logoutModal" class="custom-modal">
+    <div class="modal-content">
+        <div class="modal-icon warning"><i class="fa-solid fa-right-from-bracket"></i></div>
         <h3>Sign Out?</h3>
-        <p>Are you sure you want to end your session? You will need to log back in to access Career Sathi.</p>
+        <p>Are you sure you want to end your session? You will need to log back in.</p>
         <div class="modal-actions">
-            <button class="btn-cancel btn-close-modal">Cancel</button>
-            <button class="btn-danger btn-confirm-action" data-action="logout">
-                <i class="fa-solid fa-right-from-bracket"></i> Yes, Sign Out
+            <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+            <button class="btn-danger" onclick="handleLogout(this)">
+                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
             </button>
         </div>
     </div>
-</div>
+</dialog>
 
+<!-- FAST, MINIMIZED JS -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        /* --- Tab Switching Logic --- */
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.settings-tab-pane');
 
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetId = btn.getAttribute('data-target');
-
-                // Update Tabs
-                tabBtns.forEach(b => {
-                    b.classList.remove('active');
-                    b.setAttribute('aria-selected', 'false');
-                });
-                btn.classList.add('active');
-                btn.setAttribute('aria-selected', 'true');
-
-                // Update Panes
-                tabPanes.forEach(pane => pane.classList.remove('active'));
-                document.getElementById(targetId).classList.add('active');
+        // 1. Instant Avatar Preview (Removed delay logic completely)
+        const gallery = document.querySelector('.avatar-gallery');
+        const preview = document.getElementById('mainAvatarPreview');
+        if (gallery && preview) {
+            gallery.addEventListener('change', (e) => {
+                if (e.target.name === 'selected_avatar') {
+                    preview.src = e.target.value;
+                }
             });
-        });
+        }
 
-        /* --- Custom Dropdown Logic --- */
+        // 2. Custom Premium Dropdown Logic
         const dropdowns = document.querySelectorAll('.premium-dropdown');
 
         dropdowns.forEach(dropdown => {
@@ -341,136 +323,57 @@
             const selectedText = dropdown.querySelector('.selected-text');
             const selectedIcon = dropdown.querySelector('.selected-icon');
 
+            // Toggle Open/Close
             trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isOpen = dropdown.classList.contains('active');
+                const isActive = dropdown.classList.contains('active');
 
-                // Close all other dropdowns
-                document.querySelectorAll('.premium-dropdown').forEach(d => {
-                    d.classList.remove('active');
-                    d.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
-                });
-
-                if (!isOpen) {
-                    dropdown.classList.add('active');
-                    trigger.setAttribute('aria-expanded', 'true');
-                }
+                document.querySelectorAll('.premium-dropdown').forEach(d => d.classList.remove('active'));
+                if (!isActive) dropdown.classList.add('active');
             });
 
+            // Select Option
             options.forEach(option => {
                 option.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const value = option.getAttribute('data-value');
-                    const iconClass = option.getAttribute('data-icon');
-                    const text = option.querySelector('span').innerText;
-
-                    selectedText.innerText = text;
-                    selectedIcon.className = `fa-solid ${iconClass} selected-icon`;
-                    hiddenInput.value = value;
-
+                    selectedText.innerText = option.querySelector('span').innerText;
+                    selectedIcon.className = `fa-solid ${option.getAttribute('data-icon')} selected-icon`;
+                    hiddenInput.value = option.getAttribute('data-value');
                     dropdown.classList.remove('active');
-                    trigger.setAttribute('aria-expanded', 'false');
                 });
             });
         });
 
-        // Close dropdowns when clicking outside
+        // Close Dropdowns on outside click
         document.addEventListener('click', () => {
-            document.querySelectorAll('.premium-dropdown').forEach(d => {
-                d.classList.remove('active');
-                d.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
-            });
+            document.querySelectorAll('.premium-dropdown').forEach(d => d.classList.remove('active'));
         });
-
-        /* --- Avatar Selection Logic --- */
-        const avatarGallery = document.getElementById('avatarGallery');
-        const avatarPreview = document.getElementById('settingsAvatarPreview');
-        const avatarInput = document.getElementById('selectedAvatarInput');
-
-        if (avatarGallery) {
-            avatarGallery.addEventListener('click', (e) => {
-                if (e.target.classList.contains('gallery-item')) {
-                    const url = e.target.getAttribute('data-url');
-
-                    // Update Image and Input
-                    avatarPreview.src = url;
-                    avatarInput.value = url;
-
-                    // Update Active State
-                    document.querySelectorAll('.gallery-item').forEach(item => item.classList.remove('active'));
-                    e.target.classList.add('active');
-                }
-            });
-        }
-
-        /* --- Modal Logic --- */
-        const modalTriggers = document.querySelectorAll('.btn-trigger-modal');
-        const closeBtns = document.querySelectorAll('.btn-close-modal');
-        const actionBtns = document.querySelectorAll('.btn-confirm-action');
-
-        // Open Modal
-        modalTriggers.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modalId = btn.getAttribute('data-modal');
-                document.getElementById(modalId).classList.add('active');
-            });
-        });
-
-        // Close Modal Function
-        const closeModal = (modal) => {
-            modal.classList.remove('active');
-        };
-
-        // Bind Close Buttons
-        closeBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.closest('.custom-modal-backdrop');
-                closeModal(modal);
-            });
-        });
-
-        // Bind Action Confirmations
-        actionBtns.forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const action = btn.getAttribute('data-action');
-                const originalText = btn.innerHTML;
-                const modal = btn.closest('.custom-modal-backdrop');
-
-                // Set loading state
-                btn.classList.add('btn-loading');
-                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
-
-                try {
-                    if (action === 'deleteHistory') {
-                        const res = await fetch('/chat/history', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
-                        if (res.ok) handleSuccess(btn, 'Deleted', modal);
-                        else throw new Error('Failed to delete history');
-                    }
-                    else if (action === 'resetContext') {
-                        const res = await fetch('/profile/context', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
-                        if (res.ok) handleSuccess(btn, 'Reset Complete', modal);
-                        else throw new Error('Failed to reset context');
-                    }
-                    else if (action === 'logout') {
-                        setTimeout(() => window.location.href = '/logout', 500);
-                    }
-                } catch (error) {
-                    console.error('Action Error:', error);
-                    alert("An error occurred. Please try again.");
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('btn-loading');
-                }
-            });
-        });
-
-        function handleSuccess(btn, successText, modal) {
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> ${successText}`;
-            btn.style.background = '#10b981'; // Success Green
-            setTimeout(() => {
-                closeModal(modal);
-                window.location.reload();
-            }, 800);
-        }
     });
+
+    // 3. Modal API Handlers
+    async function handleApiAction(btn, endpoint, modalId) {
+        btn.classList.add('btn-loading');
+        try {
+            const res = await fetch(endpoint, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+            if (!res.ok) throw new Error('API Error');
+
+            btn.classList.remove('btn-loading');
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Done`;
+            btn.style.background = '#10b981'; // Green
+
+            setTimeout(() => {
+                document.getElementById(modalId).close();
+                window.location.reload();
+            }, 400);
+        } catch (error) {
+            alert("Failed to perform action. Please try again.");
+            btn.classList.remove('btn-loading');
+        }
+    }
+
+    function handleLogout(btn) {
+        btn.classList.add('btn-loading');
+        setTimeout(() => window.location.href = '/logout', 300);
+    }
 </script>
 {% endblock %}
