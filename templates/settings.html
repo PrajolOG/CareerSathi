@@ -51,41 +51,41 @@
                 <form action="/settings/update" method="POST" enctype="multipart/form-data" class="settings-form">
                     <div class="form-section-header">Profile Information</div>
 
-                    <div class="profile-pic-section">
-                        <div class="current-avatar-container">
-                            <img id="mainAvatarPreview"
-                                src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
-                                alt="Current Avatar">
-                        </div>
-                        <div class="avatar-gallery-wrapper">
-                            <label class="title">Choose your Avatar</label>
-                            <div class="avatar-gallery">
-                                {% if minio_avatars %}
-                                {% for avatar_url in minio_avatars %}
-                                <label class="avatar-radio-label" title="Select Avatar">
-                                    <input type="radio" name="selected_avatar" value="{{ avatar_url }}" {% if
-                                        user_profile_pic==avatar_url %}checked{% endif %}>
-                                    <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
-                                </label>
-                                {% endfor %}
-                                {% else %}
-                                <p class="empty-avatar-msg">No custom avatars available.</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+        <!-- Compact Avatar Header -->
+        <div class="profile-header-section">
+          <div class="profile-avatar-wrapper" onclick="document.getElementById('avatarModal').showModal()">
+            <img id="mainAvatarPreview"
+              src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
+              alt="Current Avatar">
+            <div class="avatar-overlay">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+          </div>
+          <div class="profile-header-info">
+            <h3>{{ user_name }}</h3>
+            <span class="profile-email">{{ user_email }}</span>
+            <span class="profile-role">Student Account</span>
+          </div>
+        </div>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="userName">Full Name</label>
-                            <input type="text" id="userName" name="full_name" value="{{ user_name }}" required
-                                class="modern-input" placeholder="Your full name">
-                        </div>
-                        <div class="form-group">
-                            <label for="userEmail">Email Address</label>
-                            <input type="email" id="userEmail" name="user_email" value="{{ user_email }}" readonly
-                                class="modern-input input-readonly" placeholder="Your email">
-                        </div>
+        <!-- Hidden radio input to store selected avatar -->
+        <div class="avatar-selection-hidden">
+          {% if minio_avatars %}
+          {% for avatar_url in minio_avatars %}
+          <label class="avatar-radio-label" title="Select Avatar">
+            <input type="radio" name="selected_avatar" value="{{ avatar_url }}" {% if user_profile_pic==avatar_url %}checked{% endif %}>
+            <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
+          </label>
+          {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="userName">Full Name</label>
+            <input type="text" id="userName" name="full_name" value="{{ user_name }}" required
+              class="modern-input" placeholder="Your full name">
+          </div>
 
                         <!-- Dropdown: Education Level -->
                         <div class="form-group">
@@ -144,13 +144,13 @@
                         </div>
                     </div>
 
-                    <div class="form-actions" style="margin-top: 30px; text-align: right;">
-                        <button type="submit" class="btn-save">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Changes
-                        </button>
-                    </div>
-                </form>
-            </section>
+        <div class="form-actions" style="margin-top: 30px; text-align: right;">
+          <button type="submit" class="btn-save">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </section>
 
             <!-- 2. SECURITY & LIMITS TAB -->
             <section id="pane-security" class="settings-tab-pane">
@@ -284,34 +284,69 @@
     </div>
 </dialog>
 
-<dialog id="logoutModal" class="custom-modal">
+  <dialog id="logoutModal" class="custom-modal">
     <div class="modal-content">
-        <div class="modal-icon warning"><i class="fa-solid fa-right-from-bracket"></i></div>
-        <h3>Sign Out?</h3>
-        <p>Are you sure you want to end your session? You will need to log back in.</p>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
-            <button class="btn-danger" onclick="handleLogout(this)">
-                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
-            </button>
-        </div>
+      <div class="modal-icon warning"><i class="fa-solid fa-right-from-bracket"></i></div>
+      <h3>Sign Out?</h3>
+      <p>Are you sure you want to end your session? You will need to log back in.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+        <button class="btn-danger" onclick="handleLogout(this)">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
     </div>
-</dialog>
+  </dialog>
+
+  <!-- AVATAR SELECTION MODAL -->
+  <dialog id="avatarModal" class="custom-modal avatar-modal">
+    <div class="modal-content avatar-modal-content">
+      <div class="modal-selected-preview">
+        <img id="modalSelectedAvatar" src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}" alt="Selected Avatar">
+      </div>
+      <h3>Choose Your Avatar</h3>
+      <p>Select an avatar that represents you across the platform.</p>
+      <div class="avatar-grid">
+        {% if minio_avatars %}
+        {% for avatar_url in minio_avatars %}
+        <label class="avatar-selection-item" data-value="{{ avatar_url }}">
+          <input type="radio" name="modal_avatar" value="{{ avatar_url }}" {% if user_profile_pic==avatar_url %}checked{% endif %}>
+          <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
+          <div class="avatar-check"><i class="fa-solid fa-check"></i></div>
+        </label>
+        {% endfor %}
+        {% else %}
+        <p class="empty-avatar-msg">No custom avatars available.</p>
+        {% endif %}
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+        <button class="btn-primary" onclick="handleAvatarSelection()">Save Selection</button>
+      </div>
+    </div>
+  </dialog>
 
 <!-- FAST, MINIMIZED JS -->
-<script>
+  <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-        // 1. Instant Avatar Preview (Removed delay logic completely)
-        const gallery = document.querySelector('.avatar-gallery');
-        const preview = document.getElementById('mainAvatarPreview');
-        if (gallery && preview) {
-            gallery.addEventListener('change', (e) => {
-                if (e.target.name === 'selected_avatar') {
-                    preview.src = e.target.value;
-                }
-            });
+    // 1. Avatar Modal Selection Logic
+    const avatarModal = document.getElementById('avatarModal');
+    const mainAvatarPreview = document.getElementById('mainAvatarPreview');
+    const modalSelectedAvatar = document.getElementById('modalSelectedAvatar');
+    const hiddenAvatarInputs = document.querySelectorAll('.avatar-selection-hidden input[name="selected_avatar"]');
+    const modalAvatarInputs = avatarModal.querySelectorAll('input[name="modal_avatar"]');
+
+    // Handle modal avatar selection - only update modal preview, NOT main page
+    modalAvatarInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        const img = e.target.closest('.avatar-selection-item').querySelector('img');
+        // Only update the modal preview, not the main page avatar
+        if (modalSelectedAvatar) {
+          modalSelectedAvatar.src = img.src;
         }
+      });
+    });
 
         // 2. Custom Premium Dropdown Logic
         const dropdowns = document.querySelectorAll('.premium-dropdown');
@@ -372,8 +407,24 @@
     }
 
     function handleLogout(btn) {
-        btn.classList.add('btn-loading');
-        setTimeout(() => window.location.href = '/logout', 300);
+      btn.classList.add('btn-loading');
+      setTimeout(() => window.location.href = '/logout', 300);
     }
-</script>
+
+    // Handle avatar selection from modal
+    window.handleAvatarSelection = function() {
+      const selectedModal = document.querySelector('#avatarModal input[name="modal_avatar"]:checked');
+      if (selectedModal) {
+        // Sync with hidden form inputs
+        const hiddenAvatarInputs = document.querySelectorAll('.avatar-selection-hidden input[name="selected_avatar"]');
+        hiddenAvatarInputs.forEach(hiddenInput => {
+          hiddenInput.checked = hiddenInput.value === selectedModal.value;
+        });
+        // Update preview
+        const mainAvatarPreview = document.getElementById('mainAvatarPreview');
+        mainAvatarPreview.src = selectedModal.closest('.avatar-selection-item').querySelector('img').src;
+      }
+      document.getElementById('avatarModal').close();
+    };
+  </script>
 {% endblock %}
