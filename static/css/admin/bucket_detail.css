@@ -1,4 +1,4 @@
-﻿/* static/css/admin/bucket_detail.css */
+/* static/css/admin/bucket_detail.css */
 .page-container {
   padding: 24px 32px;
   max-width: 1800px;
@@ -237,6 +237,32 @@
   min-height: 0;
   flex-shrink: 1;
   overflow-y: auto;
+}
+
+/* Custom Scrollbar Styling */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 0 12px 12px 0;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Firefox Scrollbar */
+.table-container {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
 }
 
 .users-table {
