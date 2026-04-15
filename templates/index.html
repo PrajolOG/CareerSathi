@@ -118,123 +118,127 @@
                     path based on grades, interests, and entrance scores.
                 </p>
 
-                <div class="hero-buttons">
-                    {% if user_name %}
-                    <a href="/chat" class="btn-primary-large">Talk to AI</a>
-                    <a href="/reports" class="btn-secondary-large">View
-                        Reports</a>
-                    {% else %}
-                    <a href="/signup" class="btn-primary-large"><i class="fa-solid fa-rocket"></i> Start Free</a>
-                    <a href="#features" class="btn-secondary-large"><i class="fa-solid fa-sparkles"></i> Explore
-                        Features</a>
-                    {% endif %}
-                </div>
-
-                <div class="hero-stats">
-                    <div class="stat">
-                        <div class="stat-ico"><i class="fa-solid fa-trophy"></i></div>
-                        <div class="stat-txt">
-                            <div class="stat-title">Top 3 Matches</div>
-                            <div class="stat-sub">Robust Model</div>
-                        </div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-ico"><i class="fa-solid fa-file-invoice"></i></div>
-                        <div class="stat-txt">
-                            <div class="stat-title">Saved Reports</div>
-                            <div class="stat-sub">Track Progress</div>
-                        </div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-ico"><i class="fa-solid fa-building-columns"></i></div>
-                        <div class="stat-txt">
-                            <div class="stat-title">Colleges</div>
-                            <div class="stat-sub">Nepal & Global</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Symmetrical 3-Column Showcase -->
-            <div class="hero-showcase reveal fade-up" style="transition-delay: 0.2s;">
-                <div class="showcase-grid">
-                    <!-- AI Card -->
-                    <div class="showcase-card sc-chat float-anim">
-                        <div class="sc-head">
-                            <span class="sc-title"><i class="fa-solid fa-robot"></i> AI Counselor</span>
-                            <span class="sc-chip pulse">Live</span>
-                        </div>
-                        <div class="sc-body">
-                            <div class="bubble ai">Namaste! What are your interests after +2?</div>
-                            <div class="bubble user">I like Computers and Physics.</div>
-                            <div class="bubble ai">Perfect. Let's look at Engineering and CS options in Nepal.</div>
-                            <div class="typing" aria-hidden="true"><span></span><span></span><span></span></div>
-                        </div>
-                    </div>
-
-                    <!-- Report Card -->
-                    <div class="showcase-card sc-report float-anim" style="animation-delay: 1s;">
-                        <div class="sc-head">
-                            <span class="sc-title"><i class="fa-solid fa-chart-pie"></i> Career Report</span>
-                            <span class="sc-chip">Top 3</span>
-                        </div>
-                        <div class="sc-media">
-                            <img src="/static/assets/careerreport.png" alt="Report Preview" loading="lazy">
-                        </div>
-                    </div>
-
-                    <!-- University Finder Card -->
-                    <div class="showcase-card sc-uni float-anim" style="animation-delay: 2s;">
-                        <div class="sc-uni-body">
-                            <div class="sc-uni-icon">
-                                <i class="fa-solid fa-building-columns"></i>
-                            </div>
-                            <h3 class="sc-uni-title">University Finder</h3>
-                            <p class="sc-uni-desc">Seamlessly explore 500+ local colleges and top-tier global institutions abroad.</p>
-                            <div class="sc-uni-footer">
-                                <div class="sc-uni-avatars">
-                                    <span class="sc-uni-avatar">TU</span>
-                                    <span class="sc-uni-avatar">KU</span>
-                                    <span class="sc-uni-avatar sc-uni-avatar--dark">UK</span>
-                                </div>
-                                <span class="sc-uni-label">Local & Global</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-buttons">
+          {% if user_name %}
+          <a href="/chat" class="btn-primary-large">Talk to AI</a>
+          <a href="/reports" class="btn-secondary-large">View
+            Reports</a>
+          {% else %}
+          <a href="/signup" class="btn-primary-large">Start Free</a>
+          <a href="#features" class="btn-secondary-large">Explore
+            Features</a>
+          {% endif %}
         </div>
-    </header>
+      </div>
+    </div>
+  </header>
 
-    <!-- Features Section -->
-    <section id="features" class="features-section">
+  <!-- Combined Stats & Showcase Section -->
+  <section id="showcase" class="combined-showcase">
+    <div class="combined-container">
+      <!-- Header -->
+      <div class="section-header reveal fade-up">
+        <h2>See How It Works</h2>
+        <p>Three powerful tools to guide your career journey from start to finish.</p>
+      </div>
+
+      <!-- Stats Bar (Horizontal) -->
+      <div class="stats-bar reveal fade-up">
+        <div class="stat-pill">
+          <i class="fa-solid fa-trophy"></i>
+          <span class="stat-text"><strong>Top 3</strong> Career Matches</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-pill">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span class="stat-text"><strong>Saved</strong> Progress Reports</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-pill">
+          <i class="fa-solid fa-building-columns"></i>
+          <span class="stat-text"><strong>500+</strong> Colleges</span>
+        </div>
+      </div>
+
+      <!-- Showcase Cards Grid -->
+      <div class="showcase-grid">
+        <!-- AI Card -->
+        <div class="showcase-card sc-chat float-anim reveal fade-up">
+          <div class="sc-head">
+            <span class="sc-title"><i class="fa-solid fa-robot"></i> AI Counselor</span>
+            <span class="sc-chip pulse">Live</span>
+          </div>
+          <div class="sc-body">
+            <div class="bubble ai">Namaste! What are your interests after +2?</div>
+            <div class="bubble user">I like Computers and Physics.</div>
+            <div class="bubble ai">Perfect. Let's look at Engineering and CS options in Nepal.</div>
+            <div class="typing" aria-hidden="true"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+
+        <!-- Report Card -->
+        <div class="showcase-card sc-report float-anim reveal fade-up" style="transition-delay: 0.1s;">
+          <div class="sc-head">
+            <span class="sc-title"><i class="fa-solid fa-chart-pie"></i> Career Report</span>
+            <span class="sc-chip">Top 3</span>
+          </div>
+          <div class="sc-media">
+            <img src="/static/assets/careerreport.png" alt="Report Preview" loading="lazy">
+          </div>
+        </div>
+
+        <!-- University Finder Card -->
+        <div class="showcase-card sc-uni float-anim reveal fade-up" style="transition-delay: 0.2s;">
+          <div class="sc-uni-body">
+            <div class="sc-uni-icon">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h3 class="sc-uni-title">University Finder</h3>
+            <p class="sc-uni-desc">Seamlessly explore 500+ local colleges and top-tier global institutions abroad.</p>
+            <div class="sc-uni-footer">
+              <div class="sc-uni-avatars">
+                <span class="sc-uni-avatar">TU</span>
+                <span class="sc-uni-avatar">KU</span>
+                <span class="sc-uni-avatar sc-uni-avatar--dark">UK</span>
+              </div>
+              <span class="sc-uni-label">Local & Global</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
         <div class="section-header reveal fade-up">
             <h2>Modern Counseling for Modern Students</h2>
             <p>Everything you need from prediction to enrollment in one place, beautifully organized.</p>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-card reveal fade-up">
-                <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
-                <h3>AI Counselor Chat</h3>
-                <p>Natural language guidance for entrance exams and specific career steps.</p>
-            </div>
-            <div class="feature-card reveal fade-up" style="transition-delay: 0.1s;">
-                <div class="feature-icon"><i class="fa-solid fa-ranking-star"></i></div>
-                <h3>Top 3 Prediction</h3>
-                <p>ML-powered career matching based on your unique academic profile.</p>
-            </div>
-            <div class="feature-card reveal fade-up" style="transition-delay: 0.2s;">
-                <div class="feature-icon"><i class="fa-solid fa-file-invoice"></i></div>
-                <h3>Saved Reports</h3>
-                <p>Keep your personalized career roadmaps safe in your interactive dashboard.</p>
-            </div>
-            <div class="feature-card reveal fade-up" style="transition-delay: 0.3s;">
-                <div class="feature-icon"><i class="fa-solid fa-building-columns"></i></div>
-                <h3>College Finder</h3>
-                <p>Recommended universities in Nepal and abroad specifically tailored for your path.</p>
-            </div>
+      <div class="features-grid">
+        <!-- Original Features -->
+        <div class="feature-card reveal fade-up">
+          <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+          <h3>AI Counselor Chat</h3>
+          <p>Natural language guidance for entrance exams and specific career steps.</p>
         </div>
+        <div class="feature-card reveal fade-up" style="transition-delay: 0.1s;">
+          <div class="feature-icon"><i class="fa-solid fa-ranking-star"></i></div>
+          <h3>Top 3 Prediction</h3>
+          <p>ML-powered career matching based on your unique academic profile.</p>
+        </div>
+        <div class="feature-card reveal fade-up" style="transition-delay: 0.2s;">
+          <div class="feature-icon"><i class="fa-solid fa-file-invoice"></i></div>
+          <h3>Saved Reports</h3>
+          <p>Keep your personalized career roadmaps safe in your interactive dashboard.</p>
+        </div>
+        <div class="feature-card reveal fade-up" style="transition-delay: 0.3s;">
+          <div class="feature-icon"><i class="fa-solid fa-building-columns"></i></div>
+          <h3>College Finder</h3>
+          <p>Recommended universities in Nepal and abroad specifically tailored for your path.</p>
+        </div>
+      </div>
     </section>
 
     <!-- Pain Behind The Pain Section -->
@@ -455,54 +459,72 @@
         </div>
     </section>
 
-    <!-- Enhanced Footer -->
-    <footer class="landing-footer">
-        <div class="footer-container">
-            <div class="footer-grid">
-                <div class="footer-brand-col">
-                    <div class="footer-logo">
-                        <img src="/static/assets/cc_ico.png" alt="Icon">
-                        <span>Career Sathi</span>
-                    </div>
-                    <p>Nepal's first dedicated AI career counseling platform, guiding students from confusion to
-                        clarity.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-
-                <div class="footer-links-col">
-                    <h4>Platform</h4>
-                    <a href="#features">Features</a>
-                    <a href="#showcase">AI Showcase</a>
-                    <a href="#how-it-works">How it Works</a>
-                    <a href="/reports">Reports</a>
-                </div>
-
-                <div class="footer-links-col">
-                    <h4>Resources</h4>
-                    <a href="#">Universities</a>
-                    <a href="#">Entrance Exams</a>
-                    <a href="#">Study Abroad</a>
-                    <a href="#">Blog</a>
-                </div>
-
-                <div class="footer-links-col">
-                    <h4>Support</h4>
-                    <a href="#">Contact Us</a>
-                    <a href="#">FAQ</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                </div>
+  <!-- Professional Footer -->
+  <footer class="landing-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Brand Column -->
+        <div class="footer-brand-col">
+          <div class="footer-logo">
+            <img src="/static/assets/cc_ico.png" alt="Career Sathi">
+            <span>Career Sathi</span>
+          </div>
+          <p class="footer-tagline">Nepal's first AI career counseling platform. Guiding students from confusion to clarity.</p>
+          
+          <div class="footer-newsletter">
+            <label for="footer-email">Get career tips and updates</label>
+            <div class="newsletter-form">
+              <input type="email" id="footer-email" placeholder="your@email.com" class="newsletter-input">
+              <button type="button" class="newsletter-btn" onclick="showNewsletterMsg()">Subscribe</button>
             </div>
-
-            <div class="footer-bottom">
-                <p> &copy; 2026 Career Sathi.</p>
-            </div>
+            <p class="newsletter-msg" id="newsletterMsg" style="display: none;">Thanks for subscribing!</p>
+          </div>
         </div>
-    </footer>
+
+        <!-- Platform Column -->
+        <div class="footer-links-col">
+          <h4>Platform</h4>
+          <a href="#features">Features</a>
+          <a href="/chat">AI Counselor</a>
+          <a href="/reports">Career Reports</a>
+          <a href="/userProfile">My Dashboard</a>
+        </div>
+
+        <!-- Account Column -->
+        <div class="footer-links-col">
+          <h4>Account</h4>
+          <a href="/login">Sign In</a>
+          <a href="/signup">Create Account</a>
+          <a href="/settings">Settings</a>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <div class="footer-legal-links">
+          <a href="/terms">Terms of Service</a>
+          <a href="/privacy">Privacy Policy</a>
+        </div>
+        <div class="footer-cta">
+          <span>Ready to find your path?</span>
+          <a href="/signup" class="footer-cta-btn">Start Free</a>
+        </div>
+        <p class="footer-copyright">2026 Career Sathi. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function showNewsletterMsg() {
+      const email = document.getElementById('footer-email').value;
+      const msg = document.getElementById('newsletterMsg');
+      if (email && email.includes('@')) {
+        msg.style.display = 'block';
+        document.getElementById('footer-email').value = '';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      }
+    }
+  </script>
 
     <!-- Reveal & Setup Script -->
     <script>
