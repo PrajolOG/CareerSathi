@@ -30,9 +30,14 @@
         <div class="identity-column">
             <div class="identity-card">
                 <div class="identity-glass-panel">
-                    <img class="identity-avatar" id="mainAvatarDisplay"
-                        src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
-                        alt="Profile">
+                    <div class="profile-header-wrapper">
+                        <img class="identity-avatar" id="mainAvatarDisplay"
+                            src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}"
+                            alt="Profile">
+                        <a href="/settings" class="btn-edit-icon" title="Edit Profile">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                    </div>
                     <h1 class="identity-name">{{ user_name }}</h1>
                     <span class="identity-role">Student Account</span>
 
@@ -57,10 +62,6 @@
                             <span class="info-value">{{ grade_level }}</span>
                         </div>
                     </div>
-
-                    <a href="/settings" class="btn-edit-profile">
-                        <i class="fa-solid fa-sliders"></i> Edit Profile
-                    </a>
                 </div>
             </div>
         </div>
