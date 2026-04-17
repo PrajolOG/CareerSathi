@@ -193,8 +193,16 @@
                 </div>
             </div>
 
-            <!-- Institutional Matches -->
-            <div class="uni-section">
+<!-- Institutional Matches -->
+<div class="roadmap-header-group">
+    <div class="roadmap-header-info">
+        <span class="roadmap-pill">Curated Education Paths</span>
+        <h2 class="roadmap-title">Recommended Universities</h2>
+        <p class="roadmap-desc">Hand-picked institutions that align with your career choice in <span id="uniCareerName" style="color:#4f46e5; font-weight:700">{{ primary_prediction }}</span>, offering the best programs and opportunities.</p>
+    </div>
+</div>
+
+<div class="uni-section">
                 <!-- Dynamic Course Stack -->
                 <div class="courses-stack" id="coursesStack">
                     {% for option in career_options %}

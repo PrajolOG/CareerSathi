@@ -267,11 +267,18 @@ function switchCareer(index) {
         featuredChip.innerHTML = index === 0 ? '<i class="fa-solid fa-star"></i> BEST MATCH' : '<i class="fa-solid fa-bullseye"></i> ALTERNATIVE';
     }
 
-    const titleEl = document.getElementById('whyCareerTitle');
-    if (titleEl) {
-        titleEl.style.opacity = 0;
-        setTimeout(() => { titleEl.textContent = `Why ${selectedName}?`; titleEl.style.opacity = 1; }, 150);
-    }
+const titleEl = document.getElementById('whyCareerTitle');
+  if (titleEl) {
+    titleEl.style.opacity = 0;
+    setTimeout(() => { titleEl.textContent = `Why ${selectedName}?`; titleEl.style.opacity = 1; }, 150);
+  }
+
+  // Update university section career name with fade animation
+  const uniCareerName = document.getElementById('uniCareerName');
+  if (uniCareerName) {
+    uniCareerName.style.opacity = 0;
+    setTimeout(() => { uniCareerName.textContent = selectedName; uniCareerName.style.opacity = 1; }, 150);
+  }
 
     document.querySelectorAll('.career-course-set').forEach((set, i) => {
         set.classList.toggle('active', i === index);
