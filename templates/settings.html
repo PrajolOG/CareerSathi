@@ -144,9 +144,10 @@
                         </div>
                     </div>
 
-        <div class="form-actions" style="margin-top: 30px; text-align: right;">
-          <button type="submit" class="btn-save">
-            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        <div class="form-actions">
+          <button type="submit" class="btn-save" id="saveAccountBtn">
+            <span class="btn-label">Save Changes</span>
+            <span class="btn-spinner"></span>
           </button>
         </div>
       </form>
@@ -301,27 +302,37 @@
   <!-- AVATAR SELECTION MODAL -->
   <dialog id="avatarModal" class="custom-modal avatar-modal">
     <div class="modal-content avatar-modal-content">
-      <div class="modal-selected-preview">
-        <img id="modalSelectedAvatar" src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}" alt="Selected Avatar">
-      </div>
-      <h3>Choose Your Avatar</h3>
-      <p>Select an avatar that represents you across the platform.</p>
-      <div class="avatar-grid">
-        {% if minio_avatars %}
-        {% for avatar_url in minio_avatars %}
-        <label class="avatar-selection-item" data-value="{{ avatar_url }}">
-          <input type="radio" name="modal_avatar" value="{{ avatar_url }}" {% if user_profile_pic==avatar_url %}checked{% endif %}>
-          <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
-          <div class="avatar-check"><i class="fa-solid fa-check"></i></div>
-        </label>
-        {% endfor %}
-        {% else %}
-        <p class="empty-avatar-msg">No custom avatars available.</p>
-        {% endif %}
-      </div>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
-        <button class="btn-primary" onclick="handleAvatarSelection()">Save Selection</button>
+      <div class="avatar-modal-layout">
+        <!-- Left Column -->
+        <div class="avatar-modal-left">
+          <div class="avatar-modal-header">
+            <h3>Choose Your Avatar</h3>
+            <p>Select an avatar that represents you across the platform.</p>
+          </div>
+          <div class="modal-selected-preview">
+            <img id="modalSelectedAvatar" src="{{ user_profile_pic | default('https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png') }}" alt="Selected Avatar">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="this.closest('dialog').close()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="handleAvatarSelection()">Save Selection</button>
+          </div>
+        </div>
+        <!-- Right Column (Scrollable Grid) -->
+        <div class="avatar-modal-right custom-scrollbar">
+          <div class="avatar-grid">
+            {% if minio_avatars %}
+            {% for avatar_url in minio_avatars %}
+            <label class="avatar-selection-item" data-value="{{ avatar_url }}">
+              <input type="radio" name="modal_avatar" value="{{ avatar_url }}" {% if user_profile_pic==avatar_url %}checked{% endif %}>
+              <img src="{{ avatar_url }}" alt="Avatar {{ loop.index }}">
+              <div class="avatar-check"><i class="fa-solid fa-check"></i></div>
+            </label>
+            {% endfor %}
+            {% else %}
+            <p class="empty-avatar-msg">No custom avatars available.</p>
+            {% endif %}
+          </div>
+        </div>
       </div>
     </div>
   </dialog>
@@ -411,20 +422,26 @@
       setTimeout(() => window.location.href = '/logout', 300);
     }
 
-    // Handle avatar selection from modal
-    window.handleAvatarSelection = function() {
-      const selectedModal = document.querySelector('#avatarModal input[name="modal_avatar"]:checked');
-      if (selectedModal) {
-        // Sync with hidden form inputs
-        const hiddenAvatarInputs = document.querySelectorAll('.avatar-selection-hidden input[name="selected_avatar"]');
-        hiddenAvatarInputs.forEach(hiddenInput => {
-          hiddenInput.checked = hiddenInput.value === selectedModal.value;
-        });
-        // Update preview
-        const mainAvatarPreview = document.getElementById('mainAvatarPreview');
-        mainAvatarPreview.src = selectedModal.closest('.avatar-selection-item').querySelector('img').src;
-      }
-      document.getElementById('avatarModal').close();
-    };
-  </script>
+// Handle avatar selection from modal
+  window.handleAvatarSelection = function() {
+    const selectedModal = document.querySelector('#avatarModal input[name="modal_avatar"]:checked');
+    if (selectedModal) {
+      // Sync with hidden form inputs
+      const hiddenAvatarInputs = document.querySelectorAll('.avatar-selection-hidden input[name="selected_avatar"]');
+      hiddenAvatarInputs.forEach(hiddenInput => {
+        hiddenInput.checked = hiddenInput.value === selectedModal.value;
+      });
+      // Update preview
+      const mainAvatarPreview = document.getElementById('mainAvatarPreview');
+      mainAvatarPreview.src = selectedModal.closest('.avatar-selection-item').querySelector('img').src;
+    }
+    document.getElementById('avatarModal').close();
+  };
+
+  // Save button loading state
+  const saveForm = document.querySelector('#saveAccountBtn')?.closest('form');
+  saveForm?.addEventListener('submit', () => {
+    document.getElementById('saveAccountBtn').classList.add('is-saving');
+  });
+</script>
 {% endblock %}

@@ -302,14 +302,13 @@ async def delete_user(request: Request, user_id: str):
 
     try:
         # This deletes the user from Supabase Auth
-        # It triggers the cascading delete we set up in SQL
+        # It triggers the cascading delete in SQL
         supabase_admin.auth.admin.delete_user(user_id)
         return {"success": True}
     except Exception as e:
         print(f"Error deleting user {user_id}: {e}")
         return {"success": False, "message": str(e)}
 
-# ---------- MinIO Database Management ----------
 
 from app.minio_handler import minio_client
 

@@ -54,82 +54,133 @@
 
     <!-- Overview Tab -->
     <div class="tab-content active" id="tab-overview">
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-label">Full Name</div>
-                <div class="info-value">{{ profile.full_name }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Gender</div>
-                <div class="info-value">{{ profile.gender or 'Not specified' }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Grade Level</div>
-                <div class="info-value">{{ profile.grade_level or 'Not specified' }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Role</div>
-                <div class="info-value">{{ profile.role or 'user' }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Reports Generated</div>
-                <div class="info-value">{{ reports|length }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Chat Messages</div>
-                <div class="info-value">{{ chats|length }}</div>
-            </div>
-        </div>
-
-        {% if features %}
-        <div class="section-title">ML Profile — Interests</div>
-        <div class="interest-grid">
-            {% set interest_map = [
-            ('Technology', features.interest_technology or 0),
-            ('Math & Stats', features.interest_math_stats or 0),
-            ('Art & Design', features.interest_art_design or 0),
-            ('Business & Money', features.interest_business_money or 0),
-            ('Social & People', features.interest_social_people or 0),
-            ('Bio & Health', features.interest_bio_health or 0),
-            ('Nature & Agri', features.interest_nature_agri or 0),
-            ('Construction', features.interest_construction or 0),
-            ('Law & Politics', features.interest_law_politics or 0),
-            ('Hospitality & Food', features.interest_hospitality_food or 0),
-            ('Gaming & Entertainment', features.interest_gaming_entertainment or 0),
-            ('History & Culture', features.interest_history_culture or 0)
-            ] %}
-            {% for name, val in interest_map %}
-            <div class="interest-row">
-                <span class="interest-label">{{ name }}</span>
-                <div class="interest-bar">
-                    <div class="interest-bar-fill" style="width: {{ (val * 20)|int }}%"></div>
+        <div class="overview-dashboard">
+            <!-- Left Panel: Status & Activity -->
+            <div class="overview-main-col">
+                <div class="dashboard-card">
+                    <div class="card-header border-bottom">
+                        <h3><i class="far fa-id-card"></i> Personal Details</h3>
+                        <p class="card-subtitle">User account information</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="modern-detail-grid">
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Full Name</span>
+                                <span class="modern-detail-value">{{ profile.full_name }}</span>
+                            </div>
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Gender</span>
+                                <span class="modern-detail-value">{{ profile.gender or 'Not specified' }}</span>
+                            </div>
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Grade Level</span>
+                                <span class="modern-detail-value">{{ profile.grade_level or 'Not specified' }}</span>
+                            </div>
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Role</span>
+                                <span class="modern-detail-value">{{ profile.role|title or 'User' }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span class="interest-val">{{ val }}</span>
-            </div>
-            {% endfor %}
-        </div>
 
-        <div class="section-title section-title-spaced">Academic Profile</div>
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-label">Plus2 Stream</div>
-                <div class="info-value">{{ features.plus2_stream or 'N/A' }}</div>
+                <div class="dashboard-stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper bg-blue-light">
+                            <i class="fas fa-file-alt text-blue"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-val">{{ reports|length }}</span>
+                            <span class="stat-label">Reports Generated</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper bg-green-light">
+                            <i class="fas fa-comments text-green"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-val">{{ chats|length }}</span>
+                            <span class="stat-label">Chat Messages</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if features %}
+                <div class="dashboard-card">
+                    <div class="card-header border-bottom">
+                        <h3><i class="fas fa-graduation-cap"></i> Academic Profile</h3>
+                        <p class="card-subtitle">Educational background & location</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="modern-detail-grid academic-grid">
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Plus2 Stream</span>
+                                <span class="modern-detail-value">{{ features.plus2_stream or 'N/A' }}</span>
+                            </div>
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">Plus2 GPA</span>
+                                <span class="modern-detail-value">{{ features.plus2_gpa or 'N/A' }}</span>
+                            </div>
+                            <div class="modern-detail-item">
+                                <span class="modern-detail-label">City Type</span>
+                                <span class="modern-detail-value">{{ features.city_type or 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            <div class="info-card">
-                <div class="info-label">Plus2 GPA</div>
-                <div class="info-value">{{ features.plus2_gpa or 'N/A' }}</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">City Type</div>
-                <div class="info-value">{{ features.city_type or 'N/A' }}</div>
+
+            <!-- Right Panel: ML Interests -->
+            <div class="overview-side-col">
+                <div class="dashboard-card full-height-card">
+                    <div class="card-header border-bottom">
+                        <h3><i class="fas fa-chart-pie"></i> ML Profile — Interests</h3>
+                        <p class="card-subtitle">User's calculated interest metrics</p>
+                    </div>
+                    <div class="card-body">
+                        {% if features %}
+                        <div class="ml-interest-list">
+                            {% set interest_map = [
+                                ('Technology', features.interest_technology or 0, 'brand'),
+                                ('Math & Stats', features.interest_math_stats or 0, 'indigo'),
+                                ('Art & Design', features.interest_art_design or 0, 'pink'),
+                                ('Business & Money', features.interest_business_money or 0, 'emerald'),
+                                ('Social & People', features.interest_social_people or 0, 'orange'),
+                                ('Bio & Health', features.interest_bio_health or 0, 'teal'),
+                                ('Nature & Agri', features.interest_nature_agri or 0, 'green'),
+                                ('Construction', features.interest_construction or 0, 'gray'),
+                                ('Law & Politics', features.interest_law_politics or 0, 'red'),
+                                ('Hospitality & Food', features.interest_hospitality_food or 0, 'yellow'),
+                                ('Gaming & Entertainment', features.interest_gaming_entertainment or 0, 'purple'),
+                                ('History & Culture', features.interest_history_culture or 0, 'cyan')
+                            ] %}
+                            
+                            {% for name, val, color_class in interest_map %}
+                            <div class="ml-interest-item">
+                                <div class="ml-interest-info">
+                                    <span class="ml-interest-name">{{ name }}</span>
+                                    <span class="ml-interest-score">{{ val }}/10</span>
+                                </div>
+                                <div class="ml-interest-track">
+                                    <div class="ml-interest-fill bg-{{ color_class }}" style="width: {{ (val * 10)|int }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state empty-styled">
+                            <div class="empty-icon-wrapper">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <h4>No ML Profile</h4>
+                            <p>This user hasn't generated any career reports yet, so we don't have their interest metrics.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        {% else %}
-        <div class="empty-state empty-state-spaced">
-            <i class="fas fa-flask"></i>
-            <p>No ML feature data available. This user hasn't generated a career report yet.</p>
-        </div>
-        {% endif %}
     </div>
 
     <!-- Reports Tab -->
