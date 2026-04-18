@@ -32,7 +32,8 @@ def verify_admin_status(request: Request):
         # Check Profiles table
         profile_res = supabase.table("Profiles").select("role, status").eq("id", user.id).single().execute()
         if not profile_res.data or profile_res.data.get("role") != "admin" or profile_res.data.get("status") == "deactivated":
-            raise HTTPException(status_code=401, detail="Access denied")
+            # 403 Forbidden: User is logged in, but just doesn't have the right permissions
+            raise HTTPException(status_code=403, detail="Access denied")
             
         return user
     except HTTPException:

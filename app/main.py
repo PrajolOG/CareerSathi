@@ -86,6 +86,14 @@ async def unauthorized_handler(request: Request, exc):
     return RedirectResponse(url="/login")
 
 
+@app.exception_handler(403)
+async def forbidden_handler(request: Request, exc):
+    # For non-admins trying to access admin pages, redirect to student dashboard
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(status_code=403, content={"detail": "Forbidden: Admin access required"})
+    return RedirectResponse(url="/userProfile")
+
+
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
     if "application/json" in request.headers.get("accept", ""):
