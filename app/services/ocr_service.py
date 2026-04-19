@@ -271,6 +271,32 @@ class OCRService:
         if not pdf_bytes:
             return ""
 
+        # --- HYBRID APPROACH: Try direct text extraction first ---
+        try:
+            import fitz
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            direct_text = []
+            for page_index, page in enumerate(doc, start=1):
+                page_content = page.get_text().strip()
+                if page_content:
+                    if len(doc) > 1:
+                        direct_text.append(f"Page {page_index}:\n{page_content}")
+                    else:
+                        direct_text.append(page_content)
+            
+            doc.close()
+            
+            full_direct_text = "\n\n".join(direct_text).strip()
+            
+            # If we extracted significant text, it's a digital PDF - return immediately
+            if len(full_direct_text) > 50:
+                return full_direct_text
+                
+        except Exception as extraction_error:
+            # Fallback to OCR if direct extraction fails
+            print(f"Direct PDF extraction warning: {extraction_error}")
+
+        # --- OCR FALLBACK: For scanned documents ---
         self._setup_windows_bridge()
 
         temp_path = None
