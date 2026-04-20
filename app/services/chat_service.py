@@ -124,7 +124,7 @@ class ChatService:
             
         except Exception as e:
             print(f"Gemini Pool exhaustion error: {e}")
-            yield "I am currently overloaded. Please try again later."
+            yield "I am currently assisting several students and need a brief moment to process things. Please try sending your message again in a minute, and I will be ready to give you my full attention."
             return
 
         # --- Save to Database (background) ---

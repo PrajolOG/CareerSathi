@@ -146,7 +146,7 @@ async def chat_with_bot(request: Request, chat_data: ChatMessage):
                 yield chunk
         except Exception as e:
             print(f"Streaming Error: {e}")
-            yield "Sorry, a system error occurred."
+            yield "I encountered a small technical hurdle while trying to respond. Please try sending your message again, and I will be ready to assist you."
 
     from fastapi.responses import StreamingResponse
     return StreamingResponse(event_generator(), media_type="text/plain")
@@ -251,7 +251,7 @@ async def chat_with_document(
                 yield chunk
         except Exception as e:
             print(f"Document Streaming Error: {e}")
-            yield "Sorry, a system error occurred while processing your file."
+            yield "I'm having a little trouble reading this file right now. Could you please try again, or ensure the file is a clear PDF or image?"
 
     from fastapi.responses import StreamingResponse
     return StreamingResponse(event_generator(), media_type="text/plain")
@@ -331,7 +331,7 @@ async def chat_with_stored_document(
                     yield chunk
             except Exception as e:
                 print(f"Stored Document Streaming Error: {e}")
-                yield "Sorry, a system error occurred while processing your stored file."
+                yield "I am having trouble accessing your stored document at the moment. Please try again, or let me know if there's anything else you'd like to discuss."
 
         from fastapi.responses import StreamingResponse
 

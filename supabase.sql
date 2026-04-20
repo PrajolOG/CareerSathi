@@ -38,7 +38,6 @@ CREATE TABLE public.Reports (
   user_id uuid DEFAULT auth.uid(),
   career_prediction text,
   matching_factor text,
-  pdf_url text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   roadmap jsonb,
   ml_latency_ms integer DEFAULT 0,
