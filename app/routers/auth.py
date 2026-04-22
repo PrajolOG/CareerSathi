@@ -90,7 +90,7 @@ def signup(
         # Set a temporary cookie to allow access to /welcome for 1 minute
         response.set_cookie(key="signup_success", value="true", max_age=60, httponly=True)
         
-        # Also set the access token if session is available (email confirm disabled)
+        # Also set the access token if session is available
         if auth_response.session:
             response.set_cookie(key="access_token", value=auth_response.session.access_token, httponly=True, secure=False, samesite="lax", max_age=604800)
             

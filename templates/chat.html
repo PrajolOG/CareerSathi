@@ -141,6 +141,7 @@
             opacity: 0;
             transform: translateY(-8px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -163,7 +164,8 @@
     </div>
 
     <!-- Rate Limit Banner -->
-    <div id="rateLimitBanner" class="rate-limit-banner" style="display: {% if chat_rate_limited %}flex{% else %}none{% endif %};">
+    <div id="rateLimitBanner" class="rate-limit-banner"
+        style="display: {% if chat_rate_limited %}flex{% else %}none{% endif %};">
         <i class="fa-solid fa-clock"></i>
         <span class="rl-text">Chat limit exceeded. Please try again later.</span>
         <a href="/settings#limits" class="rl-link">Learn more in Settings</a>
@@ -210,7 +212,7 @@ How would you like to begin our session today?">
         <div class="stuffs-modal-search">
             <div class="search-input-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="stuffsSearchInput" class="stuffs-search-input" 
+                <input type="text" id="stuffsSearchInput" class="stuffs-search-input"
                     placeholder="Search your documents..." oninput="filterStuffs()">
             </div>
         </div>
@@ -493,7 +495,7 @@ How would you like to begin our session today?">
         }
 
         const message = userInput.value.trim();
-        
+
         let selectedFile = null;
         if (imageUpload && imageUpload.files.length > 0) selectedFile = imageUpload.files[0];
         else if (pdfUpload && pdfUpload.files.length > 0) selectedFile = pdfUpload.files[0];
@@ -735,7 +737,7 @@ How would you like to begin our session today?">
     const stuffsModalBody = document.getElementById('stuffsModalBody');
     const stuffsSearchInput = document.getElementById('stuffsSearchInput');
 
-    window.openStuffsModal = async function() {
+    window.openStuffsModal = async function () {
         if (!stuffsModal) return;
         stuffsModal.style.display = 'flex';
         if (stuffsSearchInput) stuffsSearchInput.value = '';
@@ -754,7 +756,7 @@ How would you like to begin our session today?">
             const data = await res.json();
             if (data.resources) {
                 // Add bucket_name to each resource for selection context
-                allStuffs = data.resources.map(r => ({...r, bucket_name: data.bucket_name}));
+                allStuffs = data.resources.map(r => ({ ...r, bucket_name: data.bucket_name }));
                 renderStuffs(allStuffs);
             } else {
                 stuffsModalBody.innerHTML = '<div class="modal-empty"><i class="fa-solid fa-box-open"></i><p>No documents found.</p></div>';
@@ -765,7 +767,7 @@ How would you like to begin our session today?">
         }
     };
 
-    window.closeStuffsModal = function() {
+    window.closeStuffsModal = function () {
         stuffsModal.style.display = 'none';
     };
 
@@ -781,7 +783,7 @@ How would you like to begin our session today?">
         stuffs.forEach(item => {
             const card = document.createElement('div');
             card.className = 'stuff-item-card';
-            
+
             let iconHtml = '';
             if (item.is_image && item.presigned_url) {
                 iconHtml = `<img src="${item.presigned_url}" class="stuff-item-preview" alt="${item.name}">`;
@@ -789,7 +791,7 @@ How would you like to begin our session today?">
                 const iconClass = item.is_image ? 'fa-regular fa-image' : 'fa-regular fa-file-pdf';
                 iconHtml = `<i class="${iconClass}"></i>`;
             }
-            
+
             card.innerHTML = `
                 <div class="stuff-item-icon">${iconHtml}</div>
                 <div class="stuff-item-info">
@@ -819,7 +821,7 @@ How would you like to begin our session today?">
         };
     }
 
-    window.filterStuffs = debounce(function() {
+    window.filterStuffs = debounce(function () {
         const query = (stuffsSearchInput.value || "").toLowerCase().trim();
         const filtered = allStuffs.filter(s => (s.name || "").toLowerCase().includes(query));
         renderStuffs(filtered);
@@ -828,7 +830,7 @@ How would you like to begin our session today?">
 
     function selectStuff(item) {
         activeStoredStuff = item;
-        
+
         // Clear real file inputs
         if (imageUpload) imageUpload.value = '';
         if (pdfUpload) pdfUpload.value = '';
@@ -840,13 +842,13 @@ How would you like to begin our session today?">
             fileIcon.className = item.is_image ? 'fa-solid fa-image' : 'fa-solid fa-file-pdf';
         }
         if (filePreview) filePreview.style.display = 'flex';
-        
+
         closeStuffsModal();
 
         if (typeof toggleAttachMenu === 'function') {
             // Close attach menu if open
             const menu = document.getElementById('attachMenu');
-            if(menu && menu.style.display === 'flex') {
+            if (menu && menu.style.display === 'flex') {
                 menu.style.display = 'none';
             }
         }
@@ -858,4 +860,3 @@ How would you like to begin our session today?">
     });
 </script>
 {% endblock %}
-

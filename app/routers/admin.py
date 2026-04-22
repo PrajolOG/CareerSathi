@@ -325,6 +325,17 @@ def admin_database(request: Request):
 def admin_bucket_detail(request: Request, bucket_name: str):
     """View objects within a specific MinIO bucket."""
     objects = minio_client.list_bucket_objects(bucket_name)
+    nepal_tz = timezone(timedelta(hours=5, minutes=45))
+
+    for obj in objects:
+        last_modified = obj.get("last_modified")
+        if last_modified:
+            try:
+                obj["last_modified"] = last_modified.astimezone(nepal_tz)
+            except Exception:
+                # Keep original value if timezone conversion fails for any reason.
+                obj["last_modified"] = last_modified
+
     all_buckets = minio_client.list_buckets()
     target_buckets = [b["name"] for b in all_buckets if b["name"] != bucket_name]
     
